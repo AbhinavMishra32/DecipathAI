@@ -88,7 +88,7 @@ npm install
 
 # Set up environment variables
 cp .env.example .env.local
-# Add your NEXT_PUBLIC_GEMINI_API_KEY and Clerk keys
+# Add your GEMINI_API_KEY (or GOOGLE_API_KEY), TAVILY_API_KEY, and Clerk keys
 
 # Run the development server
 npm run dev
