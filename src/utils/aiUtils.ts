@@ -1,19 +1,14 @@
-import { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory, SchemaType } from '@google/generative-ai'
-import { CareerInfo, QuestionData, Recommendations } from '../types'
-// import { initialEdges, initialNodes } from '@/data';
-import { roadmapData } from '@/data';
-import { useEffect } from 'react'
-import { api } from '@/services/axios'
-import { useTheme } from 'next-themes';
-// import fsPromises from 'fs/promises';
+import { roadmapData } from "@/data"
+import type { Edge, Node } from "reactflow"
 
-const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY as string
-console.log("GEMINI API KEY: ", GEMINI_API_KEY);
-if (!GEMINI_API_KEY) {
-  throw new Error("Missing NEXT_PUBLIC_GEMINI_API_KEY in environment variables")
+export type AgentActivityEvent = {
+  id: string
+  type: "status" | "tool-call" | "tool-result" | "step" | "analysis" | "complete" | "error"
+  title: string
+  detail: string
+  payload?: unknown
+  timestamp: string
 }
-
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY)
 
 interface GenerateRoadmapDataProps {
   currentState: string;
