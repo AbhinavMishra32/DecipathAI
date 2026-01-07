@@ -11,11 +11,12 @@ export type AgentActivityEvent = {
 }
 
 interface GenerateRoadmapDataProps {
-  currentState: string;
-  desiredOutcome: string;
-  sampleData?: boolean;
-  customPrompt?: string | null;
+  currentState: string
+  desiredOutcome: string
+  sampleData?: boolean
+  customPrompt?: string | null
   theme: string | undefined
+  onActivity?: (event: AgentActivityEvent) => void
 }
 
 export async function generateMindMapData({ currentState, desiredOutcome, sampleData, customPrompt, theme }: GenerateRoadmapDataProps) {
