@@ -120,58 +120,19 @@ export async function generateMindMapData({
     }
   }
 
-  const schema = {
-    type: SchemaType.OBJECT,
-    properties: {
-      aiNodes: {
-        type: SchemaType.ARRAY,
-        items: {
-          type: SchemaType.OBJECT,
-          properties: {
-            id: { type: SchemaType.STRING },
-            type: { type: SchemaType.STRING },
-            data: {
-              type: SchemaType.OBJECT,
-              properties: {
-                label: { type: SchemaType.STRING },
-                icon: { type: SchemaType.STRING },
-                description: { type: SchemaType.STRING },
-                detailedDescription: { type: SchemaType.STRING },
-                timeEstimate: { type: SchemaType.STRING },
-                nextSteps: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
-                tasks: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } }
-              },
-              required: ["label", "icon", "description", "detailedDescription", "timeEstimate", "nextSteps", "tasks"]
-            }
-          },
-          required: ["id", "type", "data"]
-        }
-      },
-      aiEdges: {
-        type: SchemaType.ARRAY,
-        items: {
-          type: SchemaType.OBJECT,
-          properties: {
-            id: { type: SchemaType.STRING },
-            source: { type: SchemaType.STRING },
-            target: { type: SchemaType.STRING },
-            type: { type: SchemaType.STRING },
-            animated: { type: SchemaType.BOOLEAN },
-            style: {
-              type: SchemaType.OBJECT,
-              properties: {
-                stroke: { type: SchemaType.STRING },
-                strokeWidth: { type: SchemaType.NUMBER }
-              },
-              required: ["stroke", "strokeWidth"]
-            }
-          },
-          required: ["id", "source", "target", "type", "animated", "style"]
-        }
-      }
+  const response = await fetch("/api/roadmap/generate", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "text/event-stream",
     },
-    required: ["aiNodes", "aiEdges"]
-  };
+    body: JSON.stringify({
+      currentState,
+      desiredOutcome,
+      customPrompt,
+      theme,
+    }),
+  })
 
   const safetySettings = [
     {
