@@ -144,13 +144,10 @@ export async function generateMindMapData({
     return consumeSseRoadmapStream(response, onActivity)
   }
 
+  const payload = (await response.json()) as GenerateRoadmapApiResponse
 
-    return {
-      initialNodes: generatedData.aiNodes,
-      initialEdges: generatedData.aiEdges,
-    };
-  } catch (error) {
-    console.error("Error generating mind map data:", error);
-    throw error;
+  return {
+    initialNodes: payload.initialNodes,
+    initialEdges: payload.initialEdges,
   }
 }
