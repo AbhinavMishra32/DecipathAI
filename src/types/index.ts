@@ -1,3 +1,18 @@
+export interface NodeReference {
+    title: string;
+    url: string;
+    snippet: string;
+    relevance: string;
+}
+
+export interface SuccessStory {
+    person: string;
+    achievement: string;
+    summary: string;
+    sourceUrl: string;
+    afterNode: string;
+}
+
 interface NodeData {
     description: string;
     detailedDescription: string;
