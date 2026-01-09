@@ -21,6 +21,8 @@ interface NodeData {
     nextSteps: string[];
     tasks: string[];
     timeEstimate: string;
+    references?: NodeReference[];
+    successStories?: SuccessStory[];
 }
 
 export interface MindMapNode {
