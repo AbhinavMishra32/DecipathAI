@@ -15,13 +15,10 @@ export async function saveRoadmap({
         nodes: MindMapNode[];
         edges: MindMapEdge[];
         title: string;
-    }) {
-    // console.log("Nodes: ", nodes);
-    // console.log("Edges: ", edges);
-    // Validation
+    }): Promise<SaveRoadmapResult> {
     const { userId } = await auth();
     if (!userId) {
-        throw new Error("User not authenticated");
+        return { success: false, error: "User not authenticated" };
     }
 
     if (!Array.isArray(nodes) || !Array.isArray(edges) || !title) {
