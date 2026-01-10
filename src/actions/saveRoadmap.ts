@@ -1,9 +1,11 @@
 "use server";
 
-import { prisma } from "@/lib/db";
 import { MindMapEdge, MindMapNode } from "@/types/index";
 import { auth } from "@clerk/nextjs/server";
-// (removed unused import)
+
+type SaveRoadmapResult =
+  | { success: true; data: unknown }
+  | { success: false; error: string }
 
 export async function saveRoadmap({
     nodes,
