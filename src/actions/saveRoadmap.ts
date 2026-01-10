@@ -22,21 +22,12 @@ export async function saveRoadmap({
     }
 
     if (!Array.isArray(nodes) || !Array.isArray(edges) || !title) {
-        throw new Error("Invalid input: nodes and edges must be arrays and title must be provided");
+        return { success: false, error: "Invalid input: nodes and edges must be arrays and title must be provided" };
     }
 
-    console.log("First node:", {
-        nodeId: nodes[0]?.id,
-        type: nodes[0]?.type || 'default',
-        data: nodes[0]?.data,
-        // label: nodes[0]?.data?.label || '',
-        // description: nodes[0]?.data?.description || '',
-        // detailedDescription: nodes[0]?.data?.detailedDescription || '',
-        // icon: nodes[0]?.data?.icon || '',
-        // nextSteps: nodes[0]?.data?.nextSteps || [],
-        // tasks: nodes[0]?.data?.tasks || [],
-        // timeEstimate: nodes[0]?.data?.timeEstimate || ''
-    });
+    if (!process.env.DATABASE_URL) {
+        return { success: false, error: "Database is not configured" };
+    }
 
   try {
     // Create roadmap with properly structured data
