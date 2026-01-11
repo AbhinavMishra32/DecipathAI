@@ -22,7 +22,7 @@ import CustomNode from "../../../components/roadmap/custom-node"
 import Sidebar from "../../../components/roadmap/sidebar"
 import ControlsComponent from "../../../components/roadmap/controls"
 
-import { generateMindMapData } from "@/utils/aiUtils"
+import { generateMindMapData, type AgentActivityEvent } from "@/utils/aiUtils"
 import { type MindMapNode, MindMapEdge } from "../../types"
 import LoadingAnimationPage from "@/components/roadmap/LoadingAnimationPage"
 import { AnimatePresence } from "framer-motion"
@@ -83,6 +83,7 @@ const CareerPossibilities = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState([])
   const [edges, setEdges, onEdgesChange] = useEdgesState([])
   const [selectedNode, setSelectedNode] = useState<MindMapNode | null>(null)
+  const [agentEvents, setAgentEvents] = useState<AgentActivityEvent[]>([])
   const [isGenerating, setIsGenerating] = useState(false)
   const [isInitialized, setIsInitialized] = useState(false)
   const { getNode, getEdges, setEdges: setEdgesReactFlow } = useReactFlow()
