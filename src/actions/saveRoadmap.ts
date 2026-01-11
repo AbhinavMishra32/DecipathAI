@@ -30,7 +30,8 @@ export async function saveRoadmap({
     }
 
   try {
-    // Create roadmap with properly structured data
+    const { prisma } = await import("@/lib/db");
+
     const roadmap = await prisma.roadmap.upsert({
       where: {
         id: `${title}-${Date.now()}`
@@ -80,6 +81,6 @@ export async function saveRoadmap({
     return { success: true, data: roadmap };
   } catch (error) {
     console.error('Error in saveRoadmap:', error);
-    throw new Error(`Failed to save roadmap: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    return { success: false, error: `Failed to save roadmap: ${error instanceof Error ? error.message : 'Unknown error'}` };
   }
 }
