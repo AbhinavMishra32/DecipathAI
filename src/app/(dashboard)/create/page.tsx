@@ -165,9 +165,26 @@ const CareerPossibilities = () => {
   const generateNewMindMap = useCallback(
     async (currentState: string, desiredOutcome: string, customPrompt?: string | null) => {
       setIsGenerating(true)
-      setIsInitialized(true)
+      setAgentEvents([
+        {
+          id: `bootstrap-${Date.now()}`,
+          type: "status",
+          title: "Booting research agent",
+          detail: "Preparing objective understanding and query strategy.",
+          timestamp: new Date().toISOString(),
+        },
+      ])
       try {
-        const { initialNodes, initialEdges } = await generateMindMapData({ currentState, desiredOutcome, sampleData: false, customPrompt, theme })
+        const { initialNodes, initialEdges } = await generateMindMapData({
+          currentState,
+          desiredOutcome,
+          sampleData: false,
+          customPrompt,
+          theme,
+          onActivity: (event) => {
+            setAgentEvents((previous) => [...previous.slice(-29), event])
+          },
+        })
         saveRoadmap({ nodes: initialNodes, edges: initialEdges, title: "First roadmap" });
         const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(initialNodes, initialEdges)
         setNodes(layoutedNodes)
