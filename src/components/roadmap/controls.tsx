@@ -1,10 +1,16 @@
 import React, { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Loader2, Target, Compass, ArrowRight, Sparkles, BrainCircuit } from 'lucide-react'
-import { Background, BackgroundVariant } from 'reactflow'
-import {hubotSans} from '@/lib/fonts';
+import {
+  Loader2,
+  Target,
+  Compass,
+  Sparkles,
+  BrainCircuit,
+  GitBranch,
+  PenSquare,
+} from 'lucide-react'
+import { hubotSans } from '@/lib/fonts';
 
 interface ControlsProps {
   onGenerateNewMindMap: (situation: string, goal: string, customPrompt?: string | null) => void
