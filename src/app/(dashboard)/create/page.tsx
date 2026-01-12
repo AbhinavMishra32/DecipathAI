@@ -189,7 +189,18 @@ const CareerPossibilities = () => {
         const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(initialNodes, initialEdges)
         setNodes(layoutedNodes)
         setEdges(layoutedEdges)
+        setIsInitialized(true)
       } catch (error) {
+        setAgentEvents((previous) => [
+          ...previous.slice(-29),
+          {
+            id: `error-${Date.now()}`,
+            type: "error",
+            title: "Generation failed",
+            detail: error instanceof Error ? error.message : "Unknown generation error.",
+            timestamp: new Date().toISOString(),
+          },
+        ])
         console.error("Error generating new mind map:", error)
       } finally {
         setIsGenerating(false)
