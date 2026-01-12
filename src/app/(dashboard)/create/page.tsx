@@ -229,7 +229,7 @@ const CareerPossibilities = () => {
         )}
         <div className="flex-grow relative">
           {isGenerating ? (
-            <LoadingAnimationPage />
+            <LoadingAnimationPage activity={agentEvents} />
           ) : (
             <ReactFlow
               nodes={nodes}
