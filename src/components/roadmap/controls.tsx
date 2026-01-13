@@ -16,14 +16,27 @@ interface ControlsProps {
   onGenerateNewMindMap: (situation: string, goal: string, customPrompt?: string | null) => void
   isGenerating: boolean
   isInitialized: boolean
-  selectedNode: any
+  selectedNode: unknown
 }
 
-const Controls: React.FC<ControlsProps> = ({ onGenerateNewMindMap, isGenerating, isInitialized, selectedNode }) => {
-  const [situation, setSituation] = useState('');
-  const [goal, setGoal] = useState('');
-  const [customPrompt, setCustomPrompt] = useState<string | null>(null);
-  const [isHoveringButton, setIsHoveringButton] = useState(false);
+const featureHighlights = [
+  {
+    title: "Branching Path Intelligence",
+    description: "Get alternate routes and converging milestones instead of flat step lists.",
+    icon: GitBranch,
+  },
+  {
+    title: "Task-Centric Nodes",
+    description: "Every roadmap node is paired with practical tasks you can execute immediately.",
+    icon: PenSquare,
+  },
+]
+
+const Controls: React.FC<ControlsProps> = ({ onGenerateNewMindMap, isGenerating, isInitialized }) => {
+  const [situation, setSituation] = useState('')
+  const [goal, setGoal] = useState('')
+  const [customPrompt, setCustomPrompt] = useState<string | null>(null)
+  const [validationError, setValidationError] = useState<string | null>(null)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
