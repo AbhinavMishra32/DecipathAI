@@ -69,16 +69,76 @@ const Controls: React.FC<ControlsProps> = ({ onGenerateNewMindMap, isGenerating,
                 <BrainCircuit className="h-3.5 w-3.5" />
                 Plan with Decipath AI Engine
               </div>
-              <div className="relative">
-                <Target className="absolute left-3 top-2.5 h-5 w-5 text-indigo-400" />
-                <Input
-                  placeholder="Where do you want to go? (e.g., 'Launch successfully')"
-                  value={goal}
-                  onChange={(e) => setGoal(e.target.value)}
-                  className="pl-10 py-3 rounded-lg text-sm dark:bg-neutral-900 text-gray-600 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 border-2 border-gray-300 dark:border-neutral-800"
-                />
+
+              <div>
+                <h2 className={`${hubotSans.className} text-3xl font-semibold leading-tight text-slate-900 dark:text-white sm:text-[2.15rem]`}>
+                  Create a roadmap that actually tells you what to do next
+                </h2>
+                <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-600 dark:text-slate-300 sm:text-base">
+                  Describe your current state and your destination. Decipath will build a connected action map with milestones,
+                  tasks, and realistic progression paths.
+                </p>
               </div>
-              <div className='relative'>
+
+              <div className="space-y-3">
+                {featureHighlights.map((item) => {
+                  const Icon = item.icon
+
+                  return (
+                    <div
+                      key={item.title}
+                      className="rounded-2xl border border-indigo-200/70 bg-white/75 p-4 backdrop-blur-sm dark:border-indigo-300/18 dark:bg-neutral-900/55"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="mt-0.5 rounded-lg border border-indigo-300/55 bg-indigo-500/18 p-2 text-indigo-600 dark:text-indigo-200">
+                          <Icon className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-medium text-slate-900 dark:text-slate-100">{item.title}</h3>
+                          <p className="mt-1 text-xs leading-relaxed text-slate-600 dark:text-slate-400">{item.description}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4 rounded-[1.4rem] border border-indigo-200/70 bg-white/80 p-5 backdrop-blur-xl dark:border-indigo-300/20 dark:bg-neutral-900/65 sm:p-6">
+              <div className="space-y-1">
+                <label className="text-xs uppercase tracking-[0.18em] text-indigo-500/90 dark:text-indigo-300/80">
+                  Current Position
+                </label>
+                <div className="relative">
+                  <Compass className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-indigo-500 dark:text-indigo-300" />
+                  <Input
+                    placeholder="Where are you now?"
+                    value={situation}
+                    onChange={(e) => setSituation(e.target.value)}
+                    className="h-11 rounded-xl border-indigo-200 bg-white/90 pl-10 text-sm text-slate-800 placeholder:text-slate-400 focus-visible:ring-indigo-400 dark:border-indigo-300/25 dark:bg-neutral-950/70 dark:text-slate-100 dark:placeholder:text-slate-500"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs uppercase tracking-[0.18em] text-indigo-500/90 dark:text-indigo-300/80">
+                  Desired Outcome
+                </label>
+                <div className="relative">
+                  <Target className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-indigo-500 dark:text-indigo-300" />
+                  <Input
+                    placeholder="Where do you want to go?"
+                    value={goal}
+                    onChange={(e) => setGoal(e.target.value)}
+                    className="h-11 rounded-xl border-indigo-200 bg-white/90 pl-10 text-sm text-slate-800 placeholder:text-slate-400 focus-visible:ring-indigo-400 dark:border-indigo-300/25 dark:bg-neutral-950/70 dark:text-slate-100 dark:placeholder:text-slate-500"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs uppercase tracking-[0.18em] text-indigo-500/90 dark:text-indigo-300/80">
+                  Custom Prompt (Optional)
+                </label>
                 <textarea
                   placeholder='Custom Prompt'
                   onChange={(e) => setCustomPrompt(e.target.value)}
