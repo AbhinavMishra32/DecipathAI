@@ -40,7 +40,16 @@ const Controls: React.FC<ControlsProps> = ({ onGenerateNewMindMap, isGenerating,
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onGenerateNewMindMap(situation, goal, customPrompt)
+    const trimmedSituation = situation.trim()
+    const trimmedGoal = goal.trim()
+
+    if (!trimmedSituation || !trimmedGoal) {
+      setValidationError("Please fill both Current Position and Desired Outcome.")
+      return
+    }
+
+    setValidationError(null)
+    onGenerateNewMindMap(trimmedSituation, trimmedGoal, customPrompt)
   }
 
   if (isInitialized && isGenerating) {
@@ -49,27 +58,16 @@ const Controls: React.FC<ControlsProps> = ({ onGenerateNewMindMap, isGenerating,
 
   if (!isInitialized) {
     return (
-      <>
-        <Card className={`${hubotSans.className} w-full max-w-2xl mx-auto rounded-3xl overflow-hidden shadow-none border-none bg-gray-50 dark:bg-neutral-950`}>
-          <CardHeader className="p-6 text-center">
-            <CardTitle className="text-2xl font-light text-gray-700 dark:text-gray-200 flex items-center gap-2">
-              Create Your AI Roadmap
-            </CardTitle>
-          </CardHeader>
-          {/* <div className='w-[80vh] mx-auto'> */}
-          <CardContent className="p-6 bg-gray-50 dark:bg-neutral-950">
-            <p className="text-slate-600 dark:text-gray-300 mb-4 text-sm">
-              Our AI-powered mind map creator helps you explore connections, discover new paths, and illuminate your thinking process.
-            </p>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="relative">
-                <Compass className="absolute left-3 top-2.5 h-5 w-5 text-indigo-400" />
-                <Input
-                  placeholder="Where are you now? (e.g., 'Starting a new project')"
-                  value={situation}
-                  onChange={(e) => setSituation(e.target.value)}
-                  className="pl-10 py-3 rounded-lg text-sm dark:bg-neutral-900 text-gray-600 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 border-2 border-gray-300 dark:border-neutral-800"
-                />
+      <div className="mx-auto w-full max-w-[1120px]">
+        <div className="relative overflow-hidden rounded-[2rem] border border-indigo-200/75 bg-white/68 shadow-[0_32px_80px_-48px_rgba(79,70,229,0.75)] backdrop-blur-2xl dark:border-indigo-300/20 dark:bg-[#080c19]/70 dark:shadow-[0_36px_90px_-52px_rgba(79,70,229,0.95)]">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_14%_8%,rgba(99,102,241,0.22),transparent_44%)] dark:bg-[radial-gradient(circle_at_14%_8%,rgba(99,102,241,0.3),transparent_42%)]" />
+          <div className="pointer-events-none absolute -right-16 top-12 h-44 w-44 rounded-full border border-indigo-300/30" />
+
+          <div className="relative grid gap-8 p-6 md:grid-cols-[0.95fr_1.05fr] md:p-8 lg:p-10">
+            <div className="space-y-6">
+              <div className="inline-flex items-center gap-2 rounded-full border border-indigo-300/45 bg-indigo-500/14 px-3 py-1 text-xs text-indigo-100 dark:border-indigo-300/35 dark:bg-indigo-500/20 sm:text-sm">
+                <BrainCircuit className="h-3.5 w-3.5" />
+                Plan with Decipath AI Engine
               </div>
               <div className="relative">
                 <Target className="absolute left-3 top-2.5 h-5 w-5 text-indigo-400" />
