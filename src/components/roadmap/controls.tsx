@@ -140,9 +140,9 @@ const Controls: React.FC<ControlsProps> = ({ onGenerateNewMindMap, isGenerating,
                   Custom Prompt (Optional)
                 </label>
                 <textarea
-                  placeholder='Custom Prompt'
+                  placeholder="Any special constraints, preferences, timeline, or focus areas..."
                   onChange={(e) => setCustomPrompt(e.target.value)}
-                  className='w-full h-20 p-2 rounded-lg text-sm bg-gray-50 dark:bg-neutral-900 text-gray-600 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 border-2 border-gray-300 focus:ring-red-400 dark:border-neutral-800'
+                  className="h-28 w-full resize-none rounded-xl border border-indigo-200 bg-white/90 p-3 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:border-indigo-300/25 dark:bg-neutral-950/70 dark:text-slate-100 dark:placeholder:text-slate-500"
                 />
               </div>
               <Button
