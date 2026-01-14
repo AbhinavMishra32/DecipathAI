@@ -145,9 +145,10 @@ const Controls: React.FC<ControlsProps> = ({ onGenerateNewMindMap, isGenerating,
                   className="h-28 w-full resize-none rounded-xl border border-indigo-200 bg-white/90 p-3 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:border-indigo-300/25 dark:bg-neutral-950/70 dark:text-slate-100 dark:placeholder:text-slate-500"
                 />
               </div>
+
               <Button
                 type="submit"
-                className="w-full rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-500 text-white font-light text-lg shadow-md transition-all duration-300 ease-in-out transform hover:scale-105"
+                className="h-11 w-full rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 text-base font-medium text-white shadow-[0_18px_40px_-22px_rgba(79,70,229,0.9)] transition-all duration-300 hover:from-indigo-500 hover:to-indigo-400"
                 disabled={isGenerating}
                 onMouseEnter={() => setIsHoveringButton(true)}
                 onMouseLeave={() => setIsHoveringButton(false)}
