@@ -158,11 +158,14 @@ const Controls: React.FC<ControlsProps> = ({ onGenerateNewMindMap, isGenerating,
                   </>
                 ) : (
                   <>
-                    Create your Roadmap
-                    <Sparkles className={`h-[10px] w-[10px] ${isHoveringButton && "animate-pulse"}`} />
+                    Generate Roadmap
+                    <Sparkles className="ml-2 h-4 w-4" />
                   </>
                 )}
               </Button>
+              {validationError && (
+                <p className="text-sm text-red-500 dark:text-red-300">{validationError}</p>
+              )}
             </form>
           </CardContent>
           {/* </div> */}
