@@ -150,13 +150,11 @@ const Controls: React.FC<ControlsProps> = ({ onGenerateNewMindMap, isGenerating,
                 type="submit"
                 className="h-11 w-full rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 text-base font-medium text-white shadow-[0_18px_40px_-22px_rgba(79,70,229,0.9)] transition-all duration-300 hover:from-indigo-500 hover:to-indigo-400"
                 disabled={isGenerating}
-                onMouseEnter={() => setIsHoveringButton(true)}
-                onMouseLeave={() => setIsHoveringButton(false)}
               >
                 {isGenerating ? (
                   <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Crafting Your Mind Galaxy...
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Crafting Your Mind Map...
                   </>
                 ) : (
                   <>
