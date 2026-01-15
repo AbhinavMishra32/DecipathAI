@@ -167,23 +167,13 @@ const Controls: React.FC<ControlsProps> = ({ onGenerateNewMindMap, isGenerating,
                 <p className="text-sm text-red-500 dark:text-red-300">{validationError}</p>
               )}
             </form>
-          </CardContent>
-          {/* </div> */}
-
-        </Card>
-        {/* <Background
-          variant={BackgroundVariant.Dots}
-          gap={16}
-          size={1}
-          style={{ opacity: 0.3, zIndex: -1}}
-        />  */}
-      </>
+          </div>
+        </div>
+      </div>
     )
   }
-  return (
-    // <div className='absolute z-50 top-0 left-0 w-[200px] h-[200px] bg-red-400'></div>
-    <></>
-  )
+
+  return <></>
 }
 
 export default Controls;
