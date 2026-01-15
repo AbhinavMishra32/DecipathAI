@@ -3,7 +3,34 @@
 import React from "react"
 import { motion } from "framer-motion"
 
-const LoadingAnimation: React.FC = () => {
+const LoadingAnimation: React.FC<{ theme?: "light" | "dark" }> = ({ theme = "dark" }) => {
+  const isDark = theme === "dark"
+  const palette = isDark
+    ? {
+        nodeSurface: "bg-gray-900/40 border-gray-800",
+        nodeGlow: "bg-indigo-500/5",
+        nodeShimmer: "via-indigo-500/20",
+        pulseRing: "border-indigo-500/30",
+        innerHighlight: "from-white/5",
+        baseStroke: "rgba(155, 156, 247, 0.6)",
+        activeStroke: "rgba(59, 130, 246, 0.65)",
+        dashStroke: "rgba(196, 181, 253, 0.45)",
+        ambientOne: "bg-indigo-500/20",
+        ambientTwo: "bg-violet-500/18",
+      }
+    : {
+        nodeSurface: "bg-white/84 border-indigo-200/95",
+        nodeGlow: "bg-indigo-500/12",
+        nodeShimmer: "via-indigo-500/35",
+        pulseRing: "border-indigo-500/35",
+        innerHighlight: "from-white/70",
+        baseStroke: "rgba(99, 102, 241, 0.42)",
+        activeStroke: "rgba(79, 70, 229, 0.72)",
+        dashStroke: "rgba(79, 70, 229, 0.42)",
+        ambientOne: "bg-indigo-500/16",
+        ambientTwo: "bg-sky-400/16",
+      }
+
   const nodes = [
     { x: 0, y: 80, connections: [1, 2] },
     { x: 160, y: 20, connections: [5] },
@@ -16,7 +43,28 @@ const LoadingAnimation: React.FC = () => {
   ]
 
   return (
-    <div className="w-[680px] h-[260px] relative">
+    <motion.div
+      className="relative h-[260px] w-[680px]"
+      initial={{ opacity: 0.92, scale: 0.985 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+    >
+      <motion.div
+        className={`pointer-events-none absolute -left-14 -top-14 h-40 w-40 rounded-full blur-[70px] ${palette.ambientOne}`}
+        animate={{ opacity: [0.2, 0.45, 0.2], x: [0, 16, 0], y: [0, -10, 0] }}
+        transition={{ duration: 4.8, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+      />
+      <motion.div
+        className={`pointer-events-none absolute -bottom-10 right-0 h-36 w-36 rounded-full blur-[65px] ${palette.ambientTwo}`}
+        animate={{ opacity: [0.2, 0.5, 0.2], x: [0, -14, 0], y: [0, 10, 0] }}
+        transition={{ duration: 5.4, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut", delay: 0.4 }}
+      />
+      <motion.div
+        className={`pointer-events-none absolute inset-y-0 -left-24 w-28 bg-gradient-to-r from-transparent ${palette.nodeShimmer} to-transparent`}
+        animate={{ x: [-120, 860] }}
+        transition={{ duration: 1.9, repeat: Number.POSITIVE_INFINITY, repeatDelay: 1.2, ease: "linear" }}
+      />
+
       <svg className="absolute inset-0 w-full h-full">
         {nodes.map((node, index) => (
           <React.Fragment key={`connections-${index}`}>
