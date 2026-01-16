@@ -98,14 +98,14 @@ const LoadingAnimation: React.FC<{ theme?: "light" | "dark" }> = ({ theme = "dar
                   />
                   <motion.path
                     d={path}
-                    stroke="rgba(59, 130, 246, 0.6)"
-                    strokeWidth="0"
+                    stroke={palette.activeStroke}
+                    strokeWidth="2.25"
                     fill="none"
                     strokeLinecap="square"
                     initial={{ pathLength: 0 }}
                     animate={{ pathLength: 1 }}
                     transition={{
-                      duration: 0.75,
+                      duration: 0.9,
                       delay: index * 0.15 + 0.2,
                       repeat: Number.POSITIVE_INFINITY,
                       repeatDelay: 3,
