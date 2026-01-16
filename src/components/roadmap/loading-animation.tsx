@@ -73,7 +73,6 @@ const LoadingAnimation: React.FC<{ theme?: "light" | "dark" }> = ({ theme = "dar
               const end = { x: nodes[targetIndex].x + 40, y: nodes[targetIndex].y + 25 }
               const midX = (start.x + end.x) / 2
 
-              // Create step path with horizontal segments and vertical connections
               const path = `M ${start.x} ${start.y}
                            H ${midX}
                            V ${end.y}
@@ -83,7 +82,7 @@ const LoadingAnimation: React.FC<{ theme?: "light" | "dark" }> = ({ theme = "dar
                 <g key={`${index}-${connectionIndex}`}>
                   <motion.path
                     d={path}
-                    stroke="rgba(155, 156, 247, 0.6)"
+                    stroke={palette.baseStroke}
                     strokeWidth="2"
                     fill="none"
                     strokeLinecap="square"
