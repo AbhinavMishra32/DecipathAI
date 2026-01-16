@@ -108,7 +108,22 @@ const LoadingAnimation: React.FC<{ theme?: "light" | "dark" }> = ({ theme = "dar
                       duration: 0.9,
                       delay: index * 0.15 + 0.2,
                       repeat: Number.POSITIVE_INFINITY,
-                      repeatDelay: 3,
+                      repeatDelay: 2.2,
+                      ease: "linear",
+                    }}
+                  />
+                  <motion.path
+                    d={path}
+                    stroke={palette.dashStroke}
+                    strokeWidth="1.6"
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeDasharray="7 10"
+                    animate={{ strokeDashoffset: [0, -70] }}
+                    transition={{
+                      duration: 1.2,
+                      delay: index * 0.1,
+                      repeat: Number.POSITIVE_INFINITY,
                       ease: "linear",
                     }}
                   />
@@ -122,7 +137,7 @@ const LoadingAnimation: React.FC<{ theme?: "light" | "dark" }> = ({ theme = "dar
       {nodes.map((node, index) => (
         <motion.div key={`node-${index}`} className="absolute" style={{ left: node.x, top: node.y, zIndex: 10 }}>
           <motion.div
-            className="w-[80px] h-[50px] bg-gray-900/40 backdrop-blur-sm border border-gray-800 rounded-lg relative overflow-hidden"
+            className={`relative h-[50px] w-[80px] overflow-hidden rounded-lg border backdrop-blur-sm ${palette.nodeSurface}`}
             style={{
               boxShadow: "0 0 70px 2px rgba(149, 130, 246, 0.1), 0 0 30px 4px rgba(149, 130, 246, 0.05)",
             }}
