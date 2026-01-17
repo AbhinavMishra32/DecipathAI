@@ -146,10 +146,11 @@ const LoadingAnimation: React.FC<{ theme?: "light" | "dark" }> = ({ theme = "dar
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: [1, 1.04, 1] }}
             transition={{
-              duration: 0.3,
+              duration: 1.8,
               delay: index * 0.15,
               repeat: Number.POSITIVE_INFINITY,
-              repeatDelay: 3,
+              repeatDelay: 1.9,
+              ease: "easeInOut",
             }}
           >
             {/* Glow effect */}
