@@ -139,10 +139,12 @@ const LoadingAnimation: React.FC<{ theme?: "light" | "dark" }> = ({ theme = "dar
           <motion.div
             className={`relative h-[50px] w-[80px] overflow-hidden rounded-lg border backdrop-blur-sm ${palette.nodeSurface}`}
             style={{
-              boxShadow: "0 0 70px 2px rgba(149, 130, 246, 0.1), 0 0 30px 4px rgba(149, 130, 246, 0.05)",
+              boxShadow: isDark
+                ? "0 0 70px 2px rgba(149, 130, 246, 0.1), 0 0 30px 4px rgba(149, 130, 246, 0.05)"
+                : "0 0 64px 1px rgba(79, 70, 229, 0.11), 0 0 28px 3px rgba(99, 102, 241, 0.06)",
             }}
             initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
+            animate={{ opacity: 1, scale: [1, 1.04, 1] }}
             transition={{
               duration: 0.3,
               delay: index * 0.15,
