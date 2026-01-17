@@ -153,9 +153,20 @@ const LoadingAnimation: React.FC<{ theme?: "light" | "dark" }> = ({ theme = "dar
               ease: "easeInOut",
             }}
           >
-            {/* Glow effect */}
             <motion.div
-              className="absolute inset-0 bg-indigo-500/5"
+              className={`pointer-events-none absolute -inset-3 rounded-xl blur-xl ${palette.nodeGlow}`}
+              animate={{ opacity: [0.2, 0.55, 0.2], scale: [0.98, 1.06, 0.98] }}
+              transition={{
+                duration: 1.6,
+                delay: index * 0.1,
+                repeat: Number.POSITIVE_INFINITY,
+                repeatDelay: 1.4,
+                ease: "easeInOut",
+              }}
+            />
+
+            <motion.div
+              className={`absolute inset-0 ${palette.nodeGlow}`}
               animate={{ opacity: [0.3, 0.5, 0.3] }}
               transition={{
                 duration: 2,
