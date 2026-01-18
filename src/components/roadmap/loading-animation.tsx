@@ -183,11 +183,10 @@ const LoadingAnimation: React.FC<{ theme?: "light" | "dark" }> = ({ theme = "dar
                 duration: 0.85,
                 delay: index * 0.15,
                 repeat: Number.POSITIVE_INFINITY,
-                repeatDelay: 3,
+                repeatDelay: 2.1,
               }}
             />
 
-            {/* Pulsing border */}
             <motion.div
               className="absolute inset-0 rounded-lg border-2 border-indigo-500/30"
               initial={{ opacity: 0 }}
