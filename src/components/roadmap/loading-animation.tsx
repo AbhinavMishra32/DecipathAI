@@ -176,11 +176,11 @@ const LoadingAnimation: React.FC<{ theme?: "light" | "dark" }> = ({ theme = "dar
             />
 
             <motion.div
-              className="absolute inset-0 bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent"
+              className={`absolute inset-0 bg-gradient-to-r from-transparent ${palette.nodeShimmer} to-transparent`}
               initial={{ x: "-100%" }}
               animate={{ x: "100%" }}
               transition={{
-                duration: 1,
+                duration: 0.85,
                 delay: index * 0.15,
                 repeat: Number.POSITIVE_INFINITY,
                 repeatDelay: 3,
