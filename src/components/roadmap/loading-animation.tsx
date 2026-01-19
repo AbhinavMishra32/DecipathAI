@@ -203,9 +203,8 @@ const LoadingAnimation: React.FC<{ theme?: "light" | "dark" }> = ({ theme = "dar
           </motion.div>
         </motion.div>
       ))}
-    </div>
+    </motion.div>
   )
 }
 
 export default LoadingAnimation
-
