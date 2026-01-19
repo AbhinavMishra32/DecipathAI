@@ -195,12 +195,11 @@ const LoadingAnimation: React.FC<{ theme?: "light" | "dark" }> = ({ theme = "dar
                 duration: 1.15,
                 delay: index * 0.15,
                 repeat: Number.POSITIVE_INFINITY,
-                repeatDelay: 3,
+                repeatDelay: 1.85,
               }}
             />
 
-            {/* Inner highlight */}
-            <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent" />
+            <div className={`absolute inset-0 bg-gradient-to-b ${palette.innerHighlight} to-transparent`} />
           </motion.div>
         </motion.div>
       ))}
