@@ -188,11 +188,11 @@ const LoadingAnimation: React.FC<{ theme?: "light" | "dark" }> = ({ theme = "dar
             />
 
             <motion.div
-              className="absolute inset-0 rounded-lg border-2 border-indigo-500/30"
+              className={`absolute inset-0 rounded-lg border-2 ${palette.pulseRing}`}
               initial={{ opacity: 0 }}
               animate={{ opacity: [0, 1, 0] }}
               transition={{
-                duration: 1.5,
+                duration: 1.15,
                 delay: index * 0.15,
                 repeat: Number.POSITIVE_INFINITY,
                 repeatDelay: 3,
