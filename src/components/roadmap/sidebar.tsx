@@ -1,6 +1,6 @@
 "use client";
 import type React from "react";
-import type { MindMapNode } from "@/types";
+import type { MindMapNode, NodeReference, SuccessStory } from "@/types";
 import {
   Briefcase,
   Book,
