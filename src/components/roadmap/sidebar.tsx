@@ -76,6 +76,13 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedNode }) => {
   }
 
   try {
+    const references: NodeReference[] = Array.isArray(selectedNode?.data.references)
+      ? selectedNode.data.references.filter((reference) => typeof reference?.url === "string" && reference.url.trim().length > 0)
+      : []
+    const successStories: SuccessStory[] = Array.isArray(selectedNode?.data.successStories)
+      ? selectedNode.data.successStories.filter((story) => typeof story?.sourceUrl === "string" && story.sourceUrl.trim().length > 0)
+      : []
+
     return (
       <div
         className={`fixed z-50 right-0 top-1/2 -translate-y-1/2 w-72 rounded-3xl m-2 backdrop-blur-xl dark:backdrop-blur-md bg-white/40 dark:bg-neutral-950/50 shadow-[0_0px_60px_4px_rgba(0,0,0,0.15)] dark:shadow-[0_0px_60px_14px_rgba(0,0,0,0.6)] border-2 border-indigo-200 dark:border-indigo-400/30 overflow-y-auto max-h-[70vh] p-4 transition-all duration-300 ease-in-out ${selectedNode ? "translate-x-0" : "translate-x-full"
