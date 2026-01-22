@@ -26,6 +26,7 @@ function CustomNode({
     timeEstimate: string
     nextSteps?: string[]
     tasks: string[]
+    references?: { url: string }[]
     isExpanded?: boolean
     // isExpandedDetailed?: boolean
     isHighlighted?: boolean
