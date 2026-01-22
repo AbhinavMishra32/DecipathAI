@@ -226,4 +226,3 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedNode }) => {
 }
 
 export default Sidebar
-
