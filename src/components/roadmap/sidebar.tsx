@@ -158,6 +158,61 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedNode }) => {
               </ul>
             </div>
             )}
+
+          {references.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-400">Why This Node (References)</h3>
+              <ul className="space-y-3">
+                {references.map((reference, index) => (
+                  <li
+                    key={`${reference.url}-${index}`}
+                    className="rounded-lg border border-gray-500/25 bg-white/55 p-2.5 text-sm dark:bg-neutral-900/40"
+                  >
+                    <a
+                      href={reference.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block font-medium text-indigo-600 hover:underline dark:text-indigo-300"
+                    >
+                      {reference.title}
+                    </a>
+                    <p className="mt-1 text-xs leading-relaxed text-gray-600 dark:text-gray-400">{reference.snippet}</p>
+                    <p className="mt-1 text-[11px] uppercase tracking-wide text-indigo-500/80 dark:text-indigo-300/70">
+                      {reference.relevance}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {successStories.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-400">Success Stories After Previous Steps</h3>
+              <ul className="space-y-3">
+                {successStories.map((story, index) => (
+                  <li
+                    key={`${story.sourceUrl}-${index}`}
+                    className="rounded-lg border border-gray-500/25 bg-white/55 p-2.5 text-sm dark:bg-neutral-900/40"
+                  >
+                    <p className="text-xs uppercase tracking-wide text-indigo-500 dark:text-indigo-300/80">After: {story.afterNode}</p>
+                    <p className="mt-1 font-medium text-gray-800 dark:text-gray-200">
+                      {story.person}: {story.achievement}
+                    </p>
+                    <p className="mt-1 text-xs leading-relaxed text-gray-600 dark:text-gray-400">{story.summary}</p>
+                    <a
+                      href={story.sourceUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-1 inline-block text-xs text-indigo-600 hover:underline dark:text-indigo-300"
+                    >
+                      Source
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           </div>
         </motion.div>
           )}
