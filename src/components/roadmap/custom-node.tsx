@@ -139,6 +139,9 @@ function CustomNode({
           <div className="text-xs">
             <span className="font-medium text-gray-700 dark:text-gray-400">Time:</span>
             <span className="ml-1 text-gray-600 dark:text-gray-400">{data.timeEstimate}</span>
+            {Array.isArray(data.references) && data.references.length > 0 && (
+              <span className="ml-2 text-indigo-600 dark:text-indigo-300">Refs: {data.references.length}</span>
+            )}
           </div>
 
           {data.nextSteps && (
