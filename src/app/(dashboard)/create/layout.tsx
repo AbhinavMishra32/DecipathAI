@@ -57,7 +57,7 @@ export default async function RootLayout({
                                 </div>
 
                                 <ReactFlowWrapper>
-                                    <div className='flex flex-col w-full bg-gray-50 dark:bg-neutral-950'>
+                                    <div className='relative flex w-full flex-col bg-transparent'>
                                         {children}
                                     </div>
                                 </ReactFlowWrapper>
