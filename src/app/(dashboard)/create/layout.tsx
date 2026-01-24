@@ -55,6 +55,7 @@ export default async function RootLayout({
                                     <ThemeSelectorButton />
                                     <UserProfileButton />
                                 </div>
+
                                 <ReactFlowWrapper>
                                     <div className='flex flex-col w-full bg-gray-50 dark:bg-neutral-950'>
                                         {children}
