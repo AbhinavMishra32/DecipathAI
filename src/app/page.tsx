@@ -21,12 +21,10 @@ import {
 } from 'lucide-react';
 
 import LandingNavbar from '../components/LandingNavbar';
-import { FlipWords } from '../components/ui/flip-words';
-import {AnimatePresence, motion, stagger, useAnimate} from 'framer-motion';
 import LandingImage from '../assets/landing.png';
-// import LandingImageMobile from '../assets/landing-mobile.png';
-import { BellIcon, CalendarIcon, DivideSquare, FileTextIcon, Globe, GlobeIcon, Laptop, Search, Star, StarsIcon, Text, TextCursor, TextIcon } from 'lucide-react';
-import { BentoCard, BentoGrid } from '../components/ui/bento-grid';
+import { FlipWords } from '../components/ui/flip-words';
+import { hubotSans } from '@/lib/fonts';
+import { VelocityScroll } from '@/components/magicui/scroll-based-velocity';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 
