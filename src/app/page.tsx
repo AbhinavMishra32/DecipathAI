@@ -26,10 +26,85 @@ import { FlipWords } from '../components/ui/flip-words';
 import { hubotSans } from '@/lib/fonts';
 import { VelocityScroll } from '@/components/magicui/scroll-based-velocity';
 import { Button } from '@/components/ui/button';
-import Image from 'next/image';
+import type { LucideIcon } from 'lucide-react';
+import LandingIntroOverlay from '@/components/LandingIntroOverlay';
 
-import {hubotSans} from '@/lib/fonts';
-import { VelocityScroll } from '@/components/magicui/scroll-based-velocity';
+type FeatureCard = {
+  title: string
+  description: string
+  icon: LucideIcon
+}
+
+type PreviewNode = {
+  id: string
+  label: string
+  icon: LucideIcon
+  x: number
+  y: number
+  tone: 'violet' | 'blue' | 'cyan'
+}
+
+type FlowStep = {
+  title: string
+  description: string
+  icon: LucideIcon
+}
+
+const featureCards: FeatureCard[] = [
+  {
+    title: 'AI-Powered Roadmap Generation',
+    description: 'Describe where you are and where you want to go. Decipath creates a deep roadmap in seconds.',
+    icon: Sparkles,
+  },
+  {
+    title: 'Interactive Graph View',
+    description: 'Every milestone becomes a clickable node with connected context, so you see the full decision tree.',
+    icon: Waypoints,
+  },
+  {
+    title: 'Actionable Tasks Per Step',
+    description: 'Each node includes focused tasks, next steps, and realistic time estimates you can execute immediately.',
+    icon: PenSquare,
+  },
+  {
+    title: 'Branching + Converging Paths',
+    description: 'Explore alternate routes, prerequisites, and merged tracks without losing the bigger picture.',
+    icon: GitBranch,
+  },
+  {
+    title: 'Theme-Aware Experience',
+    description: 'A cohesive visual system across light and dark surfaces with consistent readability and contrast.',
+    icon: MoonStar,
+  },
+  {
+    title: 'Saved Progress + Secure Access',
+    description: 'Sign in, save roadmaps, return later, and continue from the exact point you left off.',
+    icon: BookmarkCheck,
+  },
+]
+
+const flowSteps: FlowStep[] = [
+  {
+    title: 'Define your starting point',
+    description: 'Tell Decipath your current state and constraints.',
+    icon: Compass,
+  },
+  {
+    title: 'Set the target',
+    description: 'Describe what success looks like in concrete terms.',
+    icon: Target,
+  },
+  {
+    title: 'Generate the map',
+    description: 'Get a multi-branch roadmap with timelines and dependencies.',
+    icon: Workflow,
+  },
+  {
+    title: 'Execute node by node',
+    description: 'Open a node, complete tasks, and move forward with clarity.',
+    icon: Waypoints,
+  },
+]
 
 
 
