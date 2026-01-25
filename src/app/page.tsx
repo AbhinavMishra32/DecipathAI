@@ -1,8 +1,25 @@
 'use client';
-import { useAuth } from '@clerk/nextjs'
-import React, { useEffect, useState } from 'react'
+
+import React from 'react'
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { motion } from 'framer-motion';
+import {
+  ArrowRight,
+  BookmarkCheck,
+  BrainCircuit,
+  Compass,
+  GitBranch,
+  LockKeyhole,
+  MoonStar,
+  PenSquare,
+  Sparkles,
+  Target,
+  TimerReset,
+  Waypoints,
+  Workflow,
+} from 'lucide-react';
+
 import LandingNavbar from '../components/LandingNavbar';
 import { FlipWords } from '../components/ui/flip-words';
 import {AnimatePresence, motion, stagger, useAnimate} from 'framer-motion';
