@@ -106,7 +106,54 @@ const flowSteps: FlowStep[] = [
   },
 ]
 
+const proofStats = [
+  { value: '10-15+', label: 'Roadmap paths generated' },
+  { value: '5-8', label: 'Actionable tasks per node' },
+  { value: '1 click', label: 'To inspect node details' },
+  { value: 'Any goal', label: 'Career, study, startup, projects' },
+]
 
+const heroPreviewNodes: PreviewNode[] = [
+  { id: 'start', label: 'Current State', icon: Compass, x: 16, y: 74, tone: 'blue' },
+  { id: 'learn', label: 'Core Skills', icon: BrainCircuit, x: 34, y: 55, tone: 'violet' },
+  { id: 'build', label: 'Projects', icon: PenSquare, x: 52, y: 36, tone: 'cyan' },
+  { id: 'ship', label: 'Execution', icon: Workflow, x: 70, y: 52, tone: 'violet' },
+  { id: 'goal', label: 'Outcome', icon: Target, x: 86, y: 28, tone: 'blue' },
+]
+
+const heroPreviewEdges: Array<[string, string]> = [
+  ['start', 'learn'],
+  ['learn', 'build'],
+  ['build', 'ship'],
+  ['ship', 'goal'],
+  ['learn', 'ship'],
+]
+
+const orbitUseCases = [
+  { label: 'Career transitions', x: 50, y: 9 },
+  { label: 'Learning new tech', x: 79, y: 22 },
+  { label: 'Startup planning', x: 88, y: 50 },
+  { label: 'Project launches', x: 77, y: 79 },
+  { label: 'Exam prep', x: 50, y: 90 },
+  { label: 'Portfolio growth', x: 21, y: 79 },
+  { label: 'Interview prep', x: 12, y: 50 },
+  { label: 'Skill roadmaps', x: 22, y: 22 },
+]
+
+const featureLayout = [
+  { index: 0, className: 'lg:col-span-7 lg:row-span-2', tone: 'from-indigo-500/25 via-indigo-500/10 to-transparent' },
+  { index: 1, className: 'lg:col-span-5', tone: 'from-sky-500/20 via-indigo-500/8 to-transparent' },
+  { index: 2, className: 'lg:col-span-5', tone: 'from-violet-500/18 via-indigo-500/8 to-transparent' },
+  { index: 3, className: 'lg:col-span-4', tone: 'from-indigo-400/18 via-indigo-500/8 to-transparent' },
+  { index: 4, className: 'lg:col-span-4', tone: 'from-slate-400/14 via-indigo-500/8 to-transparent' },
+  { index: 5, className: 'lg:col-span-4', tone: 'from-indigo-300/16 via-indigo-500/8 to-transparent' },
+]
+
+const previewToneClasses: Record<PreviewNode['tone'], string> = {
+  violet: 'border-violet-300/45 bg-violet-500/18 text-violet-100',
+  blue: 'border-sky-300/45 bg-sky-500/16 text-sky-100',
+  cyan: 'border-cyan-300/45 bg-cyan-500/14 text-cyan-100',
+}
 
 const Page = () => {
     const { isSignedIn } = useAuth();
