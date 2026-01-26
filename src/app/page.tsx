@@ -386,25 +386,43 @@ const Page = () => {
                     <div className="inline-flex h-16 w-16 items-center justify-center rounded-[1.25rem] border border-indigo-300/45 bg-indigo-500/18 text-indigo-100 shadow-[0_16px_36px_-18px_rgba(99,102,241,0.8)]">
                       <StepIcon className="h-5 w-5" />
                     </div>
-                    {/* {windowWidth > 768 ? ( */}
-                        <div className='h-fit w-[80vw] mx-auto mt-14 overflow-hidden rounded-3xl shadow-[0px_-100px_300px_-40px_rgba(93,43,163,0.23)] relative'>
-                            <Image src={LandingImage} alt='landing-page' className='w-full h-auto object-scale-down border-[2px] border-neutral-800 rounded-3xl' />
-                            <div className='absolute top-0 left-0 w-full h-full bg-gradient-to-b from-transparent to-neutral-950 rounded-3xl'></div>
-                        </div>
-                    {/* // ) : ( */}
-                        // <div className='h-fit w-[400px] max-w-[90vw] mx-auto mt-10 overflow-hidden rounded-2xl shadow-[0px_-50px_100px_-10px_rgba(93,93,93,0.23)] relative'>
-                            {/* <img src={LandingImageMobile} alt='landing-page' className='w-full h-full object-scale-down border-[1px] border-neutral-700 rounded-2xl' /> */}
-                            // <div className='absolute top-0 left-0 w-full h-full bg-gradient-to-b from-transparent to-neutral-950 rounded-2xl'></div>
-                        // </div>
-                    {/* )} */}
-                </section>
-                <section>
-                    <div className="relative mt-10 flex w-full flex-col items-center justify-center overflow-hidden bg-transparent text-indigo-900">
-                        <VelocityScroll>Works with any idea </VelocityScroll>
-                        <div className="pointer-events-none absolute inset-y-0 left-0 w-2/4 bg-gradient-to-r from-neutral-950/70 from-30%"></div>
-                         <div className="pointer-events-none absolute inset-y-0 right-0 w-2/4 bg-gradient-to-l from-neutral-950/70 from-30%"></div>
+                    <div className="mt-4">
+                      <p className="text-xs uppercase tracking-[0.18em] text-indigo-200/70">Step {index + 1}</p>
+                      <h3 className="mt-1 text-lg text-white">{step.title}</h3>
+                      <p className="mt-2 text-sm leading-relaxed text-neutral-400">{step.description}</p>
                     </div>
-                </section>
+                  </motion.div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section id="use-cases" className="mx-auto w-full max-w-[1180px] px-4 py-16 sm:px-6 lg:px-8">
+        <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+          <div className="rounded-[2rem] border border-neutral-800 bg-neutral-950/70 p-7 backdrop-blur-xl">
+            <div className="flex items-center gap-2 text-xs uppercase tracking-[0.24em] text-indigo-300/80">
+              <TimerReset className="h-4 w-4" />
+              Works Across Domains
+            </div>
+            <h2 className="mt-3 text-3xl font-semibold text-white sm:text-4xl">Use it for any path you want to build</h2>
+            <p className="mt-3 text-sm leading-relaxed text-neutral-300 sm:text-base">
+              Decipath adapts the same structured engine to career moves, technical upskilling, startup execution, and long-term learning plans.
+            </p>
+            <div className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-900/60 p-4 text-sm text-neutral-300">
+              The roadmap evolves as your context changes. You are not locked into one rigid path.
+            </div>
+          </div>
+
+          <div className="relative h-[390px] overflow-hidden rounded-[2rem] border border-indigo-300/25 bg-[linear-gradient(150deg,rgba(13,17,40,0.96),rgba(7,8,18,0.95))]">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.2),transparent_62%)]" />
+
+            <div className="pointer-events-none absolute left-1/2 top-1/2 h-[260px] w-[260px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-indigo-300/20" />
+            <div className="pointer-events-none absolute left-1/2 top-1/2 h-[170px] w-[170px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-indigo-300/28" />
+
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-indigo-200/45 bg-indigo-500/22 px-4 py-2 text-sm font-medium text-indigo-50">
+              Your Goal
             </div>
         </div>
     )
