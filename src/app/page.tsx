@@ -156,72 +156,235 @@ const previewToneClasses: Record<PreviewNode['tone'], string> = {
 }
 
 const Page = () => {
-    const { isSignedIn } = useAuth();
-    const router = useRouter();
-    // const [windowWidth, setWindowWidth] = useState(window.innerWidth); // put this in useeffect to run in client cuz without it, it cant know the window size in server, even if we write 'use client';
-    // const [scrollY, setScrollY] = useState<number>(0);
+  const previewLookup = Object.fromEntries(heroPreviewNodes.map((node) => [node.id, node])) as Record<string, PreviewNode>
 
-    // useEffect(() => {
-    //     const handleScroll = () => {
-    //       setScrollY(window.scrollY)
-    //     }
-    
-    //     window.addEventListener('scroll', handleScroll)
-    //     return () => window.removeEventListener('scroll', handleScroll)
-    //   });
-    
-    //   const [scope, animate] = useAnimate()
+  return (
+    <main className={`${hubotSans.className} relative min-h-screen overflow-x-hidden bg-neutral-950 text-white`}>
+      <LandingIntroOverlay />
 
-    // useEffect(() => {
-    //     const handleResize = () => {
-    //         setWindowWidth(window.innerWidth);
-    //     }
-    //     window.addEventListener('resize', handleResize);
+      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute left-1/2 top-[-24rem] h-[42rem] w-[42rem] -translate-x-1/2 rounded-full bg-indigo-600/30 blur-[140px]" />
+        <div className="absolute right-[-8rem] top-[28rem] h-[20rem] w-[20rem] rounded-full bg-indigo-400/20 blur-[110px]" />
+        <div className="absolute left-[-8rem] top-[45rem] h-[20rem] w-[20rem] rounded-full bg-sky-400/14 blur-[100px]" />
+      </div>
 
-    //     return () => {
-    //         window.removeEventListener('resize', handleResize);
-    //     }
-    // });
+      <LandingNavbar />
 
-    // useEffect(() => {
-    //     animate([
-    //       [".stagger-fade-in", { opacity: [0, 1], y: [20, 0] }, { duration: 0.5, delay: stagger(0.1) }],
-    //       [".hero-title", { clipPath: ["inset(100% 0 0 0)", "inset(0% 0 0 0)"] }, { duration: 0.5, at: "<" }],
-    //       [".hero-subtitle", { clipPath: ["inset(100% 0 0 0)", "inset(0% 0 0 0)"] }, { duration: 0.5, at: "-0.25" }],
-    //     ])
-    //   }, [animate])
+      <section className="mx-auto w-full max-w-[1180px] px-4 pb-14 pt-28 sm:px-6 lg:px-8">
+        <div className="grid items-stretch gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+          <motion.div
+            initial={{ opacity: 0, y: 24, filter: 'blur(8px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            transition={{ duration: 0.55, ease: 'easeOut' }}
+            className="relative overflow-hidden rounded-[2rem] border border-neutral-800 bg-neutral-950/70 p-6 shadow-[0_28px_90px_-44px_rgba(99,102,241,0.75)] backdrop-blur-xl sm:p-9"
+          >
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_10%,rgba(99,102,241,0.24),transparent_50%)]" />
+            <div className="pointer-events-none absolute -right-20 top-8 h-52 w-52 rounded-full border border-indigo-300/20" />
 
-    // useEffect(() => {
-    //     if (isSignedIn) {
-    //         router.push('/app/home');
-    //     }
-    // }, [isSignedIn, router]);
-    return (
-        <div className='flex flex-col bg-neutral-950 w-screen h-screen overflow-x-hidden'>
-            <div className='h-[74px] w-full items-center justify-center flex'>
-                <LandingNavbar />
+            <div className="relative">
+              <div className="inline-flex items-center gap-2 rounded-full border border-indigo-300/40 bg-indigo-500/12 px-3 py-1 text-xs text-indigo-100 sm:text-sm">
+                <BrainCircuit className="h-3.5 w-3.5" />
+                Custom AI roadmaps that you can actually execute
+              </div>
+
+              <h1 className="mt-5 max-w-3xl text-4xl font-semibold leading-[1.03] text-white sm:text-6xl">
+                Plan your next move with
+                <span className="block bg-gradient-to-r from-indigo-100 via-indigo-300 to-sky-200 bg-clip-text text-transparent">
+                  confidence, not guesswork
+                </span>
+              </h1>
+
+              <p className="mt-5 max-w-xl text-sm leading-relaxed text-neutral-300 sm:text-lg">
+                Decipath turns uncertainty into a live execution map so you can move from
+                <span className="mx-2 inline-flex text-indigo-200">
+                  <FlipWords words={['confusion', 'overthinking', 'stalled progress']} duration={2800} />
+                </span>
+                to forward momentum.
+              </p>
+
+              <div className="mt-8 flex flex-wrap items-center gap-3">
+                <Button asChild className="h-11 rounded-full bg-indigo-500 px-6 text-sm text-white hover:bg-indigo-400">
+                  <Link href="/signup">
+                    Get Started
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="h-11 rounded-full border-indigo-300/45 bg-indigo-500/10 px-6 text-sm text-indigo-100 hover:border-indigo-200 hover:bg-indigo-500/20 hover:text-white"
+                >
+                  <Link href="/signin">Sign In</Link>
+                </Button>
+              </div>
+
+              <div className="mt-9 divide-y divide-neutral-800/90 rounded-2xl border border-neutral-800/90 bg-neutral-900/55 backdrop-blur-xl">
+                {proofStats.map((stat) => (
+                  <div key={stat.label} className="flex items-end justify-between px-4 py-3 sm:px-5">
+                    <p className="text-lg font-semibold text-indigo-100 sm:text-xl">{stat.value}</p>
+                    <p className="text-right text-xs text-neutral-400 sm:text-sm">{stat.label}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className='w-full h-full block bg-neutral-950'>
-                <section className='flex flex-col bg-neutral-950 justify-center mt-14 md:mt-0'>
-                    <div className="text-center md:mt-48 mt-16 font-['dm_serif_display']">
-                        <div className='inline-block'>
-                            <h1 className={`${hubotSans.className} animate-gradient-x bg-gradient-to-r from-indigo-300 via-indigo-200 to-indigo-300 bg-clip-text text-transparent mx-4 md:text-7xl text-4xl text-center drop-shadow-[0_0_30px_rgba(245,196,245,0.4)] dark:drop-shadow-[0_0_30px_rgba(168,85,247,0.3)]`}>
-                                Never Be Unsure
-                            </h1>
-                        </div>
-                        <br />
-                        <div className='bg-gradient-to-b inline-block from-white to-indigo-300 bg-clip-text'>
-                            <h1
-                                className={` ${hubotSans.className} text-transparent mx-4 md:mb-10 md:text-7xl text-3xl text-center font-extrabold `}>
-                                about <FlipWords words={['making progress', 'your future', 'getting there']} duration={7000} className='' />
-                            </h1>
-                        </div>
-                        <h3 className={`${hubotSans.className} text-center md:pt-2 pt-1 md:text-xl text-sm text-indigo-100`}>
-                            Use Decipath to create a roadmap of anything you can think of
-                        </h3>
-                        <Link href="/signup">
-                            <div className={`${hubotSans.className} mt-8 bg-white hover:bg-indigo-600 inline-block px-5 py-2 rounded-full hover:px-8 hover:text-white transition-all duration-300 ease-out`}>Get Started</div>
-                        </Link>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 24, filter: 'blur(8px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            transition={{ duration: 0.65, ease: 'easeOut', delay: 0.12 }}
+            className="relative min-h-[560px] overflow-hidden rounded-[2rem] border border-indigo-300/25 bg-[linear-gradient(160deg,rgba(13,18,41,0.96),rgba(8,9,20,0.95))] shadow-[0_30px_90px_-42px_rgba(99,102,241,0.7)]"
+          >
+            <Image
+              src={LandingImage}
+              alt="Decipath roadmap interface preview"
+              className="absolute inset-0 h-full w-full object-cover opacity-25"
+              priority
+            />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(129,140,248,0.22),transparent_45%),radial-gradient(circle_at_80%_80%,rgba(56,189,248,0.12),transparent_40%)]" />
+
+            <div className="relative h-full p-6 sm:p-7">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-indigo-300/35 bg-indigo-500/15 px-3 py-1 text-xs text-indigo-100">
+                <Waypoints className="h-3.5 w-3.5" />
+                Live roadmap preview
+              </div>
+
+              <div className="relative h-[430px] overflow-hidden rounded-3xl border border-indigo-300/20 bg-neutral-950/58 backdrop-blur-xl">
+                <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full">
+                  {heroPreviewEdges.map(([sourceId, targetId], index) => {
+                    const source = previewLookup[sourceId]
+                    const target = previewLookup[targetId]
+
+                    return (
+                      <motion.line
+                        key={`${sourceId}-${targetId}`}
+                        x1={source.x}
+                        y1={source.y}
+                        x2={target.x}
+                        y2={target.y}
+                        stroke="rgba(196, 181, 253, 0.62)"
+                        strokeWidth="0.6"
+                        strokeLinecap="round"
+                        initial={{ pathLength: 0, opacity: 0 }}
+                        whileInView={{ pathLength: 1, opacity: 0.85 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.7, delay: 0.15 + index * 0.08, ease: 'easeOut' }}
+                      />
+                    )
+                  })}
+                </svg>
+
+                {heroPreviewNodes.map((node, index) => {
+                  const NodeIcon = node.icon
+
+                  return (
+                    <motion.div
+                      key={node.id}
+                      initial={{ opacity: 0, scale: 0.85, y: 10, filter: 'blur(6px)' }}
+                      whileInView={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.35, delay: 0.25 + index * 0.12 }}
+                      className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-2xl border px-3 py-2 shadow-[0_12px_35px_-20px_rgba(99,102,241,0.85)] backdrop-blur-xl ${previewToneClasses[node.tone]}`}
+                      style={{ left: `${node.x}%`, top: `${node.y}%` }}
+                    >
+                      <div className="flex items-center gap-2 whitespace-nowrap text-xs font-medium">
+                        <NodeIcon className="h-3.5 w-3.5" />
+                        {node.label}
+                      </div>
+                    </motion.div>
+                  )
+                })}
+              </div>
+
+              <div className="mt-4 rounded-2xl border border-neutral-700/80 bg-neutral-950/65 px-4 py-3 text-xs text-neutral-300 backdrop-blur-md sm:text-sm">
+                Click a node to open detailed tasks, time estimates, and connected path context.
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      <section className="relative mt-2 w-full overflow-hidden">
+        <div className="relative flex w-full items-center justify-center text-indigo-100">
+          <VelocityScroll>Anything you want to achieve can be mapped</VelocityScroll>
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-neutral-950 via-neutral-950/70 to-transparent" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-1/3 bg-gradient-to-l from-neutral-950 via-neutral-950/70 to-transparent" />
+        </div>
+      </section>
+
+      <section id="features" className="mx-auto w-full max-w-[1180px] px-4 py-16 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-2 text-xs uppercase tracking-[0.24em] text-indigo-300/85">
+          <Workflow className="h-4 w-4" />
+          Product Architecture
+        </div>
+        <h2 className="mt-3 max-w-3xl text-3xl font-semibold text-white sm:text-4xl">
+          Custom building blocks for deep planning, not template-level output
+        </h2>
+
+        <div className="mt-8 grid auto-rows-[minmax(165px,auto)] gap-4 lg:grid-cols-12">
+          {featureLayout.map((layout, displayIndex) => {
+            const feature = featureCards[layout.index]
+            const Icon = feature.icon
+
+            return (
+              <motion.article
+                key={feature.title}
+                initial={{ opacity: 0, y: 18, filter: 'blur(6px)' }}
+                whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                viewport={{ once: true, amount: 0.35 }}
+                transition={{ duration: 0.38, delay: displayIndex * 0.05 }}
+                className={`group relative overflow-hidden rounded-[1.6rem] border border-neutral-800 bg-neutral-950/75 p-5 backdrop-blur-xl ${layout.className}`}
+              >
+                <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${layout.tone}`} />
+                <div className="pointer-events-none absolute -right-4 -top-6 text-[96px] font-semibold leading-none text-white/[0.05]">
+                  {String(displayIndex + 1).padStart(2, '0')}
+                </div>
+
+                <div className="relative flex h-full flex-col">
+                  <div className="inline-flex w-fit items-center gap-2 rounded-full border border-indigo-300/40 bg-indigo-500/14 px-3 py-1 text-xs text-indigo-100">
+                    <Icon className="h-3.5 w-3.5" />
+                    Decipath Capability
+                  </div>
+
+                  <h3 className="mt-4 max-w-xl text-xl font-medium text-white">{feature.title}</h3>
+                  <p className="mt-2 max-w-xl text-sm leading-relaxed text-neutral-300">{feature.description}</p>
+
+                  <div className="mt-auto pt-5 text-xs uppercase tracking-[0.18em] text-indigo-200/70">Built into the core workflow</div>
+                </div>
+              </motion.article>
+            )
+          })}
+        </div>
+      </section>
+
+      <section id="how-it-works" className="mx-auto w-full max-w-[1180px] px-4 py-10 sm:px-6 lg:px-8">
+        <div className="relative overflow-hidden rounded-[2rem] border border-neutral-800 bg-neutral-900/45 p-6 sm:p-9">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_10%,rgba(99,102,241,0.18),transparent_45%)]" />
+
+          <h2 className="relative text-3xl font-semibold text-white sm:text-4xl">How it flows</h2>
+          <p className="relative mt-2 max-w-2xl text-sm text-neutral-300 sm:text-base">
+            One clean loop from intent to execution, with enough depth for complex goals.
+          </p>
+
+          <div className="relative mt-9 grid gap-8 lg:grid-cols-4">
+            {flowSteps.map((step, index) => {
+              const StepIcon = step.icon
+
+              return (
+                <div key={step.title} className="relative">
+                  {index < flowSteps.length - 1 && (
+                    <div className="pointer-events-none absolute left-[74px] top-8 hidden h-px w-[calc(100%-52px)] bg-gradient-to-r from-indigo-300/60 to-transparent lg:block" />
+                  )}
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 16, filter: 'blur(6px)' }}
+                    whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                    viewport={{ once: true, amount: 0.4 }}
+                    transition={{ duration: 0.35, delay: index * 0.08 }}
+                    className="relative"
+                  >
+                    <div className="inline-flex h-16 w-16 items-center justify-center rounded-[1.25rem] border border-indigo-300/45 bg-indigo-500/18 text-indigo-100 shadow-[0_16px_36px_-18px_rgba(99,102,241,0.8)]">
+                      <StepIcon className="h-5 w-5" />
                     </div>
                     {/* {windowWidth > 768 ? ( */}
                         <div className='h-fit w-[80vw] mx-auto mt-14 overflow-hidden rounded-3xl shadow-[0px_-100px_300px_-40px_rgba(93,43,163,0.23)] relative'>
