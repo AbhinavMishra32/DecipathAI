@@ -1,38 +1,44 @@
 "use client"
 
-import React, { useState } from 'react'
-import Link from 'next/link'
-import ThemeSelectorButton from './ThemeSelectorButton'
-import { motion, useScroll, useMotionValueEvent } from 'framer-motion'
-import { InteractiveHoverButton } from './magicui/interactive-hover-button'
-import { hubotSans } from '@/lib/fonts'
+import React, { useEffect, useMemo, useState } from "react"
+import Link from "next/link"
+import { motion, useMotionValueEvent, useScroll, useSpring } from "framer-motion"
+import { InteractiveHoverButton } from "./magicui/interactive-hover-button"
+import { hubotSans } from "@/lib/fonts"
+
+const navigation = [
+  { label: "Features", href: "#features" },
+  { label: "How It Works", href: "#how-it-works" },
+  { label: "Use Cases", href: "#use-cases" },
+]
+
+const SCROLL_TRIGGER = 24
 
 const LandingNavbar = () => {
-    const [isScrolled, setIsScrolled] = useState(false)
-    const { scrollY } = useScroll()
-    
-    useMotionValueEvent(scrollY, "change", (latest) => {
-        if (latest > 50) {
-            setIsScrolled(true)
-        } else {
-            setIsScrolled(false)
-        }
-    })
+  const [isScrolled, setIsScrolled] = useState(false)
+  const [activeSection, setActiveSection] = useState<string>("")
 
-    const navVariants = {
-        initial: {
-            y: -20,
-            opacity: 0,
-        },
-        animate: {
-            y: 0,
-            opacity: 1,
-            transition: {
-                duration: 0.3,
-                ease: [0.22, 1, 0.36, 1],
-                staggerChildren: 0.05
-            }
-        }
+  const { scrollY, scrollYProgress } = useScroll()
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 220,
+    damping: 34,
+    mass: 0.3,
+  })
+
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    const next = latest > SCROLL_TRIGGER
+    setIsScrolled((prev) => (prev === next ? prev : next))
+  })
+
+  const sectionIds = useMemo(() => navigation.map((item) => item.href.replace("#", "")), [])
+
+  useEffect(() => {
+    const sections = sectionIds
+      .map((id) => document.getElementById(id))
+      .filter((section): section is HTMLElement => Boolean(section))
+
+    if (!sections.length) {
+      return
     }
 
     const itemVariants = {
