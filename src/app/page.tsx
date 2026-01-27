@@ -424,8 +424,71 @@ const Page = () => {
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-indigo-200/45 bg-indigo-500/22 px-4 py-2 text-sm font-medium text-indigo-50">
               Your Goal
             </div>
+
+            {orbitUseCases.map((item, index) => (
+              <motion.div
+                key={item.label}
+                initial={{ opacity: 0, scale: 0.92, y: 8, filter: 'blur(4px)' }}
+                whileInView={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' }}
+                viewport={{ once: true, amount: 0.4 }}
+                transition={{ duration: 0.35, delay: index * 0.06 }}
+                className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border border-neutral-700/80 bg-neutral-950/80 px-3 py-1 text-xs text-indigo-100 shadow-[0_10px_28px_-18px_rgba(99,102,241,0.85)] sm:text-sm"
+                style={{ left: `${item.x}%`, top: `${item.y}%` }}
+              >
+                {item.label}
+              </motion.div>
+            ))}
+          </div>
         </div>
-    )
+      </section>
+
+      <section className="mx-auto w-full max-w-[1180px] px-4 pb-20 sm:px-6 lg:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 18, filter: 'blur(6px)' }}
+          whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+          viewport={{ once: true, amount: 0.35 }}
+          transition={{ duration: 0.45 }}
+          className="relative isolate overflow-hidden rounded-[2.2rem] border border-indigo-300/30 bg-[linear-gradient(130deg,rgba(57,64,166,0.28),rgba(19,25,56,0.9)_46%,rgba(8,10,22,0.98))] p-8 sm:p-12"
+        >
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(129,140,248,0.34),transparent_46%)]" />
+          <div className="pointer-events-none absolute right-[-80px] top-[-80px] h-[240px] w-[240px] rounded-full border border-indigo-200/20" />
+
+          <div className="relative grid gap-8 md:grid-cols-[1fr_auto] md:items-end">
+            <div>
+              <h2 className="max-w-2xl text-3xl font-semibold text-white sm:text-4xl">
+                Build your next roadmap with a system that actually feels premium
+              </h2>
+              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-indigo-100/90 sm:text-base">
+                Decipath gives you structure, flexibility, and momentum from your first step to your final milestone.
+              </p>
+
+              <div className="mt-7 flex flex-wrap items-center gap-3">
+                <Button asChild className="h-11 rounded-full bg-white px-6 text-sm text-neutral-950 hover:bg-indigo-100">
+                  <Link href="/signup">
+                    Create My Roadmap
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+                <div className="inline-flex items-center gap-2 rounded-full border border-neutral-700/80 bg-neutral-950/62 px-4 py-2 text-xs text-neutral-300">
+                  <LockKeyhole className="h-3.5 w-3.5 text-indigo-200" />
+                  Secure auth + saved roadmap history
+                </div>
+              </div>
+            </div>
+
+            <div className="min-w-[220px] space-y-3">
+              <div className="rounded-2xl border border-indigo-300/35 bg-indigo-500/18 px-4 py-3 text-sm text-indigo-100">
+                Structured AI planning engine
+              </div>
+              <div className="rounded-2xl border border-neutral-700/80 bg-neutral-950/70 px-4 py-3 text-sm text-neutral-200">
+                Interactive graph + actionable tasking
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </section>
+    </main>
+  )
 }
 
 export default Page;
