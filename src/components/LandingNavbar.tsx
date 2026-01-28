@@ -80,22 +80,12 @@ const LandingNavbar = () => {
         animate={{ scale: isScrolled ? 0.988 : 1 }}
         transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
       >
-        <motion.div
-          className="bg-neutral-950/40 border border-neutral-700/50 backdrop-blur-lg rounded-full h-[74px] shadow-lg shadow-black/10 md:w-[800px] mx-auto"
-          style={{
-            backgroundColor: isScrolled
-              ? "rgba(10, 10, 13, 0.8)"
-              : "rgba(10, 10, 13, 0.4)",
-            transition: `background-color ${scrollTransition.duration}s ${scrollTransition.ease}`,
-            transform: isScrolled ? "scale(0.98)" : "scale(1)",
-            transformOrigin: "center top",
-          }}
-        >
-          <div className="relative flex justify-between h-full items-center px-8">
-            <motion.div
-              variants={itemVariants}
-              className="relative flex-shrink-0"
-            >
+        <div className="pointer-events-none absolute inset-0 rounded-full bg-gradient-to-r from-indigo-500/12 via-transparent to-indigo-400/12" />
+        <div className="pointer-events-none absolute inset-[1px] rounded-full bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.08),transparent_55%)]" />
+
+        <div className="relative flex h-full items-center justify-between px-5 sm:px-8">
+          <Link href="/" aria-label="Decipath home" className="group inline-flex items-center gap-2.5">
+            <motion.div whileHover={{ rotate: -5, scale: 1.04 }} transition={{ duration: 0.2, ease: "easeOut" }}>
               <svg
                 width="30"
                 height="39"
@@ -115,19 +105,9 @@ const LandingNavbar = () => {
                 />
               </svg>
             </motion.div>
-
-            <div id="navigation" className={`hidden sm:flex justify-center gap-8 ${hubotSans.className}`}>
-              {["About", "Pricing", "Contact"].map((item, index) => (
-                <motion.div
-                  key={item}
-                  custom={index}
-                  variants={itemVariants}
-                  whileHover="hover"
-                  className="text-white cursor-pointer hover:text-purple-400 transition-colors"
-                >
-                  {item}
-                </motion.div>
-              ))}
+            <div className="hidden md:block">
+              <p className="text-sm font-medium tracking-wide text-indigo-100">Decipath</p>
+              <p className="-mt-0.5 text-[11px] tracking-[0.2em] text-indigo-200/55">AI ROADMAPS</p>
             </div>
 
             <motion.div
