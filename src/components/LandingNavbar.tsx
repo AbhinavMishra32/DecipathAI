@@ -41,41 +41,44 @@ const LandingNavbar = () => {
       return
     }
 
-    const itemVariants = {
-        initial: { opacity: 0, y: -8 },
-        animate: { 
-            opacity: 1, 
-            y: 0,
-            transition: {
-                duration: 0.3,
-                ease: "easeOut"
-            }
-        },
-        hover: {
-            scale: 1.05,
-            transition: {
-                duration: 0.2,
-                ease: "easeOut"
-            }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)
+
+        if (visible[0]) {
+          setActiveSection(visible[0].target.id)
         }
-    }
+      },
+      {
+        root: null,
+        rootMargin: "-32% 0px -52% 0px",
+        threshold: [0.2, 0.35, 0.5, 0.75],
+      },
+    )
 
-    const scrollTransition = {
-        type: "tween",
-        ease: [0.25, 0.1, 0.25, 1],
-        duration: 0.3
-    }
+    sections.forEach((section) => observer.observe(section))
 
-    return (
-      <motion.div
-        initial="initial"
-        animate="animate"
-        variants={navVariants}
-        className="fixed left-0 right-0 top-4 z-50 px-4 mx-auto shadow-2xl"
-        style={{
-          top: isScrolled ? 8 : 16,
-          transition: `top ${scrollTransition.duration}s ${scrollTransition.ease}`,
-        }}
+    return () => observer.disconnect()
+  }, [sectionIds])
+
+  return (
+    <motion.header
+      initial={{ y: -22, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+      className="fixed inset-x-0 top-3 z-50 px-3 sm:px-4"
+      aria-label="Primary"
+    >
+      <motion.nav
+        className={`relative mx-auto h-[74px] overflow-hidden rounded-full border transition-[width,transform,background-color,box-shadow,border-color] duration-500 ease-out ${
+          isScrolled
+            ? "w-[min(980px,calc(100vw-18px))] border-indigo-300/45 bg-[rgba(8,12,30,0.88)] shadow-[0_24px_55px_-26px_rgba(0,0,0,0.85)]"
+            : "w-[min(1120px,calc(100vw-12px))] border-neutral-700/60 bg-[rgba(6,9,24,0.58)] shadow-[0_14px_38px_-24px_rgba(0,0,0,0.8)]"
+        }`}
+        animate={{ scale: isScrolled ? 0.988 : 1 }}
+        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
       >
         <motion.div
           className="bg-neutral-950/40 border border-neutral-700/50 backdrop-blur-lg rounded-full h-[74px] shadow-lg shadow-black/10 md:w-[800px] mx-auto"
