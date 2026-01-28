@@ -109,7 +109,35 @@ const LandingNavbar = () => {
               <p className="text-sm font-medium tracking-wide text-indigo-100">Decipath</p>
               <p className="-mt-0.5 text-[11px] tracking-[0.2em] text-indigo-200/55">AI ROADMAPS</p>
             </div>
+          </Link>
 
+          <div id="navigation" className={`hidden items-center gap-2 sm:flex ${hubotSans.className}`}>
+            {navigation.map((item) => {
+              const sectionId = item.href.replace("#", "")
+              const isActive = activeSection === sectionId
+
+              return (
+                <Link href={item.href} key={item.label} className="relative rounded-full px-4 py-2 text-sm">
+                  {isActive && (
+                    <motion.span
+                      layoutId="landing-nav-active"
+                      className="absolute inset-0 -z-10 rounded-full border border-indigo-300/35 bg-indigo-500/22"
+                      transition={{ type: "spring", stiffness: 330, damping: 30, mass: 0.55 }}
+                    />
+                  )}
+                  <motion.span
+                    whileHover={{ y: -1 }}
+                    transition={{ duration: 0.18, ease: "easeOut" }}
+                    className={`block transition-colors ${isActive ? "text-white" : "text-neutral-200 hover:text-indigo-200"}`}
+                  >
+                    {item.label}
+                  </motion.span>
+                </Link>
+              )
+            })}
+          </div>
+
+          <Link href="/signin" className="relative inline-flex overflow-hidden rounded-full">
             <motion.div
               variants={itemVariants}
               className="flex items-center gap-4 flex-shrink-0"
