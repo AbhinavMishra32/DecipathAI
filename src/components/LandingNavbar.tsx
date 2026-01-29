@@ -139,27 +139,11 @@ const LandingNavbar = () => {
 
           <Link href="/signin" className="relative inline-flex overflow-hidden rounded-full">
             <motion.div
-              variants={itemVariants}
-              className="flex items-center gap-4 flex-shrink-0"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.985 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
             >
-             {/* <ThemeSelectorButton /> */}
-              <Link href={"/signin"}>
-                <motion.div
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.98 }}
-                  transition={{
-                    duration: 0.15,
-                    ease: "easeOut",
-                  }}
-                  className="relative inline-flex overflow-hidden rounded-full"
-                >
-                  <InteractiveHoverButton className='w-30 h-10'>Sign In</InteractiveHoverButton>
-                  {/* <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
-                  <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-slate-950 px-6 py-1 text-sm font-medium text-white backdrop-blur-3xl">
-                    Sign in
-                  </span> */}
-                </motion.div>
-              </Link>
+              <InteractiveHoverButton className="h-10 min-w-[132px]">Sign In</InteractiveHoverButton>
             </motion.div>
           </div>
         </motion.div>
