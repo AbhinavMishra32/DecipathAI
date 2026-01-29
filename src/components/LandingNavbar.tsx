@@ -145,10 +145,16 @@ const LandingNavbar = () => {
             >
               <InteractiveHoverButton className="h-10 min-w-[132px]">Sign In</InteractiveHoverButton>
             </motion.div>
-          </div>
-        </motion.div>
-      </motion.div>
-    );
+          </Link>
+        </div>
+
+        <motion.div
+          className="pointer-events-none absolute bottom-0 left-0 h-[2px] w-full origin-left bg-gradient-to-r from-transparent via-indigo-200/85 to-transparent"
+          style={{ scaleX: smoothProgress }}
+        />
+      </motion.nav>
+    </motion.header>
+  )
 }
 
 export default LandingNavbar
