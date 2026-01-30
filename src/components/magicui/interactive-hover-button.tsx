@@ -13,7 +13,7 @@ export const InteractiveHoverButton = React.forwardRef<
     <button
       ref={ref}
       className={cn(
-        "group relative w-auto cursor-pointer overflow-hidden rounded-full border bg-indigo-100 p-2 px-6 text-center font-semibold",
+        "group relative w-auto cursor-pointer overflow-hidden rounded-full border border-indigo-300/40 bg-gradient-to-r from-indigo-500 to-indigo-400 p-2 px-6 text-center font-semibold text-white shadow-[0_12px_36px_-16px_rgba(99,102,241,0.9)] transition-colors duration-300 hover:from-indigo-400 hover:to-indigo-500",
         className,
         hubotSans.className,
       )}
