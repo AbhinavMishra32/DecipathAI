@@ -53,7 +53,7 @@ export default function ThemeSelectorButton({ className }: { className?: string 
               }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
             >
-              <Moon className="h-6 w-6  filter drop-shadow" />
+              <Moon className="h-6 w-6 text-indigo-500 dark:text-indigo-300 filter drop-shadow" />
             </motion.div>
           </div>
           <span className="sr-only">Toggle theme</span>
