@@ -42,7 +42,7 @@ export default function ThemeSelectorButton({ className }: { className?: string 
               }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
             >
-              <Sun className="h-6 w-6 filter drop-shadow" />
+              <Sun className="h-6 w-6 text-indigo-500 dark:text-indigo-300 filter drop-shadow" />
             </motion.div>
             <motion.div
               className="absolute inset-0 flex items-center justify-center"
