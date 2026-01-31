@@ -27,7 +27,10 @@ export default function ThemeSelectorButton({ className }: { className?: string 
         <Button
           variant="outline"
           size="icon"
-          className={cn("h-12 w-12 border-2 rounded-full overflow-hidden dark:bg-neutral-800/40 backdrop-blur-md transition-all duration-300", className)}
+          className={cn(
+            "h-12 w-12 border-2 border-indigo-300/40 rounded-full overflow-hidden bg-indigo-500/10 text-indigo-600 dark:text-indigo-200 hover:bg-indigo-500/20 dark:bg-neutral-800/40 backdrop-blur-md transition-all duration-300",
+            className,
+          )}
         >
           <div className="relative w-full h-full">
             <motion.div
