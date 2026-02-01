@@ -2,7 +2,7 @@
 
 import { UserButton, useUser } from "@clerk/nextjs";
 import { useTheme } from "next-themes";
-import { dark } from '@clerk/themes';
+import { dark } from "@clerk/themes";
 import { twMerge } from "tailwind-merge";
 
 import { useRef } from "react";
