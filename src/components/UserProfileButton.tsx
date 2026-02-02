@@ -9,26 +9,27 @@ export default function UserProfileButton({ className, ...props }: { className?:
   const { user } = useUser();
   const { theme } = useTheme();
 
-export default function UserProfileButton({ className, ...props }: { className?: string, [key: string]: any }) {
-    const { user } = useUser();
-    const { theme } = useTheme();
-
-    return (
-        <div className={twMerge("flex items-center justify-center bg-opacity-40 dark:bg-neutral-200/40 border-2 border-gray-200 shadow-sm dark:border-neutral-800 backdrop-blur-md p-1 rounded-full", className)} {...props} style={{ backgroundColor: theme === "dark" ? "rgba(255,255,255, 0.03)" : "#f9fafb", borderWidth: 1 }}>
-            <div className="px-3 flex flex-col mr-[1px]">
-                <p className="text-gray-700 dark:text-gray-300 text-sm">{user?.username || user?.fullName}</p>
-                <p className="text-right text-gray-500 dark:text-gray-400 text-xs">Free account</p>
-            </div>
-            <UserButton
-                appearance={{
-                    baseTheme: theme === "dark" ? dark : undefined,
-                    elements: {
-                        userButtonAvatarBox: "w-8 h-8",
-                        // userButtonBox: { blockSize: 30 },
-                    }
-                }}
-            // showName
-            />
-        </div>
-    );
+  return (
+    <div
+      className={twMerge(
+        "flex items-center justify-center rounded-full border border-indigo-200/75 bg-white/75 p-1.5 shadow-[0_14px_35px_-24px_rgba(79,70,229,0.7)] backdrop-blur-xl dark:border-indigo-300/20 dark:bg-neutral-900/60 dark:shadow-[0_16px_40px_-24px_rgba(79,70,229,0.8)]",
+        className,
+      )}
+      {...props}
+    >
+      <div className="hidden px-3 sm:flex sm:flex-col sm:leading-tight">
+        <p className="max-w-[130px] truncate text-sm text-slate-700 dark:text-slate-200">{user?.username || user?.fullName || "Account"}</p>
+        <p className="text-right text-[11px] uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Free account</p>
+      </div>
+      <UserButton
+        appearance={{
+          baseTheme: theme === "dark" ? dark : undefined,
+          elements: {
+            userButtonAvatarBox:
+              "h-8 w-8 ring-2 ring-indigo-300/70 dark:ring-indigo-300/35",
+          },
+        }}
+      />
+    </div>
+  );
 }
