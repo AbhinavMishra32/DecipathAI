@@ -5,8 +5,9 @@ import { useTheme } from "next-themes";
 import { dark } from "@clerk/themes";
 import { twMerge } from "tailwind-merge";
 
-import { useRef } from "react";
-import { useState, useEffect } from "react";
+export default function UserProfileButton({ className, ...props }: { className?: string; [key: string]: unknown }) {
+  const { user } = useUser();
+  const { theme } = useTheme();
 
 export default function UserProfileButton({ className, ...props }: { className?: string, [key: string]: any }) {
     const { user } = useUser();
