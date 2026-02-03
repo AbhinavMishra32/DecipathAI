@@ -175,6 +175,7 @@ export default function SignUpPage() {
 
             {/* <div className="bg-gray-900/80 backdrop-blur-md p-8 rounded-xl border border-gray-800/80 shadow-[0_0_15px_rgba(139,92,246,0.15)]"> */}
               <SignUp
+                forceRedirectUrl="/create"
                 appearance={{
                   elements: {
                     formButtonPrimary:
@@ -286,4 +287,3 @@ export default function SignUpPage() {
     </div>
   )
 }
-
