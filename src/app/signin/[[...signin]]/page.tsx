@@ -130,6 +130,7 @@ export default function SignInPage() {
             />
 
             <SignIn
+              forceRedirectUrl="/create"
               appearance={{
                 elements: {
                   formButtonPrimary:
@@ -190,4 +191,3 @@ export default function SignInPage() {
     </div>
   )
 }
-
