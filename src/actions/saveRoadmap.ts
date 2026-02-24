@@ -1,7 +1,28 @@
 "use server";
 
-import { MindMapEdge, MindMapNode } from "@/types/index";
 import { auth } from "@clerk/nextjs/server";
+
+type PersistableNode = {
+  id: string
+  type?: string
+  data?: {
+    label?: string
+    description?: string
+    detailedDescription?: string
+    icon?: string
+    nextSteps?: string[]
+    tasks?: string[]
+    timeEstimate?: string
+  }
+}
+
+type PersistableEdge = {
+  id: string
+  source: string
+  target: string
+  type?: string
+  animated?: boolean
+}
 
 type SaveRoadmapResult =
   | { success: true; data: unknown }
@@ -12,8 +33,8 @@ export async function saveRoadmap({
     edges,
     title,
 }: {
-        nodes: MindMapNode[];
-        edges: MindMapEdge[];
+        nodes: PersistableNode[];
+        edges: PersistableEdge[];
         title: string;
     }): Promise<SaveRoadmapResult> {
     const { userId } = await auth();

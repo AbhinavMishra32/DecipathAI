@@ -1,7 +1,7 @@
 import { memo, useState } from "react"
 import { Handle, Position } from "reactflow"
 import { Briefcase, Book, Code, Server, Cloud, Users, School, Building2, LineChart, Plus } from "lucide-react"
-import { AnimatePresence, motion } from "framer-motion"
+import { AnimatePresence, motion, type Variants } from "framer-motion"
 
 const icons = {
   briefcase: Briefcase,
@@ -38,7 +38,7 @@ function CustomNode({
 
   const [hovered, setHovered] = useState(false)
 
-  const buttonVariants = {
+  const buttonVariants: Variants = {
     initial: { scale: 0, rotate: -180, filter: "blur(40px)", opacity: 0 },
     animate: {
       scale: 1,

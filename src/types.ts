@@ -1,3 +1,18 @@
+export interface NodeReference {
+  title: string
+  url: string
+  snippet: string
+  relevance: string
+}
+
+export interface SuccessStory {
+  person: string
+  achievement: string
+  summary: string
+  sourceUrl: string
+  afterNode: string
+}
+
 export interface CareerInfo {
   name: string
   description: string
@@ -24,6 +39,9 @@ export interface MindMapNode {
     detailedDescription: string
     timeEstimate: string
     nextSteps?: string[]
+    tasks?: string[]
+    references?: NodeReference[]
+    successStories?: SuccessStory[]
   }
 }
 
@@ -68,4 +86,3 @@ export interface Recommendations {
   courses: Course[]
   analysis: string
 }
-

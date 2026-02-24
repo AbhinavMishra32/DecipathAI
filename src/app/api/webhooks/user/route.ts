@@ -4,11 +4,12 @@ import { NextRequest } from 'next/server';
 import { Webhook } from 'svix';
 
 const webhookSecret = process.env.CLERK_WEBHOOK_SECRET || '';
-if (!webhookSecret) {
-    throw new Error("You need a WEBHOOK_SECRET in your .env");
-}
 
 async function validateRequest(request: Request) {
+    if (!webhookSecret) {
+        throw new Error("You need a WEBHOOK_SECRET in your .env");
+    }
+
     const payloadString = await request.text();
     const headerPayload = await headers();
 
@@ -36,6 +37,13 @@ type Event = {
 }
 
 export async function POST(request: NextRequest) {
+    if (!webhookSecret) {
+        return new Response(JSON.stringify({ message: "CLERK_WEBHOOK_SECRET is not configured" }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
     let evt: Event | null = null;
     evt = await validateRequest(request) as Event;
     const eventType: EventType = evt?.type;

@@ -1,7 +1,7 @@
 "use client"
 
 import { Card } from "@/components/ui/card"
-import { AnimatePresence, motion } from "framer-motion"
+import { AnimatePresence, motion, type Variants } from "framer-motion"
 import { CheckCircle } from "lucide-react"
 import { hubotSans } from "@/lib/fonts"
 
@@ -13,7 +13,7 @@ interface TaskDisplayProps {
   }
 }
 
-const listVariants = {
+const listVariants: Variants = {
   hidden: {
     opacity: 0,
     y: 10,
@@ -26,7 +26,7 @@ const listVariants = {
     transition: {
       delay: i * 0.05,
       duration: 0.3,
-      ease: [0.23, 1, 0.32, 1],
+      ease: [0.23, 1, 0.32, 1] as const,
     },
   }),
   exit: {
@@ -97,4 +97,3 @@ export default function TaskDisplay({ selectedNode }: TaskDisplayProps) {
     </Card>
   )
 }
-

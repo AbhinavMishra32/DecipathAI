@@ -53,7 +53,7 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
             {latestEvent?.detail || "Preparing search queries and objective decomposition."}
           </p>
 
-          {latestEvent?.payload && (
+          {Boolean(latestEvent?.payload) && (
             <pre className="mt-3 max-h-32 overflow-auto rounded-xl border border-indigo-200/70 bg-indigo-50/70 p-2 text-[11px] leading-relaxed text-slate-700 dark:border-indigo-300/20 dark:bg-neutral-900/60 dark:text-slate-300">
               {formatPayload(latestEvent.payload)}
             </pre>

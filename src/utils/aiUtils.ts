@@ -24,6 +24,16 @@ interface GenerateRoadmapApiResponse {
   initialEdges: Edge[]
 }
 
+const toReactFlowSampleNodes = (nodes: unknown[]): Node[] =>
+  nodes.map((entry, index) => {
+    const node = entry as Node & { position?: { x: number; y: number } }
+
+    return {
+      ...node,
+      position: node.position ?? { x: index * 260, y: 0 },
+    }
+  })
+
 const parseSseEvent = (chunk: string) => {
   const lines = chunk.split("\n")
   let event = "message"
@@ -115,7 +125,7 @@ export async function generateMindMapData({
 }: GenerateRoadmapDataProps): Promise<GenerateRoadmapApiResponse> {
   if (sampleData) {
     return {
-      initialNodes: roadmapData.initialNodes,
+      initialNodes: toReactFlowSampleNodes(roadmapData.initialNodes as unknown[]),
       initialEdges: roadmapData.initialEdges,
     }
   }
