@@ -272,7 +272,7 @@ export default function HomeFeedClient({ posts, currentUser }: HomeFeedClientPro
 
           <div className="space-y-2">
             <Link
-              href="/"
+              href="/feed"
               className="inline-flex w-full items-center gap-1.5 rounded-lg border border-indigo-300/30 bg-indigo-500/15 px-3 py-2 text-xs font-semibold text-indigo-100"
             >
               <House weight="duotone" className="h-3.5 w-3.5" />

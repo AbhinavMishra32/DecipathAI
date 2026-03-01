@@ -33,7 +33,7 @@ export default function DashboardLayout({
 
           <nav className="space-y-2">
             <Link
-              href="/"
+              href="/feed"
               className="inline-flex w-full items-center gap-2 rounded-lg border border-indigo-200/70 bg-white/85 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-indigo-50 dark:border-indigo-300/20 dark:bg-neutral-900/45 dark:text-slate-200"
             >
               <span aria-hidden>•</span>
