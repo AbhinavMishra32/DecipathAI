@@ -25,7 +25,6 @@ import ControlsComponent from "../../../components/roadmap/controls"
 import { generateMindMapData, type AgentActivityEvent } from "@/utils/aiUtils"
 import { type MindMapNode, MindMapEdge } from "../../types"
 import LoadingAnimationPage from "@/components/roadmap/LoadingAnimationPage"
-import { AnimatePresence } from "framer-motion"
 import RoadmapControls from "../../../components/roadmap/dock"
 import { useTheme } from "next-themes";
 import TaskDisplay from "@/components/roadmap/task-display";
@@ -259,12 +258,7 @@ const CareerPossibilities = () => {
           )}
         </div>
         <div>
-          <AnimatePresence>
-            {selectedNode && (
-              console.log("Selected node for sidebar:", selectedNode),
-              <Sidebar selectedNode={selectedNode} key={selectedNode.id} />
-            )}
-          </AnimatePresence>
+          <Sidebar selectedNode={selectedNode} />
         </div>
         {/* <RoadmapControls /> */}
       </div>
