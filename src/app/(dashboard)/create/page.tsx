@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import ReactFlow, {
   MiniMap,
   Controls,
@@ -30,9 +31,10 @@ import { useTheme } from "next-themes";
 import TaskDisplay from "@/components/roadmap/task-display";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { saveRoadmap } from "@/actions/saveRoadmap";
+import { saveRoadmap } from "@/actions/roadmap";
 import { useSelectedNode } from "@/hooks/useSelectedNode";
 import { hubotSans } from "@/lib/fonts";
+import type { RoadmapGraph } from "@/lib/roadmap-repository";
 
 const dagreGraph = new dagre.graphlib.Graph()
 dagreGraph.setDefaultEdgeLabel(() => ({}))
@@ -87,6 +89,7 @@ const CareerPossibilities = () => {
   const [isInitialized, setIsInitialized] = useState(false)
   const { getNode, getEdges, setEdges: setEdgesReactFlow } = useReactFlow()
   const { theme } = useTheme();
+  const router = useRouter();
 
   const resetSelection = useCallback(() => {
     setSelectedNode(null)
@@ -138,7 +141,7 @@ const CareerPossibilities = () => {
         })),
       )
     },
-    [getEdges, setEdgesReactFlow, setNodes],
+    [getEdges, setEdgesReactFlow, setNodes, theme],
   )
 
   const onNodeClick = useCallback(
@@ -159,7 +162,7 @@ const CareerPossibilities = () => {
   const onPaneClick = useCallback(() => {
     resetSelection()
     highlightPath("root")
-  }, [resetSelection])
+  }, [resetSelection, highlightPath])
 
   const generateNewMindMap = useCallback(
     async (currentState: string, desiredOutcome: string, customPrompt?: string | null) => {
@@ -184,11 +187,49 @@ const CareerPossibilities = () => {
             setAgentEvents((previous) => [...previous.slice(-29), event])
           },
         })
-        saveRoadmap({ nodes: initialNodes, edges: initialEdges, title: "First roadmap" });
+
+        // Layout nodes with dagre (adds position data)
         const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(initialNodes, initialEdges)
-        setNodes(layoutedNodes)
-        setEdges(layoutedEdges)
-        setIsInitialized(true)
+
+        // Build the full graph snapshot with positions for persistence
+        const graph: RoadmapGraph = {
+          nodes: layoutedNodes.map((n) => ({
+            id: n.id,
+            type: n.type ?? "customNode",
+            position: n.position,
+            data: n.data,
+          })),
+          edges: layoutedEdges.map((e) => ({
+            id: e.id,
+            source: e.source,
+            target: e.target,
+            type: e.type ?? "smoothstep",
+            animated: e.animated,
+            style: e.style as { stroke?: string; strokeWidth?: number } | undefined,
+          })),
+        }
+
+        // Use the desired outcome as the roadmap title
+        const title = desiredOutcome || currentState || "Untitled Roadmap"
+
+        // Persist and navigate to the canonical route
+        const result = await saveRoadmap({ title, graph })
+
+        if (result.success) {
+          // Set React Flow state so the view renders immediately if user navigates back
+          setNodes(layoutedNodes)
+          setEdges(layoutedEdges)
+          setIsInitialized(true)
+
+          // Navigate to the roadmap's permanent URL
+          router.push(`/roadmaps/${result.data.slugId}`)
+        } else {
+          // Save failed but we can still show the roadmap in the editor
+          console.warn("[saveRoadmap] failed:", result.error)
+          setNodes(layoutedNodes)
+          setEdges(layoutedEdges)
+          setIsInitialized(true)
+        }
       } catch (error) {
         setAgentEvents((previous) => [
           ...previous.slice(-29),
@@ -205,7 +246,7 @@ const CareerPossibilities = () => {
         setIsGenerating(false)
       }
     },
-    [setNodes, setEdges],
+    [setNodes, setEdges, router, theme],
   )
 
   const onConnect = useCallback((connection: Edge | Connection) => setEdges((eds) => addEdge(connection, eds)), [setEdges])

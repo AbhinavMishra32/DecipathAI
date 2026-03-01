@@ -130,7 +130,8 @@ export default function SignInPage() {
             />
 
             <SignIn
-              forceRedirectUrl="/create"
+              forceRedirectUrl="/roadmaps"
+              fallbackRedirectUrl="/roadmaps"
               appearance={{
                 elements: {
                   formButtonPrimary:

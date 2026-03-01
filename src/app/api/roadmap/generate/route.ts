@@ -510,155 +510,57 @@ const hasInvalidToolArgumentsError = (message: string): boolean => {
   )
 }
 
-const pickVariant = (seed: number, options: string[]): string => options[Math.abs(seed) % options.length]
-
-const buildAgentThoughtTitle = ({
-  phase,
-  finishReason,
-  toolCalls,
-  toolResults,
-  nextNodeLabels,
-  phaseStep,
-}: {
-  phase: string
-  finishReason: string
-  toolCalls: number
-  toolResults: number
-  nextNodeLabels: string[]
-  phaseStep: number
-}): string => {
-  const seed = phaseStep + toolCalls * 3 + toolResults * 5 + phase.length
-
-  if (finishReason === "stop") {
-    return pickVariant(seed, ["Checkpoint locked", "Decision checkpoint", "Ready to move", "Confidence reached"])
+const normalizeStepThoughtText = (value: string): string => {
+  const trimmed = safeString(value)
+  if (!trimmed) {
+    return ""
   }
 
-  if (toolCalls > 0 || toolResults > 0) {
-    const base = pickVariant(seed, ["Refining next move", "Evidence pass", "Shaping next nodes", "Narrowing focus"])
-    const leadNode = nextNodeLabels[0]
-    return leadNode ? `${base}: ${preview(leadNode, 38)}` : base
+  const withoutFences = trimmed.replace(/```(?:json)?\s*[\s\S]*?```/gi, " ")
+  const flattened = withoutFences.replace(/\s+/g, " ").trim()
+
+  if (!flattened) {
+    return ""
   }
 
-  if (phase.toLowerCase().includes("pathway")) {
-    return pickVariant(seed, ["Mapping pathways", "Comparing routes", "Balancing branches", "Route planning"])
+  if (flattened.startsWith("{") || flattened.startsWith("[")) {
+    return ""
   }
 
-  return pickVariant(seed, ["Node planning", "Roadmap alignment", "Sequencing actions", "Structuring next steps"])
+  return flattened
 }
 
-const buildAgentThoughtDetail = ({
+const buildAgentThoughtFromModelStep = ({
   phase,
   finishReason,
+  text,
   toolCalls,
   toolResults,
-  pathwayPlan,
-  researchedNodeCount,
-  objective,
-  nextNodeLabels,
-  phaseStep,
 }: {
   phase: string
   finishReason: string
+  text: string
   toolCalls: number
   toolResults: number
-  pathwayPlan: PathwayPlan | null
-  researchedNodeCount: number
-  objective: string
-  nextNodeLabels: string[]
-  phaseStep: number
-}): string => {
-  const seed = phaseStep + toolCalls * 7 + toolResults * 11 + phase.length
-  const phaseLabel = phase.toLowerCase().includes("pathway") ? "pathway strategy" : "node roadmap"
-  const pathwayCount = pathwayPlan?.pathways.length ?? 0
-  const plannedNodeCount = pathwayPlan?.nodePlan.length ?? 0
-  const nextFocusSentence =
-    nextNodeLabels.length > 0
-      ? pickVariant(seed, [
-          `I’ll move next through ${nextNodeLabels.slice(0, 3).join(" • ")}.`,
-          `Next up: ${nextNodeLabels.slice(0, 3).join(" • ")}.`,
-          `The immediate focus is ${nextNodeLabels.slice(0, 3).join(" • ")}.`,
-        ])
-      : ""
-  const objectiveSentence = pickVariant(seed + 2, [
-    `Target remains ${objective}.`,
-    `I’m still oriented ${objective}.`,
-    `North star stays ${objective}.`,
-    `Keeping the roadmap centered ${objective}.`,
-  ])
+}): { title: string; detail: string } => {
+  const llmThought = normalizeStepThoughtText(text)
 
-  if (finishReason === "stop") {
-    if (pathwayCount > 0 && plannedNodeCount > 0) {
-      const lockSentence = pickVariant(seed + 3, [
-        `I have enough signal to lock this checkpoint and tighten ${phaseLabel} choices across ${pathwayCount} pathways.`,
-        `This checkpoint is stable, so I’m now tightening ${phaseLabel} decisions across ${pathwayCount} pathways.`,
-        `Signal quality is strong here; I’ll now consolidate ${phaseLabel} decisions across ${pathwayCount} pathways.`,
-      ])
-      const sequenceSentence = `I’ll sequence ${plannedNodeCount} planned nodes into a cleaner progression.`
-      return [objectiveSentence, lockSentence, sequenceSentence, nextFocusSentence].filter(Boolean).join(" ")
+  if (llmThought.length > 0) {
+    const firstSentence = llmThought.split(/(?<=[.!?])\s+/)[0] ?? llmThought
+    return {
+      title: preview(firstSentence, 72),
+      detail: preview(llmThought, 460),
     }
-
-    return [
-      objectiveSentence,
-      pickVariant(seed + 5, [
-        "This checkpoint is stable, so I’m converting the strongest signals into concrete node sequencing.",
-        "I can move forward from here, translating this evidence into decision-ready roadmap nodes.",
-        "I have enough confidence in this pass to turn it into actionable node structure.",
-      ]),
-      nextFocusSentence,
-    ]
-      .filter(Boolean)
-      .join(" ")
   }
 
-  if (toolCalls > 0 || toolResults > 0) {
-    const lookupSummary = toolCalls > 1 ? `${toolCalls} lookups` : "a focused lookup"
-    const evidenceSummary = toolResults > 0 ? `${toolResults} evidence result${toolResults > 1 ? "s" : ""}` : "incoming evidence"
-    const evidenceSentence = pickVariant(seed + 7, [
-      `I’m using ${lookupSummary} and ${evidenceSummary} to refine the next decisions.`,
-      `${lookupSummary} produced ${evidenceSummary}, and I’m folding that into node selection now.`,
-      `With ${lookupSummary} and ${evidenceSummary}, I can narrow the next branch with better confidence.`,
-    ])
+  const phaseLabel = phase.toLowerCase()
+  const fallbackTitle = phaseLabel.includes("pathway") ? "Pathway reasoning in progress" : "Roadmap reasoning in progress"
+  const finishNote = finishReason === "stop" ? "step reached a confidence checkpoint" : "step is still exploring options"
 
-    if (researchedNodeCount > 0 && plannedNodeCount > 0) {
-      const progressSentence = `${researchedNodeCount}/${plannedNodeCount} planned nodes now have grounded research context.`
-      return [objectiveSentence, evidenceSentence, progressSentence, nextFocusSentence].filter(Boolean).join(" ")
-    }
-
-    return [
-      objectiveSentence,
-      evidenceSentence,
-      "I’m using this pass to keep branch quality high before finalizing structure.",
-      nextFocusSentence,
-    ]
-      .filter(Boolean)
-      .join(" ")
+  return {
+    title: fallbackTitle,
+    detail: `${finishNote}; tool calls: ${toolCalls}, tool results: ${toolResults}.`,
   }
-
-  if (phase.toLowerCase().includes("pathway")) {
-    return [
-      objectiveSentence,
-      pickVariant(seed + 11, [
-        "I’m comparing routes and dependencies so the branches stay meaningful, not random.",
-        "I’m pressure-testing alternative routes to keep the pathway logic coherent.",
-        "I’m balancing branch options so each pathway has a clear purpose.",
-      ]),
-      nextFocusSentence,
-    ]
-      .filter(Boolean)
-      .join(" ")
-  }
-
-  return [
-    objectiveSentence,
-    pickVariant(seed + 13, [
-      "I’m aligning what we’ve learned with the next best actions and translating it into concrete nodes.",
-      "I’m turning the current evidence into executable node sequencing.",
-      "I’m consolidating this context into clear next actions and node structure.",
-    ]),
-    nextFocusSentence,
-  ]
-    .filter(Boolean)
-    .join(" ")
 }
 
 const classifyAgentError = (rawMessage: string): ClassifiedAgentError => {
@@ -1295,14 +1197,15 @@ export async function POST(request: NextRequest) {
                       parameters: z
                         .object({
                           query: z.string().min(3).optional(),
-                          queries: z.array(z.string().min(3)).min(1).max(12).optional(),
-                          maxResults: z.number().int().min(1).max(8).default(3),
-                          searchDepth: z.enum(["basic", "advanced"]).default("basic"),
+                          queries: z.array(z.string().min(3)).min(1).optional(),
+                          maxResults: z.number().int().min(1).optional().default(3),
+                          searchDepth: z.enum(["basic", "advanced"]).catch("basic").default("basic"),
                         })
                         .refine((value) => Boolean(value.query || (value.queries && value.queries.length > 0)), {
                           message: "Either query or queries must be provided",
                         }),
                       execute: async ({ query, queries, maxResults, searchDepth }) => {
+                        const safeMaxResults = Math.max(1, Math.min(8, maxResults ?? 3))
                         const normalizedQueries = [...(query ? [query] : []), ...(queries ?? [])]
                           .map((item) => safeString(item))
                           .filter((item) => item.length >= 3)
@@ -1323,7 +1226,7 @@ export async function POST(request: NextRequest) {
                         log.info("Tool call started: tavily_search", {
                           primaryQuery,
                           queryCount: selectedQueries.length,
-                          maxResults,
+                          maxResults: safeMaxResults,
                           searchDepth,
                           phase,
                         })
@@ -1341,7 +1244,7 @@ export async function POST(request: NextRequest) {
                             payload: {
                               query: primaryQuery,
                               queries: selectedQueries,
-                              maxResults,
+                              maxResults: safeMaxResults,
                               searchDepth,
                               showcase: matchedNode
                                 ? {
@@ -1365,7 +1268,7 @@ export async function POST(request: NextRequest) {
                             const searchPayload = await runTavilySearch({
                               apiKey: tavilyApiKey,
                               query: selectedQuery,
-                              maxResults,
+                              maxResults: safeMaxResults,
                               searchDepth,
                               log,
                             })
@@ -1490,26 +1393,14 @@ export async function POST(request: NextRequest) {
 
                 pushActivity(
                   createActivityEvent({
+                    ...(buildAgentThoughtFromModelStep({
+                      phase,
+                      finishReason: normalizedFinishReason,
+                      text: safeString(text),
+                      toolCalls: callCount,
+                      toolResults: resultCount,
+                    })),
                     type: "analysis",
-                    title: buildAgentThoughtTitle({
-                      phase,
-                      finishReason: normalizedFinishReason,
-                      toolCalls: callCount,
-                      toolResults: resultCount,
-                      nextNodeLabels,
-                      phaseStep,
-                    }),
-                    detail: buildAgentThoughtDetail({
-                      phase,
-                      finishReason: normalizedFinishReason,
-                      toolCalls: callCount,
-                      toolResults: resultCount,
-                      pathwayPlan: activePathwayPlan,
-                      researchedNodeCount: researchedNodeIds.size,
-                      objective,
-                      nextNodeLabels,
-                      phaseStep,
-                    }),
                     payload: {
                       showcase: {
                         kind: "agent-thought",
@@ -1627,7 +1518,7 @@ export async function POST(request: NextRequest) {
 
 Tool input guardrails (mandatory):
 - For tavily_search, pass either a single "query" string OR "queries" array.
-- If using "queries", include at most 6 concise queries.
+- If using "queries", include at most 3 concise queries.
 - Prefer one focused query when possible.`
 
                 try {

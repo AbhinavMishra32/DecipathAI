@@ -21,6 +21,7 @@ type ThreadEntry = {
   label: string
   badge?: string
   query?: string
+  queries?: string[]
   title: string
   detail?: string
   dotClass: string
@@ -162,6 +163,19 @@ const getEventQuery = (event: AgentActivityEvent): string | null => {
   return typeof payload?.query === "string" ? payload.query : null
 }
 
+const getEventQueries = (event: AgentActivityEvent): string[] => {
+  const payload = event.payload as { queries?: unknown } | undefined
+  if (!Array.isArray(payload?.queries)) {
+    return []
+  }
+
+  return payload.queries
+    .filter((value): value is string => typeof value === "string")
+    .map((value) => value.trim())
+    .filter((value) => value.length > 0)
+    .filter((value, index, list) => list.findIndex((entry) => entry.toLowerCase() === value.toLowerCase()) === index)
+}
+
 const getEventContext = (event: AgentActivityEvent): { objective?: string; nextNodeLabels?: string[] } => {
   const payload = (event.payload ?? {}) as Record<string, unknown>
   const objective = typeof payload.objective === "string" ? payload.objective : undefined
@@ -298,12 +312,14 @@ const toThreadEntry = (event: AgentActivityEvent): ThreadEntry => {
   }
 
   if (event.type === "tool-call") {
+    const queries = getEventQueries(event)
     return {
       id: event.id,
       kind: "action",
       ...THREAD_META.action,
       query: query ?? undefined,
-      title: "Web search",
+      queries: queries.length > 0 ? queries : query ? [query] : undefined,
+      title: queries.length > 1 ? `Web search (${queries.length} lookups)` : "Web search",
       detail: summarizeActionDetail(event.detail, query),
       ...eventContext,
     }
@@ -543,8 +559,10 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
   const isDark = resolvedTheme !== "light"
   const threadViewportRef = useRef<HTMLDivElement>(null)
   const latestStepAnchorRef = useRef<HTMLDivElement>(null)
+  const seenThreadIdsRef = useRef<Set<string>>(new Set())
+  const entryRevealRankRef = useRef<Map<string, number>>(new Map())
 
-  const { latestEvent, threadEntries, currentSearchQuery, currentThought, nodeLifecycle, roadmapIntent } = useMemo(() => {
+  const { latestEvent, threadEntries, currentSearchQueries, currentThought, nodeLifecycle, roadmapIntent } = useMemo(() => {
     const visibleEvents = activity.filter((event) => event.type !== "tool-result")
     const latest = visibleEvents[visibleEvents.length - 1]
     const threads = visibleEvents.slice(-16).map((event) => toThreadEntry(event))
@@ -552,14 +570,18 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
     const intent = deriveRoadmapIntent(activity)
     const latestToolCall = [...activity].reverse().find((event) => event.type === "tool-call")
     const toolPayload = (latestToolCall?.payload ?? {}) as Record<string, unknown>
+    const queries = Array.isArray(toolPayload.queries)
+      ? toolPayload.queries.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+      : []
     const query = typeof toolPayload.query === "string" ? toolPayload.query : undefined
+    const groupedQueries = queries.length > 0 ? queries : query ? [query] : []
     const thoughtSource = [...visibleEvents].reverse().find((event) => event.type === "analysis" || event.type === "step")
     const thought = thoughtSource ? toFriendlyText(thoughtSource) : "Preparing pathways, node strategy, and evidence collection."
 
     return {
       latestEvent: latest,
       threadEntries: threads,
-      currentSearchQuery: query,
+      currentSearchQueries: groupedQueries,
       currentThought: thought,
       nodeLifecycle: lifecycle,
       roadmapIntent: intent,
@@ -568,6 +590,34 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
 
   const readyNodes = nodeLifecycle.filter((node) => node.stage === "ready").length
   const activeNodeId = [...nodeLifecycle].reverse().find((node) => node.stage === "researching")?.id
+
+  const threadRevealRanks = useMemo(() => {
+    const currentIds = threadEntries.map((entry) => entry.id)
+    const currentIdSet = new Set(currentIds)
+    const seen = seenThreadIdsRef.current
+    const revealRanks = entryRevealRankRef.current
+
+    let batchRank = 0
+    currentIds.forEach((id) => {
+      if (!seen.has(id)) {
+        revealRanks.set(id, batchRank)
+        batchRank += 1
+      }
+    })
+
+    Array.from(revealRanks.keys()).forEach((id) => {
+      if (!currentIdSet.has(id)) {
+        revealRanks.delete(id)
+      }
+    })
+
+    seenThreadIdsRef.current = currentIdSet
+
+    return threadEntries.reduce<Record<string, number>>((acc, entry) => {
+      acc[entry.id] = revealRanks.get(entry.id) ?? 0
+      return acc
+    }, {})
+  }, [threadEntries])
 
   useEffect(() => {
     if (!threadViewportRef.current || !latestStepAnchorRef.current) {
@@ -623,7 +673,11 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
               <p className="text-xs uppercase tracking-wide text-indigo-600 dark:text-indigo-300">Current focus</p>
               <p className="mt-1 text-base font-medium text-slate-900 dark:text-slate-100">{currentThought}</p>
               <p className="mt-1 text-sm text-slate-600 dark:text-slate-300/90">
-                {currentSearchQuery ? `Live query: ${currentSearchQuery}` : latestEvent?.title || "Initializing roadmap research..."}
+                {currentSearchQueries.length > 0
+                  ? currentSearchQueries.length === 1
+                    ? `Live query: ${currentSearchQueries[0]}`
+                    : `Live grouped queries: ${currentSearchQueries.join(" • ")}`
+                  : latestEvent?.title || "Initializing roadmap research..."}
               </p>
             </motion.div>
           </AnimatePresence>
@@ -635,6 +689,7 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
               {threadEntries.map((entry, index) => (
                 (() => {
                   const isLatest = index === threadEntries.length - 1
+                  const revealRank = threadRevealRanks[entry.id] ?? 0
                   const markerClass =
                     entry.markerShape === "dot"
                       ? "rounded-full"
@@ -649,7 +704,7 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
                   key={entry.id}
                   initial={{ opacity: 0, x: -10, y: 6, filter: "blur(10px)" }}
                   animate={{ opacity: 1, x: 0, y: 0, filter: "blur(0px)" }}
-                  transition={{ duration: 0.28, delay: Math.min(index * 0.035, 0.24), ease: "easeOut" }}
+                  transition={{ duration: 0.28, delay: Math.min(revealRank * 0.08, 0.28), ease: "easeOut" }}
                   className={`relative flex items-start gap-2 rounded-md px-1 py-0.5 backdrop-blur-[1px] ${
                     entry.kind === "thought"
                       ? "bg-violet-500/[0.04] dark:bg-violet-400/[0.05]"
@@ -697,11 +752,22 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
                       transition={{ duration: 0.25, ease: "easeOut" }}
                       className="mt-1 pl-0.5"
                     >
-                      {entry.kind === "action" && entry.query ? (
-                        <p className="text-[13px] leading-snug text-slate-800 dark:text-slate-200">
-                          <span className="font-medium text-slate-500 dark:text-slate-400">Looking up web for </span>
-                          <span className="font-semibold">{entry.query}</span>
-                        </p>
+                      {entry.kind === "action" && (entry.queries?.length || entry.query) ? (
+                        <div className="text-[13px] leading-snug text-slate-800 dark:text-slate-200">
+                          <p>
+                            <span className="font-medium text-slate-500 dark:text-slate-400">
+                              {entry.queries && entry.queries.length > 1 ? "Running grouped web search" : "Looking up web for"}
+                            </span>
+                          </p>
+                          <div className="mt-1 space-y-0.5">
+                            {(entry.queries && entry.queries.length > 0 ? entry.queries : [entry.query as string]).map((search, searchIndex) => (
+                              <p key={`${entry.id}-search-${searchIndex}`} className="font-semibold">
+                                {entry.queries && entry.queries.length > 1 ? `${searchIndex + 1}. ` : ""}
+                                {search}
+                              </p>
+                            ))}
+                          </div>
+                        </div>
                       ) : (
                         <p className={`text-[14px] font-semibold leading-snug ${entry.titleClass}`}>{entry.title}</p>
                       )}

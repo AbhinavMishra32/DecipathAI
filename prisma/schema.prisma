@@ -1,8 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// Decipath Prisma Schema
+// Roadmap graph data is stored as a JSON document (nodes + edges + positions).
+// Normalized per-node tables are intentionally avoided — the graph is the unit of persistence.
 
 generator client {
   provider = "prisma-client-js"
@@ -13,73 +11,47 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id             String    @id @default(cuid())
-  extId          String    @unique
-  attributes     Json
-  username       String
-  email          String
-  recentRoadmaps Roadmap[] @relation("RecentRoadmaps")
-  savedRoadmaps  Roadmap[] @relation("SavedRoadmaps")
+// ───────────────────────────────────────────
+// Enums
+// ───────────────────────────────────────────
+
+enum Visibility {
+  PRIVATE
+  PUBLIC
 }
+
+// ───────────────────────────────────────────
+// User — synced from Clerk via webhook
+// ───────────────────────────────────────────
+
+model User {
+  id         String    @id @default(cuid())
+  extId      String    @unique          // Clerk user id
+  attributes Json
+  username   String
+  email      String
+  roadmaps   Roadmap[] @relation("OwnedRoadmaps")
+}
+
+// ───────────────────────────────────────────
+// Roadmap — single-document graph storage
+// ───────────────────────────────────────────
 
 model Roadmap {
-  id    String @id @default(cuid())
-  title String
-  nodes Node[]
-  edges Edge[]
+  id         String     @id @default(cuid())
+  title      String
+  slug       String                      // URL-safe slug derived from title
+  visibility Visibility @default(PRIVATE)
 
-  recentUserId String?
-  recentUser   User?   @relation("RecentRoadmaps", fields: [recentUserId], references: [id])
+  /// Full ReactFlow graph snapshot: { nodes: MindMapNode[], edges: MindMapEdge[] }
+  graph      Json
 
-  savedUserId String?
-  savedUser   User?   @relation("SavedRoadmaps", fields: [savedUserId], references: [id])
-}
+  ownerId    String
+  owner      User       @relation("OwnedRoadmaps", fields: [ownerId], references: [id])
 
-model Node {
-  id        String    @id @default(cuid())
-  roadmapId String
-  roadmap   Roadmap   @relation(fields: [roadmapId], references: [id])
-  nodeData  NodeData?
-  type      String
-}
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
 
-model NodeData {
-  id                  String   @id @default(cuid())
-  description         String
-  detailedDescription String
-  icon                String
-  label               String
-  nextSteps           String[]
-  tasks               Task[]
-  timeEstimate        String
-  nodeId              String   @unique
-  node                Node     @relation(fields: [nodeId], references: [id])
-}
-
-model Task {
-  id        String   @id @default(cuid())
-  title     String
-  completed Boolean
-  nodeId    String
-  node      NodeData @relation(fields: [nodeId], references: [id])
-}
-
-model Edge {
-  id        String
-  edgeId    String  @id @default(cuid())
-  source    String
-  target    String
-  type      String
-  style     Style?
-  roadmapId String
-  roadmap   Roadmap @relation(fields: [roadmapId], references: [id])
-}
-
-model Style {
-  id          String @id @default(cuid())
-  stroke      String
-  strokeWidth Int
-  edgeId      String @unique
-  edge        Edge   @relation(fields: [edgeId], references: [edgeId])
+  @@index([ownerId, updatedAt(sort: Desc)])
+  @@index([slug])
 }
