@@ -58,13 +58,47 @@ export default async function RoadmapsDashboardPage() {
       })
     : [];
 
-  const graphForRoadmap = new Map<string, { nodes: Array<{ id: string; data?: { label?: string; tasks?: string[] } }> }>();
+  const graphForRoadmap = new Map<
+    string,
+    {
+      nodes: Array<{
+        id: string;
+        position?: { x?: number; y?: number };
+        data?: {
+          label?: string;
+          icon?: string;
+          description?: string;
+          detailedDescription?: string;
+          timeEstimate?: string;
+          tasks?: string[];
+          nextSteps?: string[];
+          references?: Array<{ title?: string; url?: string; snippet?: string; relevance?: string }>;
+        };
+      }>;
+      edges: Array<{ id: string; source: string; target: string }>;
+    }
+  >();
   roadmaps.forEach((roadmap) => {
     const graph = (roadmap.graph ?? {}) as {
-      nodes?: Array<{ id: string; data?: { label?: string; tasks?: string[] } }>;
+      nodes?: Array<{
+        id: string;
+        position?: { x?: number; y?: number };
+        data?: {
+          label?: string;
+          icon?: string;
+          description?: string;
+          detailedDescription?: string;
+          timeEstimate?: string;
+          tasks?: string[];
+          nextSteps?: string[];
+          references?: Array<{ title?: string; url?: string; snippet?: string; relevance?: string }>;
+        };
+      }>;
+      edges?: Array<{ id: string; source: string; target: string }>;
     };
     graphForRoadmap.set(roadmap.id, {
       nodes: Array.isArray(graph.nodes) ? graph.nodes : [],
+      edges: Array.isArray(graph.edges) ? graph.edges : [],
     });
   });
 
@@ -76,6 +110,48 @@ export default async function RoadmapsDashboardPage() {
       slugId: toSlugId(roadmap.slug, roadmap.id),
       visibility: roadmap.visibility,
       nodeCount: graph?.nodes.length ?? 0,
+      graph: {
+        nodes: (graph?.nodes ?? []).map((node) => ({
+          id: node.id,
+          type: "customNode" as const,
+          data: {
+            label: node.data?.label ?? node.id,
+            icon: node.data?.icon ?? "Briefcase",
+            description: node.data?.description ?? "",
+            detailedDescription: node.data?.detailedDescription ?? "",
+            timeEstimate: node.data?.timeEstimate ?? "Not specified",
+            tasks: Array.isArray(node.data?.tasks) ? node.data.tasks : [],
+            references: Array.isArray((node.data as { references?: unknown[] } | undefined)?.references)
+              ? ((node.data as { references?: Array<{ title?: string; url?: string; snippet?: string; relevance?: string }> }).references ?? []).map(
+                  (ref) => ({
+                    title: ref?.title ?? "Reference",
+                    url: ref?.url ?? "",
+                    snippet: ref?.snippet ?? "",
+                    relevance: ref?.relevance ?? "",
+                  }),
+                )
+              : [],
+            nextSteps: Array.isArray((node.data as { nextSteps?: unknown[] } | undefined)?.nextSteps)
+              ? (((node.data as { nextSteps?: string[] }).nextSteps ?? []).filter((step) => typeof step === "string") as string[])
+              : [],
+          },
+          position: {
+            x: typeof node.position?.x === "number" ? node.position.x : 0,
+            y: typeof node.position?.y === "number" ? node.position.y : 0,
+          },
+        })),
+        edges: (graph?.edges ?? []).map((edge) => ({
+          id: edge.id,
+          source: edge.source,
+          target: edge.target,
+          type: "smoothstep" as const,
+          animated: false,
+          style: {
+            stroke: "rgba(145, 140, 241, 0.6)",
+            strokeWidth: 2,
+          },
+        })),
+      },
       createdAt: roadmap.createdAt.toISOString(),
       updatedAt: roadmap.updatedAt.toISOString(),
     };

@@ -37,6 +37,9 @@ model User {
   email      String
   roadmaps   Roadmap[] @relation("OwnedRoadmaps")
   progressRuns RoadmapProgress[]
+  roadmapLikes RoadmapLike[]
+  roadmapComments RoadmapComment[]
+  roadmapSaves RoadmapSave[]
 }
 
 // ───────────────────────────────────────────
@@ -55,12 +58,56 @@ model Roadmap {
   ownerId    String
   owner      User       @relation("OwnedRoadmaps", fields: [ownerId], references: [id])
   progressRuns RoadmapProgress[]
+  likes      RoadmapLike[]
+  comments   RoadmapComment[]
+  saves      RoadmapSave[] @relation("RoadmapSourceSaves")
+  savedCopies RoadmapSave[] @relation("RoadmapSavedCopy")
 
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
 
   @@index([ownerId, updatedAt(sort: Desc)])
   @@index([slug])
+}
+
+model RoadmapLike {
+  id         String   @id @default(cuid())
+  roadmapId  String
+  roadmap    Roadmap  @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, roadmapId])
+  @@index([roadmapId, createdAt(sort: Desc)])
+}
+
+model RoadmapComment {
+  id         String   @id @default(cuid())
+  roadmapId  String
+  roadmap    Roadmap  @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([roadmapId, createdAt(sort: Desc)])
+}
+
+model RoadmapSave {
+  id               String    @id @default(cuid())
+  sourceRoadmapId  String
+  sourceRoadmap    Roadmap   @relation("RoadmapSourceSaves", fields: [sourceRoadmapId], references: [id], onDelete: Cascade)
+  savedRoadmapId   String?
+  savedRoadmap     Roadmap?  @relation("RoadmapSavedCopy", fields: [savedRoadmapId], references: [id], onDelete: SetNull)
+  sourceCreatorName String
+  userId           String
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt        DateTime  @default(now())
+
+  @@unique([userId, sourceRoadmapId])
+  @@index([sourceRoadmapId, createdAt(sort: Desc)])
 }
 
 model RoadmapProgress {

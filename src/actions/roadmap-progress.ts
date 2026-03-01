@@ -329,7 +329,7 @@ const getOrCreateProgress = async ({
     )
     VALUES (
       ${createProgressId()},
-      ${"ACTIVE" as ProgressStatus},
+      CAST(${"ACTIVE" as ProgressStatus} AS "ProgressStatus"),
       ${rootNodeId},
       ARRAY[]::TEXT[],
       ${roadmapId},
@@ -522,7 +522,7 @@ export async function advanceRoadmapProgress({
       await prisma.$executeRaw`
         UPDATE "RoadmapProgress"
         SET
-          "status" = ${"COMPLETED" as ProgressStatus},
+          "status" = CAST(${"COMPLETED" as ProgressStatus} AS "ProgressStatus"),
           "currentNodeId" = ${null},
           "completedNodeIds" = ${completedNodeIds}::text[],
           "completedAt" = ${now()},
@@ -547,7 +547,7 @@ export async function advanceRoadmapProgress({
       await prisma.$executeRaw`
         UPDATE "RoadmapProgress"
         SET
-          "status" = ${"ACTIVE" as ProgressStatus},
+          "status" = CAST(${"ACTIVE" as ProgressStatus} AS "ProgressStatus"),
           "currentNodeId" = ${nextNodeId},
           "completedNodeIds" = ${completedNodeIds}::text[],
           "completedAt" = ${null},

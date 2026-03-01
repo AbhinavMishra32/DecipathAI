@@ -1,494 +1,233 @@
-'use client';
+import { Prisma } from "@prisma/client";
+import { getDbUser } from "@/lib/auth";
+import { prisma } from "@/lib/db";
+import { toSlugId } from "@/lib/roadmap-repository";
+import HomeFeedClient from "./home-feed-client";
 
-import React from 'react'
-import Link from 'next/link';
-import Image from 'next/image';
-import { motion } from 'framer-motion';
-import {
-  ArrowRight,
-  BookmarkCheck,
-  BrainCircuit,
-  Compass,
-  GitBranch,
-  LockKeyhole,
-  MoonStar,
-  PenSquare,
-  Sparkles,
-  Target,
-  TimerReset,
-  Waypoints,
-  Workflow,
-} from 'lucide-react';
+const FEED_LIMIT = 20;
 
-import LandingNavbar from '../components/LandingNavbar';
-import LandingImage from '../assets/landing.png';
-import { FlipWords } from '../components/ui/flip-words';
-import { hubotSans } from '@/lib/fonts';
-import { VelocityScroll } from '@/components/magicui/scroll-based-velocity';
-import { Button } from '@/components/ui/button';
-import type { LucideIcon } from 'lucide-react';
-import LandingIntroOverlay from '@/components/LandingIntroOverlay';
+type CountRow = {
+  roadmapId: string;
+  count: bigint | number;
+};
 
-type FeatureCard = {
-  title: string
-  description: string
-  icon: LucideIcon
-}
+type CommentRow = {
+  id: string;
+  roadmapId: string;
+  content: string;
+  createdAt: Date;
+  userId: string;
+  username: string;
+  rn: number;
+};
 
-type PreviewNode = {
-  id: string
-  label: string
-  icon: LucideIcon
-  x: number
-  y: number
-  tone: 'violet' | 'blue' | 'cyan'
-}
+type LikeUserRow = {
+  roadmapId: string;
+};
 
-type FlowStep = {
-  title: string
-  description: string
-  icon: LucideIcon
-}
+type SaveUserRow = {
+  sourceRoadmapId: string;
+  savedRoadmapId: string | null;
+  savedRoadmapSlug: string | null;
+};
 
-const featureCards: FeatureCard[] = [
-  {
-    title: 'AI-Powered Roadmap Generation',
-    description: 'Describe where you are and where you want to go. Decipath creates a deep roadmap in seconds.',
-    icon: Sparkles,
-  },
-  {
-    title: 'Interactive Graph View',
-    description: 'Every milestone becomes a clickable node with connected context, so you see the full decision tree.',
-    icon: Waypoints,
-  },
-  {
-    title: 'Actionable Tasks Per Step',
-    description: 'Each node includes focused tasks, next steps, and realistic time estimates you can execute immediately.',
-    icon: PenSquare,
-  },
-  {
-    title: 'Branching + Converging Paths',
-    description: 'Explore alternate routes, prerequisites, and merged tracks without losing the bigger picture.',
-    icon: GitBranch,
-  },
-  {
-    title: 'Theme-Aware Experience',
-    description: 'A cohesive visual system across light and dark surfaces with consistent readability and contrast.',
-    icon: MoonStar,
-  },
-  {
-    title: 'Saved Progress + Secure Access',
-    description: 'Sign in, save roadmaps, return later, and continue from the exact point you left off.',
-    icon: BookmarkCheck,
-  },
-]
+export default async function HomePage() {
+  const currentUser = await getDbUser();
 
-const flowSteps: FlowStep[] = [
-  {
-    title: 'Define your starting point',
-    description: 'Tell Decipath your current state and constraints.',
-    icon: Compass,
-  },
-  {
-    title: 'Set the target',
-    description: 'Describe what success looks like in concrete terms.',
-    icon: Target,
-  },
-  {
-    title: 'Generate the map',
-    description: 'Get a multi-branch roadmap with timelines and dependencies.',
-    icon: Workflow,
-  },
-  {
-    title: 'Execute node by node',
-    description: 'Open a node, complete tasks, and move forward with clarity.',
-    icon: Waypoints,
-  },
-]
+  const publicRoadmaps = await prisma.roadmap.findMany({
+    where: { visibility: "PUBLIC" },
+    orderBy: { createdAt: "desc" },
+    take: FEED_LIMIT,
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      graph: true,
+      createdAt: true,
+      updatedAt: true,
+      owner: {
+        select: {
+          id: true,
+          username: true,
+        },
+      },
+    },
+  });
 
-const proofStats = [
-  { value: '10-15+', label: 'Roadmap paths generated' },
-  { value: '5-8', label: 'Actionable tasks per node' },
-  { value: '1 click', label: 'To inspect node details' },
-  { value: 'Any goal', label: 'Career, study, startup, projects' },
-]
+  const roadmapIds = publicRoadmaps.map((roadmap) => roadmap.id);
 
-const heroPreviewNodes: PreviewNode[] = [
-  { id: 'start', label: 'Current State', icon: Compass, x: 16, y: 74, tone: 'blue' },
-  { id: 'learn', label: 'Core Skills', icon: BrainCircuit, x: 34, y: 55, tone: 'violet' },
-  { id: 'build', label: 'Projects', icon: PenSquare, x: 52, y: 36, tone: 'cyan' },
-  { id: 'ship', label: 'Execution', icon: Workflow, x: 70, y: 52, tone: 'violet' },
-  { id: 'goal', label: 'Outcome', icon: Target, x: 86, y: 28, tone: 'blue' },
-]
+  const [likeCounts, commentCounts, saveCounts, topComments, likedByMe, savedByMe] =
+    roadmapIds.length === 0
+      ? [[], [], [], [], [], []]
+      : await Promise.all([
+          prisma.$queryRaw<CountRow[]>(Prisma.sql`
+            SELECT "roadmapId", COUNT(*)::BIGINT AS count
+            FROM "RoadmapLike"
+            WHERE "roadmapId" IN (${Prisma.join(roadmapIds)})
+            GROUP BY "roadmapId"
+          `),
+          prisma.$queryRaw<CountRow[]>(Prisma.sql`
+            SELECT "roadmapId", COUNT(*)::BIGINT AS count
+            FROM "RoadmapComment"
+            WHERE "roadmapId" IN (${Prisma.join(roadmapIds)})
+            GROUP BY "roadmapId"
+          `),
+          prisma.$queryRaw<CountRow[]>(Prisma.sql`
+            SELECT "sourceRoadmapId" AS "roadmapId", COUNT(*)::BIGINT AS count
+            FROM "RoadmapSave"
+            WHERE "sourceRoadmapId" IN (${Prisma.join(roadmapIds)})
+            GROUP BY "sourceRoadmapId"
+          `),
+          prisma.$queryRaw<CommentRow[]>(Prisma.sql`
+            SELECT *
+            FROM (
+              SELECT
+                c."id",
+                c."roadmapId",
+                c."content",
+                c."createdAt",
+                u."id" AS "userId",
+                u."username",
+                ROW_NUMBER() OVER (PARTITION BY c."roadmapId" ORDER BY c."createdAt" DESC) AS rn
+              FROM "RoadmapComment" c
+              INNER JOIN "User" u ON u."id" = c."userId"
+              WHERE c."roadmapId" IN (${Prisma.join(roadmapIds)})
+            ) ranked
+            WHERE ranked.rn <= 5
+            ORDER BY ranked."roadmapId", ranked."createdAt" DESC
+          `),
+          currentUser
+            ? prisma.$queryRaw<LikeUserRow[]>(Prisma.sql`
+                SELECT "roadmapId"
+                FROM "RoadmapLike"
+                WHERE "userId" = ${currentUser.id}
+                AND "roadmapId" IN (${Prisma.join(roadmapIds)})
+              `)
+            : Promise.resolve([]),
+          currentUser
+            ? prisma.$queryRaw<SaveUserRow[]>(Prisma.sql`
+                SELECT
+                  s."sourceRoadmapId",
+                  s."savedRoadmapId",
+                  r."slug" AS "savedRoadmapSlug"
+                FROM "RoadmapSave" s
+                LEFT JOIN "Roadmap" r ON r."id" = s."savedRoadmapId"
+                WHERE s."userId" = ${currentUser.id}
+                AND s."sourceRoadmapId" IN (${Prisma.join(roadmapIds)})
+              `)
+            : Promise.resolve([]),
+        ]);
 
-const heroPreviewEdges: Array<[string, string]> = [
-  ['start', 'learn'],
-  ['learn', 'build'],
-  ['build', 'ship'],
-  ['ship', 'goal'],
-  ['learn', 'ship'],
-]
+  const likeCountByRoadmapId = new Map(
+    likeCounts.map((row) => [row.roadmapId, Number(row.count)]),
+  );
+  const commentCountByRoadmapId = new Map(
+    commentCounts.map((row) => [row.roadmapId, Number(row.count)]),
+  );
+  const saveCountByRoadmapId = new Map(
+    saveCounts.map((row) => [row.roadmapId, Number(row.count)]),
+  );
 
-const orbitUseCases = [
-  { label: 'Career transitions', x: 50, y: 9 },
-  { label: 'Learning new tech', x: 79, y: 22 },
-  { label: 'Startup planning', x: 88, y: 50 },
-  { label: 'Project launches', x: 77, y: 79 },
-  { label: 'Exam prep', x: 50, y: 90 },
-  { label: 'Portfolio growth', x: 21, y: 79 },
-  { label: 'Interview prep', x: 12, y: 50 },
-  { label: 'Skill roadmaps', x: 22, y: 22 },
-]
+  const commentsByRoadmapId = new Map<
+    string,
+    Array<{
+      id: string;
+      content: string;
+      createdAt: string;
+      user: {
+        id: string;
+        username: string;
+      };
+    }>
+  >();
 
-const featureLayout = [
-  { index: 0, className: 'lg:col-span-7 lg:row-span-2', tone: 'from-indigo-500/25 via-indigo-500/10 to-transparent' },
-  { index: 1, className: 'lg:col-span-5', tone: 'from-sky-500/20 via-indigo-500/8 to-transparent' },
-  { index: 2, className: 'lg:col-span-5', tone: 'from-violet-500/18 via-indigo-500/8 to-transparent' },
-  { index: 3, className: 'lg:col-span-4', tone: 'from-indigo-400/18 via-indigo-500/8 to-transparent' },
-  { index: 4, className: 'lg:col-span-4', tone: 'from-slate-400/14 via-indigo-500/8 to-transparent' },
-  { index: 5, className: 'lg:col-span-4', tone: 'from-indigo-300/16 via-indigo-500/8 to-transparent' },
-]
+  topComments.forEach((row) => {
+    const existing = commentsByRoadmapId.get(row.roadmapId) ?? [];
+    existing.push({
+      id: row.id,
+      content: row.content,
+      createdAt: row.createdAt.toISOString(),
+      user: {
+        id: row.userId,
+        username: row.username,
+      },
+    });
+    commentsByRoadmapId.set(row.roadmapId, existing);
+  });
 
-const previewToneClasses: Record<PreviewNode['tone'], string> = {
-  violet: 'border-violet-300/45 bg-violet-500/18 text-violet-100',
-  blue: 'border-sky-300/45 bg-sky-500/16 text-sky-100',
-  cyan: 'border-cyan-300/45 bg-cyan-500/14 text-cyan-100',
-}
+  const likedRoadmapIdSet = new Set(likedByMe.map((row) => row.roadmapId));
+  const savedByRoadmapId = new Map(
+    savedByMe.map((row) => [
+      row.sourceRoadmapId,
+      {
+        savedRoadmapId: row.savedRoadmapId,
+        savedRoadmapSlug: row.savedRoadmapSlug,
+      },
+    ]),
+  );
 
-const Page = () => {
-  const previewLookup = Object.fromEntries(heroPreviewNodes.map((node) => [node.id, node])) as Record<string, PreviewNode>
+  const posts = publicRoadmaps.map((roadmap) => {
+    const graph = (roadmap.graph ?? {}) as {
+      nodes?: Array<{
+        id: string;
+        position?: { x?: number; y?: number };
+        data?: { label?: string };
+      }>;
+      edges?: Array<{ source: string; target: string }>;
+    };
+
+    const nodes = Array.isArray(graph.nodes) ? graph.nodes : [];
+    const edges = Array.isArray(graph.edges) ? graph.edges : [];
+
+    const savedRecord = savedByRoadmapId.get(roadmap.id);
+
+    return {
+      roadmapId: roadmap.id,
+      title: roadmap.title,
+      slugId: toSlugId(roadmap.slug, roadmap.id),
+      creator: {
+        id: roadmap.owner.id,
+        username: roadmap.owner.username,
+      },
+      createdAt: roadmap.createdAt.toISOString(),
+      updatedAt: roadmap.updatedAt.toISOString(),
+      nodeCount: nodes.length,
+      likeCount: likeCountByRoadmapId.get(roadmap.id) ?? 0,
+      commentCount: commentCountByRoadmapId.get(roadmap.id) ?? 0,
+      saveCount: saveCountByRoadmapId.get(roadmap.id) ?? 0,
+      likedByMe: likedRoadmapIdSet.has(roadmap.id),
+      savedByMe: Boolean(savedRecord?.savedRoadmapId),
+      savedRoadmapSlugId:
+        savedRecord?.savedRoadmapId && savedRecord.savedRoadmapSlug
+          ? toSlugId(savedRecord.savedRoadmapSlug, savedRecord.savedRoadmapId)
+          : null,
+      graphPreview: {
+        nodes: nodes.slice(0, 12).map((node) => ({
+          id: node.id,
+          label: node.data?.label ?? node.id,
+          x: typeof node.position?.x === "number" ? node.position.x : 0,
+          y: typeof node.position?.y === "number" ? node.position.y : 0,
+        })),
+        edges: edges.slice(0, 18).map((edge) => ({
+          source: edge.source,
+          target: edge.target,
+        })),
+      },
+      comments: commentsByRoadmapId.get(roadmap.id) ?? [],
+    };
+  });
 
   return (
-    <main className={`${hubotSans.className} relative min-h-screen overflow-x-hidden bg-neutral-950 text-white`}>
-      <LandingIntroOverlay />
-
-      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute left-1/2 top-[-24rem] h-[42rem] w-[42rem] -translate-x-1/2 rounded-full bg-indigo-600/30 blur-[140px]" />
-        <div className="absolute right-[-8rem] top-[28rem] h-[20rem] w-[20rem] rounded-full bg-indigo-400/20 blur-[110px]" />
-        <div className="absolute left-[-8rem] top-[45rem] h-[20rem] w-[20rem] rounded-full bg-sky-400/14 blur-[100px]" />
-      </div>
-
-      <LandingNavbar />
-
-      <section className="mx-auto w-full max-w-[1180px] px-4 pb-14 pt-28 sm:px-6 lg:px-8">
-        <div className="grid items-stretch gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-          <motion.div
-            initial={{ opacity: 0, y: 24, filter: 'blur(8px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            transition={{ duration: 0.55, ease: 'easeOut' }}
-            className="relative overflow-hidden rounded-[2rem] border border-neutral-800 bg-neutral-950/70 p-6 shadow-[0_28px_90px_-44px_rgba(99,102,241,0.75)] backdrop-blur-xl sm:p-9"
-          >
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_10%,rgba(99,102,241,0.24),transparent_50%)]" />
-            <div className="pointer-events-none absolute -right-20 top-8 h-52 w-52 rounded-full border border-indigo-300/20" />
-
-            <div className="relative">
-              <div className="inline-flex items-center gap-2 rounded-full border border-indigo-300/40 bg-indigo-500/12 px-3 py-1 text-xs text-indigo-100 sm:text-sm">
-                <BrainCircuit className="h-3.5 w-3.5" />
-                Custom AI roadmaps that you can actually execute
-              </div>
-
-              <h1 className="mt-5 max-w-3xl text-4xl font-semibold leading-[1.03] text-white sm:text-6xl">
-                Plan your next move with
-                <span className="block bg-gradient-to-r from-indigo-100 via-indigo-300 to-sky-200 bg-clip-text text-transparent">
-                  confidence, not guesswork
-                </span>
-              </h1>
-
-              <p className="mt-5 max-w-xl text-sm leading-relaxed text-neutral-300 sm:text-lg">
-                Decipath turns uncertainty into a live execution map so you can move from
-                <span className="mx-2 inline-flex text-indigo-200">
-                  <FlipWords words={['confusion', 'overthinking', 'stalled progress']} duration={2800} />
-                </span>
-                to forward momentum.
-              </p>
-
-              <div className="mt-8 flex flex-wrap items-center gap-3">
-                <Button asChild className="h-11 rounded-full bg-indigo-500 px-6 text-sm text-white hover:bg-indigo-400">
-                  <Link href="/signup">
-                    Get Started
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                  variant="outline"
-                  className="h-11 rounded-full border-indigo-300/45 bg-indigo-500/10 px-6 text-sm text-indigo-100 hover:border-indigo-200 hover:bg-indigo-500/20 hover:text-white"
-                >
-                  <Link href="/signin">Sign In</Link>
-                </Button>
-              </div>
-
-              <div className="mt-9 divide-y divide-neutral-800/90 rounded-2xl border border-neutral-800/90 bg-neutral-900/55 backdrop-blur-xl">
-                {proofStats.map((stat) => (
-                  <div key={stat.label} className="flex items-end justify-between px-4 py-3 sm:px-5">
-                    <p className="text-lg font-semibold text-indigo-100 sm:text-xl">{stat.value}</p>
-                    <p className="text-right text-xs text-neutral-400 sm:text-sm">{stat.label}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 24, filter: 'blur(8px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            transition={{ duration: 0.65, ease: 'easeOut', delay: 0.12 }}
-            className="relative min-h-[560px] overflow-hidden rounded-[2rem] border border-indigo-300/25 bg-[linear-gradient(160deg,rgba(13,18,41,0.96),rgba(8,9,20,0.95))] shadow-[0_30px_90px_-42px_rgba(99,102,241,0.7)]"
-          >
-            <Image
-              src={LandingImage}
-              alt="Decipath roadmap interface preview"
-              className="absolute inset-0 h-full w-full object-cover opacity-25"
-              priority
-            />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(129,140,248,0.22),transparent_45%),radial-gradient(circle_at_80%_80%,rgba(56,189,248,0.12),transparent_40%)]" />
-
-            <div className="relative h-full p-6 sm:p-7">
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-indigo-300/35 bg-indigo-500/15 px-3 py-1 text-xs text-indigo-100">
-                <Waypoints className="h-3.5 w-3.5" />
-                Live roadmap preview
-              </div>
-
-              <div className="relative h-[430px] overflow-hidden rounded-3xl border border-indigo-300/20 bg-neutral-950/58 backdrop-blur-xl">
-                <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full">
-                  {heroPreviewEdges.map(([sourceId, targetId], index) => {
-                    const source = previewLookup[sourceId]
-                    const target = previewLookup[targetId]
-
-                    return (
-                      <motion.line
-                        key={`${sourceId}-${targetId}`}
-                        x1={source.x}
-                        y1={source.y}
-                        x2={target.x}
-                        y2={target.y}
-                        stroke="rgba(196, 181, 253, 0.62)"
-                        strokeWidth="0.6"
-                        strokeLinecap="round"
-                        initial={{ pathLength: 0, opacity: 0 }}
-                        whileInView={{ pathLength: 1, opacity: 0.85 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.7, delay: 0.15 + index * 0.08, ease: 'easeOut' }}
-                      />
-                    )
-                  })}
-                </svg>
-
-                {heroPreviewNodes.map((node, index) => {
-                  const NodeIcon = node.icon
-
-                  return (
-                    <motion.div
-                      key={node.id}
-                      initial={{ opacity: 0, scale: 0.85, y: 10, filter: 'blur(6px)' }}
-                      whileInView={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.35, delay: 0.25 + index * 0.12 }}
-                      className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-2xl border px-3 py-2 shadow-[0_12px_35px_-20px_rgba(99,102,241,0.85)] backdrop-blur-xl ${previewToneClasses[node.tone]}`}
-                      style={{ left: `${node.x}%`, top: `${node.y}%` }}
-                    >
-                      <div className="flex items-center gap-2 whitespace-nowrap text-xs font-medium">
-                        <NodeIcon className="h-3.5 w-3.5" />
-                        {node.label}
-                      </div>
-                    </motion.div>
-                  )
-                })}
-              </div>
-
-              <div className="mt-4 rounded-2xl border border-neutral-700/80 bg-neutral-950/65 px-4 py-3 text-xs text-neutral-300 backdrop-blur-md sm:text-sm">
-                Click a node to open detailed tasks, time estimates, and connected path context.
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      <section className="relative mt-2 w-full overflow-hidden">
-        <div className="relative flex w-full items-center justify-center text-indigo-100">
-          <VelocityScroll>Anything you want to achieve can be mapped</VelocityScroll>
-          <div className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-neutral-950 via-neutral-950/70 to-transparent" />
-          <div className="pointer-events-none absolute inset-y-0 right-0 w-1/3 bg-gradient-to-l from-neutral-950 via-neutral-950/70 to-transparent" />
-        </div>
-      </section>
-
-      <section id="features" className="mx-auto w-full max-w-[1180px] px-4 py-16 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-2 text-xs uppercase tracking-[0.24em] text-indigo-300/85">
-          <Workflow className="h-4 w-4" />
-          Product Architecture
-        </div>
-        <h2 className="mt-3 max-w-3xl text-3xl font-semibold text-white sm:text-4xl">
-          Custom building blocks for deep planning, not template-level output
-        </h2>
-
-        <div className="mt-8 grid auto-rows-[minmax(165px,auto)] gap-4 lg:grid-cols-12">
-          {featureLayout.map((layout, displayIndex) => {
-            const feature = featureCards[layout.index]
-            const Icon = feature.icon
-
-            return (
-              <motion.article
-                key={feature.title}
-                initial={{ opacity: 0, y: 18, filter: 'blur(6px)' }}
-                whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                viewport={{ once: true, amount: 0.35 }}
-                transition={{ duration: 0.38, delay: displayIndex * 0.05 }}
-                className={`group relative overflow-hidden rounded-[1.6rem] border border-neutral-800 bg-neutral-950/75 p-5 backdrop-blur-xl ${layout.className}`}
-              >
-                <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${layout.tone}`} />
-                <div className="pointer-events-none absolute -right-4 -top-6 text-[96px] font-semibold leading-none text-white/[0.05]">
-                  {String(displayIndex + 1).padStart(2, '0')}
-                </div>
-
-                <div className="relative flex h-full flex-col">
-                  <div className="inline-flex w-fit items-center gap-2 rounded-full border border-indigo-300/40 bg-indigo-500/14 px-3 py-1 text-xs text-indigo-100">
-                    <Icon className="h-3.5 w-3.5" />
-                    Decipath Capability
-                  </div>
-
-                  <h3 className="mt-4 max-w-xl text-xl font-medium text-white">{feature.title}</h3>
-                  <p className="mt-2 max-w-xl text-sm leading-relaxed text-neutral-300">{feature.description}</p>
-
-                  <div className="mt-auto pt-5 text-xs uppercase tracking-[0.18em] text-indigo-200/70">Built into the core workflow</div>
-                </div>
-              </motion.article>
-            )
-          })}
-        </div>
-      </section>
-
-      <section id="how-it-works" className="mx-auto w-full max-w-[1180px] px-4 py-10 sm:px-6 lg:px-8">
-        <div className="relative overflow-hidden rounded-[2rem] border border-neutral-800 bg-neutral-900/45 p-6 sm:p-9">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_10%,rgba(99,102,241,0.18),transparent_45%)]" />
-
-          <h2 className="relative text-3xl font-semibold text-white sm:text-4xl">How it flows</h2>
-          <p className="relative mt-2 max-w-2xl text-sm text-neutral-300 sm:text-base">
-            One clean loop from intent to execution, with enough depth for complex goals.
-          </p>
-
-          <div className="relative mt-9 grid gap-8 lg:grid-cols-4">
-            {flowSteps.map((step, index) => {
-              const StepIcon = step.icon
-
-              return (
-                <div key={step.title} className="relative">
-                  {index < flowSteps.length - 1 && (
-                    <div className="pointer-events-none absolute left-[74px] top-8 hidden h-px w-[calc(100%-52px)] bg-gradient-to-r from-indigo-300/60 to-transparent lg:block" />
-                  )}
-
-                  <motion.div
-                    initial={{ opacity: 0, y: 16, filter: 'blur(6px)' }}
-                    whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                    viewport={{ once: true, amount: 0.4 }}
-                    transition={{ duration: 0.35, delay: index * 0.08 }}
-                    className="relative"
-                  >
-                    <div className="inline-flex h-16 w-16 items-center justify-center rounded-[1.25rem] border border-indigo-300/45 bg-indigo-500/18 text-indigo-100 shadow-[0_16px_36px_-18px_rgba(99,102,241,0.8)]">
-                      <StepIcon className="h-5 w-5" />
-                    </div>
-                    <div className="mt-4">
-                      <p className="text-xs uppercase tracking-[0.18em] text-indigo-200/70">Step {index + 1}</p>
-                      <h3 className="mt-1 text-lg text-white">{step.title}</h3>
-                      <p className="mt-2 text-sm leading-relaxed text-neutral-400">{step.description}</p>
-                    </div>
-                  </motion.div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </section>
-
-      <section id="use-cases" className="mx-auto w-full max-w-[1180px] px-4 py-16 sm:px-6 lg:px-8">
-        <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="rounded-[2rem] border border-neutral-800 bg-neutral-950/70 p-7 backdrop-blur-xl">
-            <div className="flex items-center gap-2 text-xs uppercase tracking-[0.24em] text-indigo-300/80">
-              <TimerReset className="h-4 w-4" />
-              Works Across Domains
-            </div>
-            <h2 className="mt-3 text-3xl font-semibold text-white sm:text-4xl">Use it for any path you want to build</h2>
-            <p className="mt-3 text-sm leading-relaxed text-neutral-300 sm:text-base">
-              Decipath adapts the same structured engine to career moves, technical upskilling, startup execution, and long-term learning plans.
-            </p>
-            <div className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-900/60 p-4 text-sm text-neutral-300">
-              The roadmap evolves as your context changes. You are not locked into one rigid path.
-            </div>
-          </div>
-
-          <div className="relative h-[390px] overflow-hidden rounded-[2rem] border border-indigo-300/25 bg-[linear-gradient(150deg,rgba(13,17,40,0.96),rgba(7,8,18,0.95))]">
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.2),transparent_62%)]" />
-
-            <div className="pointer-events-none absolute left-1/2 top-1/2 h-[260px] w-[260px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-indigo-300/20" />
-            <div className="pointer-events-none absolute left-1/2 top-1/2 h-[170px] w-[170px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-indigo-300/28" />
-
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-indigo-200/45 bg-indigo-500/22 px-4 py-2 text-sm font-medium text-indigo-50">
-              Your Goal
-            </div>
-
-            {orbitUseCases.map((item, index) => (
-              <motion.div
-                key={item.label}
-                initial={{ opacity: 0, scale: 0.92, y: 8, filter: 'blur(4px)' }}
-                whileInView={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' }}
-                viewport={{ once: true, amount: 0.4 }}
-                transition={{ duration: 0.35, delay: index * 0.06 }}
-                className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border border-neutral-700/80 bg-neutral-950/80 px-3 py-1 text-xs text-indigo-100 shadow-[0_10px_28px_-18px_rgba(99,102,241,0.85)] sm:text-sm"
-                style={{ left: `${item.x}%`, top: `${item.y}%` }}
-              >
-                {item.label}
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto w-full max-w-[1180px] px-4 pb-20 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 18, filter: 'blur(6px)' }}
-          whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-          viewport={{ once: true, amount: 0.35 }}
-          transition={{ duration: 0.45 }}
-          className="relative isolate overflow-hidden rounded-[2.2rem] border border-indigo-300/30 bg-[linear-gradient(130deg,rgba(57,64,166,0.28),rgba(19,25,56,0.9)_46%,rgba(8,10,22,0.98))] p-8 sm:p-12"
-        >
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(129,140,248,0.34),transparent_46%)]" />
-          <div className="pointer-events-none absolute right-[-80px] top-[-80px] h-[240px] w-[240px] rounded-full border border-indigo-200/20" />
-
-          <div className="relative grid gap-8 md:grid-cols-[1fr_auto] md:items-end">
-            <div>
-              <h2 className="max-w-2xl text-3xl font-semibold text-white sm:text-4xl">
-                Build your next roadmap with a system that actually feels premium
-              </h2>
-              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-indigo-100/90 sm:text-base">
-                Decipath gives you structure, flexibility, and momentum from your first step to your final milestone.
-              </p>
-
-              <div className="mt-7 flex flex-wrap items-center gap-3">
-                <Button asChild className="h-11 rounded-full bg-white px-6 text-sm text-neutral-950 hover:bg-indigo-100">
-                  <Link href="/signup">
-                    Create My Roadmap
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-                <div className="inline-flex items-center gap-2 rounded-full border border-neutral-700/80 bg-neutral-950/62 px-4 py-2 text-xs text-neutral-300">
-                  <LockKeyhole className="h-3.5 w-3.5 text-indigo-200" />
-                  Secure auth + saved roadmap history
-                </div>
-              </div>
-            </div>
-
-            <div className="min-w-[220px] space-y-3">
-              <div className="rounded-2xl border border-indigo-300/35 bg-indigo-500/18 px-4 py-3 text-sm text-indigo-100">
-                Structured AI planning engine
-              </div>
-              <div className="rounded-2xl border border-neutral-700/80 bg-neutral-950/70 px-4 py-3 text-sm text-neutral-200">
-                Interactive graph + actionable tasking
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      </section>
-    </main>
-  )
+    <HomeFeedClient
+      posts={posts}
+      currentUser={
+        currentUser
+          ? {
+              id: currentUser.id,
+              username: currentUser.username,
+            }
+          : null
+      }
+    />
+  );
 }
-
-export default Page;

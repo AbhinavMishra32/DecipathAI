@@ -1,31 +1,13 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono, Sen, Space_Grotesk } from "next/font/google";
+import { Sen } from "next/font/google";
 import "../../globals.css";
-import { cookies } from "next/headers";
-import { SidebarProvider } from "../../../components/ui/sidebar";
-import { SdSidebar } from "../../../components/SdSidebar";
 import React from "react";
 import ThemeProvider from "@/components/ThemeProvider";
 import { ClerkProvider } from "@clerk/nextjs";
-import { dark } from "@clerk/themes";
 import UserProfileButton from "@/components/UserProfileButton";
 import ThemeSelectorButton from "@/components/ThemeSelectorButton";
 import ReactFlowWrapper from "@/components/ReactFlowWrapper";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
-  subsets: ["latin"],
-})
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import Link from "next/link";
+import { House, MapTrifold, PlusCircle } from "@phosphor-icons/react";
 
 const sen = Sen({
   variable: "--font-sen",
@@ -42,36 +24,58 @@ export default async function RootLayout({
             <html lang="en">
                 <body className={`${sen.variable} antialiased`}>
                     <ThemeProvider>
-                        <SidebarProvider>
-                            <div className='relative flex min-h-screen w-screen overflow-hidden bg-gradient-to-b from-slate-100 via-indigo-50/55 to-slate-100 dark:from-[#04060d] dark:via-[#070b18] dark:to-[#04060d]'>
-                                <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-                                    <div className="absolute left-1/2 top-[-16rem] h-[34rem] w-[34rem] -translate-x-1/2 rounded-full bg-indigo-500/18 blur-[120px] dark:bg-indigo-600/25" />
-                                    <div className="absolute right-[-8rem] top-[16rem] h-[18rem] w-[18rem] rounded-full bg-indigo-400/16 blur-[90px] dark:bg-indigo-500/14" />
-                                    <div className="absolute left-[-6rem] top-[28rem] h-[16rem] w-[16rem] rounded-full bg-sky-300/16 blur-[80px] dark:bg-sky-500/10" />
+                        <div className='relative flex min-h-screen w-screen overflow-hidden bg-gradient-to-b from-slate-100 via-indigo-50/55 to-slate-100 dark:from-[#04060d] dark:via-[#070b18] dark:to-[#04060d]'>
+                            <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+                                <div className="absolute left-1/2 top-[-16rem] h-[34rem] w-[34rem] -translate-x-1/2 rounded-full bg-indigo-500/18 blur-[120px] dark:bg-indigo-600/25" />
+                                <div className="absolute right-[-8rem] top-[16rem] h-[18rem] w-[18rem] rounded-full bg-indigo-400/16 blur-[90px] dark:bg-indigo-500/14" />
+                                <div className="absolute left-[-6rem] top-[28rem] h-[16rem] w-[16rem] rounded-full bg-sky-300/16 blur-[80px] dark:bg-sky-500/10" />
+                            </div>
+
+                            <aside className="z-20 hidden w-[17.5rem] shrink-0 flex-col border-r border-indigo-300/20 bg-white/75 px-4 py-5 backdrop-blur-sm dark:border-indigo-300/15 dark:bg-neutral-900/55 lg:flex">
+                                <div className="mb-5 rounded-xl border border-indigo-200/70 bg-indigo-50/70 px-3 py-2 dark:border-indigo-300/20 dark:bg-indigo-900/20">
+                                    <p className="text-xs uppercase tracking-[0.16em] text-indigo-600 dark:text-indigo-300">Decipath</p>
+                                    <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">Workspace</p>
                                 </div>
 
-                                {/* <SdSidebar /> */}
-                                <div className="absolute right-4 top-4 z-50 flex items-center gap-2">
+                                <nav className="space-y-2">
+                                    <Link
+                                        href="/"
+                                        className="inline-flex w-full items-center gap-2 rounded-lg border border-indigo-200/70 bg-white/85 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-indigo-50 dark:border-indigo-300/20 dark:bg-neutral-900/45 dark:text-slate-200"
+                                    >
+                                        <House className="h-4 w-4" weight="duotone" />
+                                        Home Feed
+                                    </Link>
+                                    <Link
+                                        href="/roadmaps"
+                                        className="inline-flex w-full items-center gap-2 rounded-lg border border-indigo-200/70 bg-white/85 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-indigo-50 dark:border-indigo-300/20 dark:bg-neutral-900/45 dark:text-slate-200"
+                                    >
+                                        <MapTrifold className="h-4 w-4" weight="duotone" />
+                                        Dashboard
+                                    </Link>
+                                    <Link
+                                        href="/create"
+                                        className="inline-flex w-full items-center gap-2 rounded-lg border border-indigo-300/40 bg-indigo-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-indigo-500"
+                                    >
+                                        <PlusCircle className="h-4 w-4" weight="duotone" />
+                                        Create roadmap
+                                    </Link>
+                                </nav>
+
+                                <div className="mt-auto flex items-center gap-2">
                                     <ThemeSelectorButton />
                                     <UserProfileButton />
                                 </div>
+                            </aside>
 
-                                <ReactFlowWrapper>
-                                    <div className='relative flex w-full flex-col bg-transparent'>
-                                        {children}
-                                    </div>
-                                </ReactFlowWrapper>
-                            </div>
-                        </SidebarProvider>
+                            <ReactFlowWrapper>
+                                <div className='relative flex min-h-screen w-full flex-col bg-transparent'>
+                                    {children}
+                                </div>
+                            </ReactFlowWrapper>
+                        </div>
                     </ThemeProvider>
                 </body>
             </html>
         </ClerkProvider>
     );
-    {/* <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        >
-          {children}
-        </body>
-      </html></> */}
 }

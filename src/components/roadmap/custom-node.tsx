@@ -131,6 +131,7 @@ function CustomNode({
     isExpanded?: boolean
     // isExpandedDetailed?: boolean
     isHighlighted?: boolean
+    highlightTone?: "indigo" | "amber"
   }
   isConnectable: boolean
 }) {
@@ -150,6 +151,8 @@ function CustomNode({
   ]
 
   const [hovered, setHovered] = useState(false)
+  const isHighlighted = Boolean(data.isHighlighted)
+  const isAmberHighlight = isHighlighted && data.highlightTone === "amber"
 
   const buttonVariants: Variants = {
     initial: { scale: 0.9, y: 4, opacity: 0 },
@@ -193,8 +196,10 @@ function CustomNode({
           duration: 0.2,
           ease: "easeOut",
         }}
-        className={`group relative rounded-2xl border-2 px-4 py-3.5 transition-all duration-200 transform-gpu ${data.isHighlighted
-          ? "border-indigo-500 bg-indigo-50/70 shadow-[0_16px_40px_-20px_rgba(79,70,229,0.45)] dark:border-indigo-400 dark:bg-indigo-900/15"
+        className={`group relative rounded-2xl border-2 px-4 py-3.5 transition-all duration-200 transform-gpu ${isHighlighted
+          ? isAmberHighlight
+            ? "border-amber-400 bg-amber-50/80 shadow-[0_16px_40px_-20px_rgba(245,158,11,0.45)] dark:border-amber-300 dark:bg-amber-900/20"
+            : "border-indigo-500 bg-indigo-50/70 shadow-[0_16px_40px_-20px_rgba(79,70,229,0.45)] dark:border-indigo-400 dark:bg-indigo-900/15"
           : "border-gray-200 bg-white/95 shadow-[0_12px_30px_-20px_rgba(15,23,42,0.32)] dark:border-neutral-700 dark:bg-neutral-900/35"
           } ${data.isExpanded ? "scale-[1.04]" : "hover:scale-[1.02]"}`}
         style={{
@@ -207,7 +212,7 @@ function CustomNode({
           type="target"
           position={Position.Left}
           isConnectable={isConnectable}
-          className={`!h-3 !w-3 !-left-1.5 !border-2 !border-white ${data.isHighlighted ? "!bg-indigo-500 dark:!bg-indigo-400" : "!bg-indigo-400 dark:!bg-indigo-500"
+          className={`!h-3 !w-3 !-left-1.5 !border-2 !border-white ${isHighlighted ? isAmberHighlight ? "!bg-amber-500 dark:!bg-amber-400" : "!bg-indigo-500 dark:!bg-indigo-400" : "!bg-indigo-400 dark:!bg-indigo-500"
             }`}
         />
         <AnimatePresence>
@@ -230,17 +235,17 @@ function CustomNode({
         <div className="flex flex-col gap-2.5">
           <div className="flex items-start gap-2.5">
             <div
-              className={`mt-0.5 rounded-xl p-2 ${data.isHighlighted ? "bg-indigo-200/70 dark:bg-indigo-400/20" : "bg-indigo-100/80 dark:bg-indigo-400/15"}`}
+              className={`mt-0.5 rounded-xl p-2 ${isHighlighted ? isAmberHighlight ? "bg-amber-200/70 dark:bg-amber-400/20" : "bg-indigo-200/70 dark:bg-indigo-400/20" : "bg-indigo-100/80 dark:bg-indigo-400/15"}`}
             >
               <IconComponent
                 size={18}
                 weight="duotone"
-                className={`${data.isHighlighted ? "text-indigo-700 dark:text-indigo-100" : "text-indigo-600 dark:text-indigo-200"}`}
+                className={`${isHighlighted ? isAmberHighlight ? "text-amber-700 dark:text-amber-200" : "text-indigo-700 dark:text-indigo-100" : "text-indigo-600 dark:text-indigo-200"}`}
               />
             </div>
             <div className="min-w-0">
               <h2
-                className={`truncate text-[15px] font-semibold leading-5 ${data.isHighlighted ? "text-indigo-900 dark:text-indigo-50" : "text-slate-900 dark:text-white"}`}
+                className={`truncate text-[15px] font-semibold leading-5 ${isHighlighted ? isAmberHighlight ? "text-amber-900 dark:text-amber-100" : "text-indigo-900 dark:text-indigo-50" : "text-slate-900 dark:text-white"}`}
               >
                 {data.label}
               </h2>
@@ -270,8 +275,10 @@ function CustomNode({
               {roadmapTags.map((tag, index) => (
                 <span
                   key={index}
-                  className={`rounded-full border px-2 py-[3px] text-[10px] font-medium leading-[1.1] ${data.isHighlighted
-                    ? "border-indigo-200 bg-indigo-100/80 text-indigo-700 dark:border-indigo-500/70 dark:bg-indigo-900/25 dark:text-indigo-200"
+                  className={`rounded-full border px-2 py-[3px] text-[10px] font-medium leading-[1.1] ${isHighlighted
+                    ? isAmberHighlight
+                      ? "border-amber-200 bg-amber-100/80 text-amber-700 dark:border-amber-500/60 dark:bg-amber-900/25 dark:text-amber-200"
+                      : "border-indigo-200 bg-indigo-100/80 text-indigo-700 dark:border-indigo-500/70 dark:bg-indigo-900/25 dark:text-indigo-200"
                     : "border-slate-200 bg-slate-100/80 text-slate-700 dark:border-slate-600/80 dark:bg-slate-800/70 dark:text-slate-200"
                     }`}
                 >
@@ -286,7 +293,7 @@ function CustomNode({
           type="source"
           position={Position.Right}
           isConnectable={isConnectable}
-          className={`!h-3 !w-3 !-right-1.5 !border-2 !border-white ${data.isHighlighted ? "!bg-indigo-500 dark:!bg-indigo-400" : "!bg-indigo-400 dark:!bg-indigo-500"
+          className={`!h-3 !w-3 !-right-1.5 !border-2 !border-white ${isHighlighted ? isAmberHighlight ? "!bg-amber-500 dark:!bg-amber-400" : "!bg-indigo-500 dark:!bg-indigo-400" : "!bg-indigo-400 dark:!bg-indigo-500"
             }`}
         />
       </motion.div>
