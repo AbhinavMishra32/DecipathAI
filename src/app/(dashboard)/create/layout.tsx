@@ -51,7 +51,7 @@ export default async function RootLayout({
                                 </div>
 
                                 {/* <SdSidebar /> */}
-                                <div className="absolute right-4 top-4 z-50 flex items-center gap-3 rounded-full border border-indigo-200/70 bg-white/70 px-2 py-2 shadow-[0_16px_36px_-22px_rgba(79,70,229,0.55)] backdrop-blur-xl dark:border-indigo-300/20 dark:bg-neutral-900/45 dark:shadow-[0_22px_50px_-30px_rgba(79,70,229,0.8)]">
+                                <div className="absolute right-4 top-4 z-50 flex items-center gap-2">
                                     <ThemeSelectorButton />
                                     <UserProfileButton />
                                 </div>

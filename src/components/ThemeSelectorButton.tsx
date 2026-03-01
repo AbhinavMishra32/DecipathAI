@@ -6,7 +6,6 @@ import { useTheme } from "next-themes"
 
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
 
 export default function ThemeSelectorButton({ className }: { className?: string }) {
@@ -26,36 +25,16 @@ export default function ThemeSelectorButton({ className }: { className?: string 
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          size="icon"
           className={cn(
-            "h-12 w-12 border-2 border-indigo-300/40 rounded-full overflow-hidden bg-indigo-500/10 text-indigo-600 dark:text-indigo-200 hover:bg-indigo-500/20 dark:bg-neutral-800/40 backdrop-blur-md transition-all duration-300",
+            "h-10 w-10 rounded-lg border border-indigo-200/70 bg-white/70 p-0 text-xs font-medium text-slate-700 shadow-sm backdrop-blur-xl transition hover:bg-indigo-50 dark:border-indigo-300/20 dark:bg-neutral-900/45 dark:text-slate-300 dark:hover:bg-neutral-800/60",
             className,
           )}
         >
-          <div className="relative w-full h-full">
-            <motion.div
-              className="absolute inset-0 flex items-center justify-center"
-              initial={false}
-              animate={{
-                rotate: theme === "dark" ? 180 : 0,
-                scale: theme === "dark" ? 0 : 1,
-              }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            >
-              <Sun className="h-6 w-6 text-indigo-500 dark:text-indigo-300 filter drop-shadow" />
-            </motion.div>
-            <motion.div
-              className="absolute inset-0 flex items-center justify-center"
-              initial={false}
-              animate={{
-                rotate: theme === "dark" ? 0 : -180,
-                scale: theme === "dark" ? 1 : 0,
-              }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            >
-              <Moon className="h-6 w-6 text-indigo-500 dark:text-indigo-300 filter drop-shadow" />
-            </motion.div>
-          </div>
+          {theme === "dark" ? (
+            <Moon className="h-4 w-4 text-indigo-500 dark:text-indigo-300" />
+          ) : (
+            <Sun className="h-4 w-4 text-indigo-500 dark:text-indigo-300" />
+          )}
           <span className="sr-only">Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>

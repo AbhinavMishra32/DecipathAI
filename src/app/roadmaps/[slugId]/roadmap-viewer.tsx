@@ -48,6 +48,7 @@ import {
 } from "@/components/ui/sheet";
 
 const nodeTypes = { customNode: CustomNode };
+const LAYOUT_SAVE_THRESHOLD_PX = 1;
 
 interface RoadmapViewerProps {
   roadmap: {
@@ -102,6 +103,7 @@ export default function RoadmapViewer({ roadmap }: RoadmapViewerProps) {
   );
   const [copied, setCopied] = useState(false);
   const [isSavingLayout, setIsSavingLayout] = useState(false);
+  const [saveLayoutError, setSaveLayoutError] = useState<string | null>(null);
 
   const roadmapRundown = useMemo(() => {
     const idToLabel = new Map<string, string>();
@@ -333,14 +335,34 @@ export default function RoadmapViewer({ roadmap }: RoadmapViewerProps) {
       };
 
       setIsSavingLayout(true);
-      const result = await updateRoadmapGraph({
-        id: roadmap.id,
-        graph,
-      });
-      if (!result.success) {
-        console.error("[roadmap-viewer] Failed to save node position", result.error);
+      setSaveLayoutError(null);
+
+      try {
+        const response = await fetch(`/api/roadmaps/${roadmap.id}/layout`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ graph }),
+        });
+
+        const payload = (await response.json().catch(() => null)) as
+          | { success?: boolean; error?: string }
+          | null;
+
+        if (!response.ok || !payload?.success) {
+          const errorMessage = payload?.error || "Failed to save roadmap layout";
+          setSaveLayoutError(errorMessage);
+          console.error("[roadmap-viewer] Failed to save node position", errorMessage);
+        }
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to save roadmap layout";
+        setSaveLayoutError(errorMessage);
+        console.error("[roadmap-viewer] Failed to save node position", errorMessage);
+      } finally {
+        setIsSavingLayout(false);
       }
-      setIsSavingLayout(false);
     },
     [edges, roadmap.id, roadmap.isOwner, theme],
   );
@@ -348,6 +370,19 @@ export default function RoadmapViewer({ roadmap }: RoadmapViewerProps) {
   const onNodeDragStop = useCallback(
     async (_: React.MouseEvent, draggedNode: Node) => {
       if (!roadmap.isOwner) {
+        return;
+      }
+
+      const originalNode = nodes.find((node) => node.id === draggedNode.id);
+      if (!originalNode) {
+        return;
+      }
+
+      const deltaX = draggedNode.position.x - originalNode.position.x;
+      const deltaY = draggedNode.position.y - originalNode.position.y;
+      const distanceMoved = Math.hypot(deltaX, deltaY);
+
+      if (distanceMoved < LAYOUT_SAVE_THRESHOLD_PX) {
         return;
       }
 
@@ -544,6 +579,12 @@ export default function RoadmapViewer({ roadmap }: RoadmapViewerProps) {
               {isSavingLayout && (
                 <div className="rounded-lg border border-indigo-200/70 bg-white/70 px-3 py-2 text-xs font-medium text-slate-600 shadow-sm backdrop-blur-xl dark:border-indigo-300/20 dark:bg-neutral-900/45 dark:text-slate-300">
                   Saving layout...
+                </div>
+              )}
+
+              {saveLayoutError && (
+                <div className="rounded-lg border border-red-200/70 bg-red-50/80 px-3 py-2 text-xs font-medium text-red-700 shadow-sm backdrop-blur-xl dark:border-red-300/20 dark:bg-red-900/30 dark:text-red-300">
+                  Layout save failed
                 </div>
               )}
             </>

@@ -20,6 +20,11 @@ enum Visibility {
   PUBLIC
 }
 
+enum ProgressStatus {
+  ACTIVE
+  COMPLETED
+}
+
 // ───────────────────────────────────────────
 // User — synced from Clerk via webhook
 // ───────────────────────────────────────────
@@ -31,6 +36,7 @@ model User {
   username   String
   email      String
   roadmaps   Roadmap[] @relation("OwnedRoadmaps")
+  progressRuns RoadmapProgress[]
 }
 
 // ───────────────────────────────────────────
@@ -48,10 +54,47 @@ model Roadmap {
 
   ownerId    String
   owner      User       @relation("OwnedRoadmaps", fields: [ownerId], references: [id])
+  progressRuns RoadmapProgress[]
 
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
 
   @@index([ownerId, updatedAt(sort: Desc)])
   @@index([slug])
+}
+
+model RoadmapProgress {
+  id               String          @id @default(cuid())
+  status           ProgressStatus  @default(ACTIVE)
+  currentNodeId    String?
+  completedNodeIds String[]        @default([])
+  completedAt      DateTime?
+
+  roadmapId        String
+  roadmap          Roadmap         @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+
+  userId           String
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  taskProgresses   RoadmapTaskProgress[]
+
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@unique([userId, roadmapId])
+  @@index([userId, updatedAt(sort: Desc)])
+}
+
+model RoadmapTaskProgress {
+  id         String         @id @default(cuid())
+
+  progressId String
+  progress   RoadmapProgress @relation(fields: [progressId], references: [id], onDelete: Cascade)
+
+  nodeId     String
+  taskIndex  Int
+  completedAt DateTime      @default(now())
+
+  @@unique([progressId, nodeId, taskIndex])
+  @@index([progressId, nodeId])
 }

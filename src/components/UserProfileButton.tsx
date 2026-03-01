@@ -12,24 +12,29 @@ export default function UserProfileButton({ className, ...props }: { className?:
   return (
     <div
       className={twMerge(
-        "flex items-center justify-center rounded-full border border-indigo-200/75 bg-white/75 p-1.5 shadow-[0_14px_35px_-24px_rgba(79,70,229,0.7)] backdrop-blur-xl dark:border-indigo-300/20 dark:bg-neutral-900/60 dark:shadow-[0_16px_40px_-24px_rgba(79,70,229,0.8)]",
+        "flex h-10 items-center gap-1.5 rounded-lg border border-indigo-200/70 bg-white/70 px-3 text-xs font-medium text-slate-700 shadow-sm backdrop-blur-xl transition hover:bg-indigo-50 dark:border-indigo-300/20 dark:bg-neutral-900/45 dark:text-slate-300 dark:hover:bg-neutral-800/60",
         className,
       )}
       {...props}
     >
-      <div className="hidden px-3 sm:flex sm:flex-col sm:leading-tight">
-        <p className="max-w-[130px] truncate text-sm text-slate-700 dark:text-slate-200">{user?.username || user?.fullName || "Account"}</p>
-        <p className="text-right text-[11px] uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Free account</p>
-      </div>
       <UserButton
         appearance={{
           baseTheme: theme === "dark" ? dark : undefined,
           elements: {
             userButtonAvatarBox:
-              "h-8 w-8 ring-2 ring-indigo-300/70 dark:ring-indigo-300/35",
+              "h-6 w-6 ring-1 ring-indigo-300/70 dark:ring-indigo-300/35",
           },
         }}
       />
+
+      <div className="hidden flex-col sm:flex sm:leading-tight">
+        <p className="max-w-[120px] truncate text-xs text-slate-700 dark:text-slate-200">
+          {user?.username || user?.fullName || "Account"}
+        </p>
+        <p className="text-right text-[10px] uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
+          Free account
+        </p>
+      </div>
     </div>
   );
 }
