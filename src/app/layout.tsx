@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Sen } from "next/font/google";
 import "./globals.css";
 import React from "react";
-import { ClerkProvider } from "@clerk/nextjs";
-import { dark } from "@clerk/themes";
 import { Analytics } from "@vercel/analytics/react";
 
 const geistSans = Geist({
@@ -22,27 +20,46 @@ export const metadata: Metadata = {
     description: "Generate any roadmap you want",
 };
 
+const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim();
+const hasValidClerkPublishableKey = Boolean(
+    publishableKey && publishableKey.startsWith("pk_"),
+);
+
 
 export default async function RootLayout({
     children
 }: Readonly<{
     children: React.ReactNode;
 }>) {
+    let appContent = children;
+
+    if (hasValidClerkPublishableKey && publishableKey) {
+        const [{ ClerkProvider }, { dark }] = await Promise.all([
+            import("@clerk/nextjs"),
+            import("@clerk/themes"),
+        ]);
+
+        appContent = (
+            <ClerkProvider
+                publishableKey={publishableKey}
+                appearance={{
+                    baseTheme: dark,
+                    elements: {
+                        footer: "hidden",
+                    },
+                }}
+            >
+                {children}
+            </ClerkProvider>
+        );
+    }
+
     return (
-        <ClerkProvider
-        appearance={{
-            baseTheme: dark,
-            elements: {
-                footer: "hidden",
-            }
-        }}
-        >
-            <html lang="en">
-                <body>
-                    {children}
-                    <Analytics />
-                </body>
-            </html>
-        </ClerkProvider>
+        <html lang="en">
+            <body>
+                {appContent}
+                <Analytics />
+            </body>
+        </html>
     );
 }

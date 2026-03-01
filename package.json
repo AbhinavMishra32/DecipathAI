@@ -42,6 +42,7 @@
     "svix": "^1.62.0",
     "tailwind-merge": "^3.0.2",
     "tailwindcss-animate": "^1.0.7",
+    "vercel": "^50.25.4",
     "zod": "^3.25.76"
   },
   "devDependencies": {
