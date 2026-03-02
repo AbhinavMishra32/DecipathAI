@@ -1,0 +1,188 @@
+"use client"
+
+import { useTheme } from "next-themes"
+import { useState, useEffect } from "react"
+import { hubotSans } from "@/lib/fonts"
+import { Moon, Sun, Desktop, Keyboard, Info } from "@phosphor-icons/react"
+import { cn } from "@/lib/utils"
+
+const themeOptions = [
+  {
+    value: "light",
+    label: "Light",
+    icon: Sun,
+    description: "Clean light appearance",
+  },
+  {
+    value: "dark",
+    label: "Dark",
+    icon: Moon,
+    description: "Easy on the eyes",
+  },
+  {
+    value: "system",
+    label: "System",
+    icon: Desktop,
+    description: "Match your device",
+  },
+] as const
+
+const shortcuts = [
+  { keys: ["⌘", "B"], description: "Toggle sidebar pin" },
+  { keys: ["⌘", "K"], description: "Open search" },
+  { keys: ["⌘", "↵"], description: "Generate roadmap" },
+]
+
+export default function SettingsPage() {
+  const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) return null
+
+  return (
+    <div className={`${hubotSans.className} mx-auto max-w-2xl px-6 py-12 sm:px-8`}>
+      <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
+        Settings
+      </h1>
+      <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+        Manage your preferences and account settings.
+      </p>
+
+      {/* ── Appearance ──────────────────────────────────────── */}
+      <section className="mt-10">
+        <div className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-200">
+          <Sun weight="duotone" className="h-4 w-4 text-indigo-500" />
+          Appearance
+        </div>
+        <p className="mt-1 text-[13px] text-slate-500 dark:text-slate-400">
+          Choose how Decipath looks for you.
+        </p>
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          {themeOptions.map((opt) => {
+            const Icon = opt.icon
+            const active = theme === opt.value
+
+            return (
+              <button
+                key={opt.value}
+                onClick={() => setTheme(opt.value)}
+                className={cn(
+                  "flex flex-col items-start rounded-xl border p-4 text-left transition-all duration-150",
+                  active
+                    ? "border-indigo-300/50 bg-indigo-50/50 ring-1 ring-indigo-400/25 dark:border-indigo-500/25 dark:bg-indigo-500/[0.08] dark:ring-indigo-500/15"
+                    : "border-slate-200/60 bg-white/70 hover:border-slate-300/70 hover:bg-slate-50/70 dark:border-neutral-800/60 dark:bg-neutral-900/30 dark:hover:border-neutral-700 dark:hover:bg-neutral-800/30",
+                )}
+              >
+                <Icon
+                  weight={active ? "fill" : "regular"}
+                  className={cn(
+                    "h-5 w-5",
+                    active
+                      ? "text-indigo-600 dark:text-indigo-400"
+                      : "text-slate-400 dark:text-slate-500",
+                  )}
+                />
+                <p
+                  className={cn(
+                    "mt-3 text-[13px] font-semibold",
+                    active
+                      ? "text-indigo-700 dark:text-indigo-300"
+                      : "text-slate-700 dark:text-slate-300",
+                  )}
+                >
+                  {opt.label}
+                </p>
+                <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
+                  {opt.description}
+                </p>
+              </button>
+            )
+          })}
+        </div>
+      </section>
+
+      {/* ── Keyboard shortcuts ─────────────────────────────── */}
+      <section className="mt-10">
+        <div className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-200">
+          <Keyboard weight="duotone" className="h-4 w-4 text-indigo-500" />
+          Keyboard shortcuts
+        </div>
+        <div className="mt-4 overflow-hidden rounded-xl border border-slate-200/60 bg-white/70 dark:border-neutral-800/60 dark:bg-neutral-900/30">
+          {shortcuts.map((shortcut, index) => (
+            <div
+              key={shortcut.description}
+              className={cn(
+                "flex items-center justify-between px-4 py-3",
+                index !== shortcuts.length - 1 &&
+                  "border-b border-slate-100/70 dark:border-neutral-800/40",
+              )}
+            >
+              <span className="text-[13px] text-slate-600 dark:text-slate-300">
+                {shortcut.description}
+              </span>
+              <div className="flex items-center gap-1">
+                {shortcut.keys.map((key) => (
+                  <kbd
+                    key={key}
+                    className="inline-flex min-w-[24px] items-center justify-center rounded-md border border-slate-200/60 bg-slate-50/70 px-1.5 py-0.5 text-[11px] font-medium text-slate-500 shadow-[0_1px_2px_rgba(0,0,0,0.04)] dark:border-neutral-700/60 dark:bg-neutral-800/70 dark:text-slate-400"
+                  >
+                    {key}
+                  </kbd>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── About ──────────────────────────────────────────── */}
+      <section className="mt-10 pb-12">
+        <div className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-200">
+          <Info weight="duotone" className="h-4 w-4 text-indigo-500" />
+          About Decipath
+        </div>
+        <div className="mt-4 rounded-xl border border-slate-200/60 bg-white/70 p-5 dark:border-neutral-800/60 dark:bg-neutral-900/30">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 shadow-sm dark:bg-white">
+              <span className="text-[15px] font-bold text-white dark:text-slate-900">
+                D
+              </span>
+            </div>
+            <div>
+              <p className="text-[13px] font-semibold text-slate-800 dark:text-slate-200">
+                Decipath
+              </p>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                AI-powered roadmap generator
+              </p>
+            </div>
+          </div>
+          <p className="mt-4 text-[12px] leading-relaxed text-slate-500 dark:text-slate-400">
+            Generate deep, interactive roadmaps from any goal. Every milestone
+            becomes a clickable node with connected context, actionable tasks,
+            and realistic time estimates you can execute immediately.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <span className="rounded-full border border-slate-200/60 bg-slate-50/60 px-2.5 py-1 text-[10px] font-medium text-slate-500 dark:border-neutral-800/60 dark:bg-neutral-900/40 dark:text-slate-400">
+              AI Generation
+            </span>
+            <span className="rounded-full border border-slate-200/60 bg-slate-50/60 px-2.5 py-1 text-[10px] font-medium text-slate-500 dark:border-neutral-800/60 dark:bg-neutral-900/40 dark:text-slate-400">
+              Interactive Graphs
+            </span>
+            <span className="rounded-full border border-slate-200/60 bg-slate-50/60 px-2.5 py-1 text-[10px] font-medium text-slate-500 dark:border-neutral-800/60 dark:bg-neutral-900/40 dark:text-slate-400">
+              Progress Tracking
+            </span>
+            <span className="rounded-full border border-slate-200/60 bg-slate-50/60 px-2.5 py-1 text-[10px] font-medium text-slate-500 dark:border-neutral-800/60 dark:bg-neutral-900/40 dark:text-slate-400">
+              Community Feed
+            </span>
+          </div>
+        </div>
+      </section>
+    </div>
+  )
+}
