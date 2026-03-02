@@ -1,15 +1,22 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+import { NextResponse } from 'next/server'
 
 const isProtectedRoute = createRouteMatcher([
     '/create(.*)',
-    '/roadmaps',        // dashboard listing (owner-only)
+    '/roadmaps(.*)',
 ])
 
 
 export default clerkMiddleware(async (auth, req) => {
-    // Restrict admin routes to users with specific permissions
-    if (isProtectedRoute(req)) {
-        await auth.protect()
+    if (!isProtectedRoute(req)) {
+        return
+    }
+
+    const { userId } = await auth()
+    if (!userId) {
+        const signInUrl = new URL('/signin', req.url)
+        signInUrl.searchParams.set('redirect_url', req.url)
+        return NextResponse.redirect(signInUrl)
     }
 })
 

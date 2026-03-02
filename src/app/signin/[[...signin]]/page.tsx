@@ -7,6 +7,9 @@ import { ArrowLeft, Sparkles, Stars } from "lucide-react"
 import { useEffect, useState } from "react"
 import { hubotSans } from "@/lib/fonts"
 
+const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim()
+const hasValidClerkPublishableKey = Boolean(publishableKey && publishableKey.startsWith("pk_"))
+
 export default function SignInPage() {
   const [mounted, setMounted] = useState(false)
   const [hoverButton, setHoverButton] = useState(false)
@@ -129,31 +132,37 @@ export default function SignInPage() {
               className="absolute bg-gradient-to-r from-indigo-500/30 to-purple-500/30 rounded-xl -z-10"
             />
 
-            <SignIn
-              forceRedirectUrl="/roadmaps"
-              fallbackRedirectUrl="/roadmaps"
-              appearance={{
-                elements: {
-                  formButtonPrimary:
-                    "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-medium py-3 px-4 rounded-md transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] shadow-[0_4px_10px_rgba(139,92,246,0.3)] hover:shadow-[0_6px_15px_rgba(139,92,246,0.4)]",
-                  formFieldInput:
-                    "bg-gray-800/80 border-gray-700 text-white rounded-md px-3 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200",
-                  card: "bg-transparent shadow-none",
-                  headerTitle: "text-white text-2xl font-bold",
-                  headerSubtitle: "text-gray-400",
-                  socialButtonsBlockButton:
-                    "border border-gray-700 bg-gray-800/50 hover:bg-gray-800 text-white transition-all duration-200 hover:border-indigo-500/50",
-                  footerActionLink: "text-indigo-400 hover:text-indigo-300",
-                  identityPreviewEditButton: "text-indigo-400 hover:text-indigo-300",
-                  formFieldLabel: "text-gray-300 font-medium",
-                  formFieldAction: "text-indigo-400 hover:text-indigo-300",
-                  formFieldSuccessText: "text-green-400",
-                  formFieldErrorText: "text-red-400",
-                  dividerLine: "bg-gray-700",
-                  dividerText: "text-gray-400",
-                },
-              }}
-            />
+            {hasValidClerkPublishableKey ? (
+              <SignIn
+                forceRedirectUrl="/roadmaps"
+                fallbackRedirectUrl="/roadmaps"
+                appearance={{
+                  elements: {
+                    formButtonPrimary:
+                      "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-medium py-3 px-4 rounded-md transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] shadow-[0_4px_10px_rgba(139,92,246,0.3)] hover:shadow-[0_6px_15px_rgba(139,92,246,0.4)]",
+                    formFieldInput:
+                      "bg-gray-800/80 border-gray-700 text-white rounded-md px-3 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200",
+                    card: "bg-transparent shadow-none",
+                    headerTitle: "text-white text-2xl font-bold",
+                    headerSubtitle: "text-gray-400",
+                    socialButtonsBlockButton:
+                      "border border-gray-700 bg-gray-800/50 hover:bg-gray-800 text-white transition-all duration-200 hover:border-indigo-500/50",
+                    footerActionLink: "text-indigo-400 hover:text-indigo-300",
+                    identityPreviewEditButton: "text-indigo-400 hover:text-indigo-300",
+                    formFieldLabel: "text-gray-300 font-medium",
+                    formFieldAction: "text-indigo-400 hover:text-indigo-300",
+                    formFieldSuccessText: "text-green-400",
+                    formFieldErrorText: "text-red-400",
+                    dividerLine: "bg-gray-700",
+                    dividerText: "text-gray-400",
+                  },
+                }}
+              />
+            ) : (
+              <div className="rounded-xl border border-amber-300/40 bg-amber-500/10 p-4 text-sm text-amber-100">
+                Clerk auth is not configured. Set <span className="font-semibold">NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY</span> to enable sign in.
+              </div>
+            )}
           </motion.div>
 
           <motion.div

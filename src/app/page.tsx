@@ -118,8 +118,24 @@ const orbitUseCases = [
 ]
 
 const ORBIT_RING_SIZE = 260
-const ORBIT_SPOKE_RADIUS = 130
-const ORBIT_TAG_RADIUS = 168
+const ORBIT_OUTER_RING_STROKE = 1.5
+const ORBIT_OUTER_RADIUS = (ORBIT_RING_SIZE - ORBIT_OUTER_RING_STROKE) / 2
+const ORBIT_INNER_RADIUS = 85
+const ORBIT_PHASE_RADIANS = -Math.PI / 2
+
+const getOrbitPoint = (index: number, total: number, radius: number) => {
+  const angle = ORBIT_PHASE_RADIANS + (2 * Math.PI * index) / total
+  const cx = ORBIT_RING_SIZE / 2
+  const cy = ORBIT_RING_SIZE / 2
+
+  return {
+    angle,
+    cx,
+    cy,
+    x: cx + radius * Math.cos(angle),
+    y: cy + radius * Math.sin(angle),
+  }
+}
 
 const featureLayout = [
   { index: 0, className: 'lg:col-span-7 lg:row-span-2', tone: 'from-indigo-500/25 via-indigo-500/10 to-transparent' },
@@ -346,58 +362,66 @@ const Page = () => {
           <div className="relative h-[390px] overflow-hidden rounded-[2rem] border border-indigo-300/45 bg-[linear-gradient(150deg,rgba(244,247,255,0.96),rgba(231,238,255,0.95))] dark:border-indigo-300/25 dark:bg-[linear-gradient(150deg,rgba(13,17,40,0.96),rgba(7,8,18,0.95))]">
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.2),transparent_62%)]" />
 
-            <div className="pointer-events-none absolute left-1/2 top-1/2 h-[260px] w-[260px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-indigo-400/35 dark:border-indigo-300/20" />
-            <div className="pointer-events-none absolute left-1/2 top-1/2 h-[170px] w-[170px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-indigo-300/45 dark:border-indigo-300/28" />
+            <div className="absolute left-1/2 top-1/2 h-[260px] w-[260px] -translate-x-1/2 -translate-y-1/2">
+              <svg viewBox={`0 0 ${ORBIT_RING_SIZE} ${ORBIT_RING_SIZE}`} className="pointer-events-none absolute inset-0 h-full w-full">
+                <circle
+                  cx={ORBIT_RING_SIZE / 2}
+                  cy={ORBIT_RING_SIZE / 2}
+                  r={ORBIT_OUTER_RADIUS}
+                  stroke="currentColor"
+                  className="text-indigo-400/45 dark:text-indigo-300/20"
+                  strokeWidth={ORBIT_OUTER_RING_STROKE}
+                  fill="none"
+                />
+                <circle
+                  cx={ORBIT_RING_SIZE / 2}
+                  cy={ORBIT_RING_SIZE / 2}
+                  r={ORBIT_INNER_RADIUS}
+                  stroke="currentColor"
+                  className="text-indigo-300/45 dark:text-indigo-300/28"
+                  strokeWidth="1.2"
+                  fill="none"
+                />
+                {orbitUseCases.map((label, index) => {
+                  const point = getOrbitPoint(index, orbitUseCases.length, ORBIT_OUTER_RADIUS)
 
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-indigo-300/55 bg-indigo-500/16 px-4 py-2 text-sm font-medium text-indigo-700 dark:border-indigo-200/45 dark:bg-indigo-500/22 dark:text-indigo-50">
-              Your Goal
-            </div>
+                  return (
+                    <line
+                      key={`orbit-line-${label}`}
+                      x1={point.cx}
+                      y1={point.cy}
+                      x2={point.x}
+                      y2={point.y}
+                      stroke="currentColor"
+                      className="text-indigo-400/45 dark:text-indigo-300/30"
+                      strokeWidth="1.25"
+                    />
+                  )
+                })}
+              </svg>
 
-            <svg
-              viewBox={`0 0 ${ORBIT_RING_SIZE} ${ORBIT_RING_SIZE}`}
-              className="pointer-events-none absolute left-1/2 top-1/2 h-[260px] w-[260px] -translate-x-1/2 -translate-y-1/2"
-            >
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-indigo-300/55 bg-indigo-500/16 px-4 py-2 text-sm font-medium text-indigo-700 dark:border-indigo-200/45 dark:bg-indigo-500/22 dark:text-indigo-50">
+                Your Goal
+              </div>
+
               {orbitUseCases.map((label, index) => {
-                const angle = (-90 + (360 / orbitUseCases.length) * index) * (Math.PI / 180)
-                const cx = ORBIT_RING_SIZE / 2
-                const cy = ORBIT_RING_SIZE / 2
-                const x = cx + ORBIT_SPOKE_RADIUS * Math.cos(angle)
-                const y = cy + ORBIT_SPOKE_RADIUS * Math.sin(angle)
+                const point = getOrbitPoint(index, orbitUseCases.length, ORBIT_OUTER_RADIUS)
 
                 return (
-                  <line
-                    key={`orbit-line-${label}`}
-                    x1={cx}
-                    y1={cy}
-                    x2={x}
-                    y2={y}
-                    stroke="currentColor"
-                    className="text-indigo-400/45 dark:text-indigo-300/30"
-                    strokeWidth="1.25"
-                  />
+                  <motion.div
+                    key={label}
+                    initial={{ opacity: 0, scale: 0.92, y: 8, filter: 'blur(4px)' }}
+                    whileInView={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' }}
+                    viewport={{ once: true, amount: 0.4 }}
+                    transition={{ duration: 0.35, delay: index * 0.06 }}
+                    className="absolute w-max -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full border border-indigo-200/80 bg-white/92 px-3 py-1 text-xs text-indigo-700 shadow-[0_10px_28px_-18px_rgba(99,102,241,0.65)] dark:border-neutral-700/80 dark:bg-neutral-950/80 dark:text-indigo-100 dark:shadow-[0_10px_28px_-18px_rgba(99,102,241,0.85)] sm:text-sm"
+                    style={{ left: `${point.x - 5}px`, top: `${point.y - 10}px` }}
+                  >
+                    {label}
+                  </motion.div>
                 )
               })}
-            </svg>
-
-            {orbitUseCases.map((label, index) => {
-              const angle = (-90 + (360 / orbitUseCases.length) * index) * (Math.PI / 180)
-              const xOffset = ORBIT_TAG_RADIUS * Math.cos(angle)
-              const yOffset = ORBIT_TAG_RADIUS * Math.sin(angle)
-
-              return (
-                <motion.div
-                  key={label}
-                  initial={{ opacity: 0, scale: 0.92, y: 8, filter: 'blur(4px)' }}
-                  whileInView={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' }}
-                  viewport={{ once: true, amount: 0.4 }}
-                  transition={{ duration: 0.35, delay: index * 0.06 }}
-                  className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border border-indigo-200/80 bg-white/92 px-3 py-1 text-xs text-indigo-700 shadow-[0_10px_28px_-18px_rgba(99,102,241,0.65)] dark:border-neutral-700/80 dark:bg-neutral-950/80 dark:text-indigo-100 dark:shadow-[0_10px_28px_-18px_rgba(99,102,241,0.85)] sm:text-sm"
-                  style={{ left: `calc(50% + ${xOffset}px)`, top: `calc(50% + ${yOffset}px)` }}
-                >
-                  {label}
-                </motion.div>
-              )
-            })}
+            </div>
           </div>
         </div>
       </section>
