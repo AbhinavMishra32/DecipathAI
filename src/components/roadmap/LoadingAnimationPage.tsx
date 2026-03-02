@@ -1,10 +1,11 @@
 "use client"
 
-import { useEffect, useMemo, useRef } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useTheme } from "next-themes"
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion"
 import { CheckCircle, Circle, CircleNotch, MagnifyingGlass } from "@phosphor-icons/react"
 import type { AgentActivityEvent } from "@/utils/aiUtils"
+import { Sidebar, SidebarBody } from "@/components/roadmap/decipath-thread-sidebar"
 
 interface LoadingAnimationPageProps {
   activity?: AgentActivityEvent[]
@@ -702,6 +703,7 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
   const { resolvedTheme } = useTheme()
   const prefersReducedMotion = useReducedMotion()
   const isDark = resolvedTheme !== "light"
+  const [nodeSidebarOpen, setNodeSidebarOpen] = useState(true)
   const lowPerfDevice =
     prefersReducedMotion || (typeof navigator !== "undefined" && typeof navigator.hardwareConcurrency === "number" ? navigator.hardwareConcurrency <= 4 : false)
   const threadViewportRef = useRef<HTMLDivElement>(null)
@@ -737,6 +739,8 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
 
   const readyNodes = nodeLifecycle.filter((node) => node.stage === "ready").length
   const activeNodeId = [...nodeLifecycle].reverse().find((node) => node.stage === "researching")?.id
+  const searchStepCount = threadEntries.filter((entry) => entry.kind === "action").length
+  const checkpointCount = threadEntries.filter((entry) => entry.kind === "checkpoint").length
 
   const threadRevealRanks = useMemo(() => {
     const currentIds = threadEntries.map((entry) => entry.id)
@@ -783,7 +787,7 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
         isDark ? "bg-gray-950" : "bg-[radial-gradient(circle_at_50%_0%,#e0e7ff_0%,#f8fafc_42%,#eef2ff_100%)]"
       }`}
     >
-      <div className="mx-auto grid h-full min-h-0 w-full max-w-[1280px] grid-cols-1 items-stretch gap-6 px-6 py-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-8">
+      <div className="mx-auto grid h-full min-h-0 w-full max-w-[1280px] grid-cols-1 items-stretch gap-6 px-6 py-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-8">
         <section className="relative flex min-h-0 flex-col overflow-hidden rounded-2xl border border-indigo-200/50 bg-white/80 p-5 shadow-2xl shadow-indigo-900/10 backdrop-blur-xl dark:border-indigo-300/20 dark:bg-neutral-950/55 dark:shadow-indigo-950/40">
           <motion.div
             aria-hidden
@@ -806,6 +810,21 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
             <p className="text-xs text-slate-500 dark:text-slate-400">
               {latestEvent?.timestamp ? new Date(latestEvent.timestamp).toLocaleTimeString() : "initializing"}
             </p>
+          </div>
+
+          <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
+            <div className="rounded-lg border border-indigo-200/65 px-3 py-2 dark:border-indigo-300/20">
+              <p className="text-[10px] uppercase tracking-[0.12em] text-indigo-600/90 dark:text-indigo-300/90">Thread events</p>
+              <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{threadEntries.length}</p>
+            </div>
+            <div className="rounded-lg border border-blue-200/65 px-3 py-2 dark:border-blue-300/20">
+              <p className="text-[10px] uppercase tracking-[0.12em] text-blue-600/90 dark:text-blue-300/90">Search steps</p>
+              <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{searchStepCount}</p>
+            </div>
+            <div className="rounded-lg border border-violet-200/65 px-3 py-2 dark:border-violet-300/20">
+              <p className="text-[10px] uppercase tracking-[0.12em] text-violet-600/90 dark:text-violet-300/90">Checkpoints</p>
+              <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{checkpointCount}</p>
+            </div>
           </div>
 
           <AnimatePresence mode="wait">
@@ -1024,114 +1043,137 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
           </div>
         </section>
 
-        <aside className="relative flex min-h-0 flex-col overflow-hidden rounded-2xl border border-indigo-200/50 bg-white/80 p-4 shadow-2xl shadow-indigo-900/10 backdrop-blur-xl dark:border-indigo-300/20 dark:bg-neutral-950/55 dark:shadow-indigo-950/40">
-          <motion.div
-            aria-hidden
-            className="pointer-events-none absolute -right-10 top-10 h-32 w-32 rounded-full bg-indigo-300/25 blur-3xl dark:bg-indigo-500/20"
-            animate={{ opacity: [0.2, 0.4, 0.2], x: [0, -8, 0], y: [0, 6, 0] }}
-            transition={{ duration: 7, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
-          />
-          <p className="text-[11px] uppercase tracking-[0.16em] text-indigo-600 dark:text-indigo-300">Node Construction</p>
-          <p className="mt-1 text-sm text-slate-700 dark:text-slate-200">
-            {nodeLifecycle.length > 0
-              ? `${readyNodes}/${nodeLifecycle.length} nodes ready`
-              : "Waiting for pathway blueprint..."}
-          </p>
+        <Sidebar open={nodeSidebarOpen} setOpen={setNodeSidebarOpen} animate>
+          <SidebarBody className="relative min-h-0 flex-col overflow-hidden p-4">
+            <motion.div
+              aria-hidden
+              className="pointer-events-none absolute -right-10 top-10 h-32 w-32 rounded-full bg-indigo-300/25 blur-3xl dark:bg-indigo-500/20"
+              animate={{ opacity: [0.2, 0.4, 0.2], x: [0, -8, 0], y: [0, 6, 0] }}
+              transition={{ duration: 7, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+            />
 
-          <div className="mt-3 min-h-0 flex-1 overflow-auto pr-1">
-            {nodeLifecycle.length === 0 ? (
-              <div className="rounded-xl border border-indigo-200/60 bg-indigo-100/40 p-3 text-xs text-slate-600 dark:border-indigo-300/20 dark:bg-indigo-500/10 dark:text-slate-300">
-                The agent will populate this panel as soon as planned roadmap nodes are identified.
-              </div>
-            ) : (
-              <div className="space-y-2 pb-2">
-                {nodeLifecycle.map((node, index) => {
-                  const stageMeta = NODE_STAGE_META[node.stage]
-                  const isActive = node.id === activeNodeId
+            {nodeSidebarOpen ? (
+              <>
+                <p className="text-[11px] uppercase tracking-[0.16em] text-indigo-600 dark:text-indigo-300">Node Construction</p>
+                <p className="mt-1 text-sm text-slate-700 dark:text-slate-200">
+                  {nodeLifecycle.length > 0
+                    ? `${readyNodes}/${nodeLifecycle.length} nodes ready`
+                    : "Waiting for pathway blueprint..."}
+                </p>
 
-                  return (
-                    <motion.div
-                      key={node.id}
-                      initial={{ opacity: 0, x: 12 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.22, delay: Math.min(index * 0.03, 0.2), ease: "easeOut" }}
-                      className={`group relative overflow-hidden rounded-xl border px-3 py-2.5 backdrop-blur-md transition-colors ${
-                        isActive
-                          ? isDark
-                            ? "border-indigo-300/35 bg-indigo-500/10 shadow-lg shadow-indigo-500/10"
-                            : "border-indigo-400/50 bg-indigo-100/45 shadow-lg shadow-indigo-500/10"
-                          : "border-indigo-200/60 bg-white/65 dark:border-indigo-300/15 dark:bg-neutral-900/40"
-                      }`}
-                    >
-                      <motion.span
-                        aria-hidden
-                        className={`pointer-events-none absolute inset-y-0 -left-10 w-16 -skew-x-12 blur-md ${
-                          isActive ? "bg-indigo-300/15 dark:bg-indigo-300/12" : "bg-indigo-200/20 dark:bg-indigo-400/10"
-                        }`}
-                        animate={{ x: [0, 150, 0], opacity: isActive ? [0.08, 0.2, 0.08] : [0.06, 0.14, 0.06] }}
-                        transition={{ duration: isActive ? 3.4 : 4.8, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
-                      />
+                <div className="mt-3 min-h-0 flex-1 overflow-auto pr-1">
+                  {nodeLifecycle.length === 0 ? (
+                    <div className="rounded-xl border border-indigo-200/60 bg-indigo-100/40 p-3 text-xs text-slate-600 dark:border-indigo-300/20 dark:bg-indigo-500/10 dark:text-slate-300">
+                      The agent will populate this panel as soon as planned roadmap nodes are identified.
+                    </div>
+                  ) : (
+                    <div className="space-y-2 pb-2">
+                      {nodeLifecycle.map((node, index) => {
+                        const stageMeta = NODE_STAGE_META[node.stage]
+                        const isActive = node.id === activeNodeId
 
-                      <div className="flex items-start gap-2.5">
-                        <span
-                          className={`mt-[3px] inline-flex h-5 w-5 items-center justify-center rounded-full ring-1 ring-indigo-200/70 dark:ring-indigo-300/20 ${stageMeta.dotClass}`}
-                        >
-                          {node.stage === "ready" ? (
-                            <CheckCircle size={13} weight="fill" className="text-white" />
-                          ) : node.stage === "researching" ? (
-                            <CircleNotch size={12} weight="bold" className="animate-spin text-white" />
-                          ) : node.stage === "researched" ? (
-                            <CheckCircle size={12} weight="bold" className="text-white" />
-                          ) : (
-                            <Circle size={11} weight="bold" className="text-white" />
-                          )}
-                        </span>
+                        return (
+                          <motion.div
+                            key={node.id}
+                            initial={{ opacity: 0, x: 12 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.22, delay: Math.min(index * 0.03, 0.2), ease: "easeOut" }}
+                            className={`group relative overflow-hidden rounded-xl border px-3 py-2.5 backdrop-blur-md transition-colors ${
+                              isActive
+                                ? isDark
+                                  ? "border-indigo-300/35 bg-indigo-500/10 shadow-lg shadow-indigo-500/10"
+                                  : "border-indigo-400/50 bg-indigo-100/45 shadow-lg shadow-indigo-500/10"
+                                : "border-indigo-200/60 bg-white/65 dark:border-indigo-300/15 dark:bg-neutral-900/40"
+                            }`}
+                          >
+                            <motion.span
+                              aria-hidden
+                              className={`pointer-events-none absolute inset-y-0 -left-10 w-16 -skew-x-12 blur-md ${
+                                isActive ? "bg-indigo-300/15 dark:bg-indigo-300/12" : "bg-indigo-200/20 dark:bg-indigo-400/10"
+                              }`}
+                              animate={{ x: [0, 150, 0], opacity: isActive ? [0.08, 0.2, 0.08] : [0.06, 0.14, 0.06] }}
+                              transition={{ duration: isActive ? 3.4 : 4.8, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+                            />
 
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-[13px] font-semibold text-slate-900 dark:text-slate-100">{node.label}</p>
-                          <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px]">
-                            <span className={`font-medium ${stageMeta.textClass}`}>{stageMeta.label}</span>
-                            {node.searchCount > 0 && (
-                              <span className="text-slate-500 dark:text-slate-400">{node.searchCount} searches</span>
-                            )}
-                            {typeof node.pathwayCount === "number" && node.pathwayCount > 0 && (
-                              <span className="text-slate-500 dark:text-slate-400">{node.pathwayCount} pathways</span>
-                            )}
-                            {typeof node.referencesCount === "number" && node.referencesCount > 0 && (
-                              <span className="text-slate-500 dark:text-slate-400">{node.referencesCount} references</span>
-                            )}
-                          </div>
+                            <div className="flex items-start gap-2.5">
+                              <span
+                                className={`mt-[3px] inline-flex h-5 w-5 items-center justify-center rounded-full ring-1 ring-indigo-200/70 dark:ring-indigo-300/20 ${stageMeta.dotClass}`}
+                              >
+                                {node.stage === "ready" ? (
+                                  <CheckCircle size={13} weight="fill" className="text-white" />
+                                ) : node.stage === "researching" ? (
+                                  <CircleNotch size={12} weight="bold" className="animate-spin text-white" />
+                                ) : node.stage === "researched" ? (
+                                  <CheckCircle size={12} weight="bold" className="text-white" />
+                                ) : (
+                                  <Circle size={11} weight="bold" className="text-white" />
+                                )}
+                              </span>
 
-                          <div className="mt-1.5 max-h-0 overflow-hidden opacity-0 transition-all duration-300 ease-out group-hover:max-h-28 group-hover:opacity-100">
-                            {node.searchQueries.length > 0 && (
-                              <div className="rounded-lg border border-indigo-200/60 bg-indigo-50/55 px-2 py-1.5 dark:border-indigo-300/20 dark:bg-indigo-500/10">
-                                <p className="text-[10px] uppercase tracking-[0.12em] text-indigo-600 dark:text-indigo-300">Recent searches</p>
-                                <p className="mt-1 line-clamp-2 text-[11px] text-slate-600 dark:text-slate-300">
-                                  {node.searchQueries.slice(-2).join(" • ")}
-                                </p>
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate text-[13px] font-semibold text-slate-900 dark:text-slate-100">{node.label}</p>
+                                <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px]">
+                                  <span className={`font-medium ${stageMeta.textClass}`}>{stageMeta.label}</span>
+                                  {node.searchCount > 0 && (
+                                    <span className="text-slate-500 dark:text-slate-400">{node.searchCount} searches</span>
+                                  )}
+                                  {typeof node.pathwayCount === "number" && node.pathwayCount > 0 && (
+                                    <span className="text-slate-500 dark:text-slate-400">{node.pathwayCount} pathways</span>
+                                  )}
+                                  {typeof node.referencesCount === "number" && node.referencesCount > 0 && (
+                                    <span className="text-slate-500 dark:text-slate-400">{node.referencesCount} references</span>
+                                  )}
+                                </div>
+
+                                <div className="mt-1.5 max-h-0 overflow-hidden opacity-0 transition-all duration-300 ease-out group-hover:max-h-28 group-hover:opacity-100">
+                                  {node.searchQueries.length > 0 && (
+                                    <div className="rounded-lg border border-indigo-200/60 bg-indigo-50/55 px-2 py-1.5 dark:border-indigo-300/20 dark:bg-indigo-500/10">
+                                      <p className="text-[10px] uppercase tracking-[0.12em] text-indigo-600 dark:text-indigo-300">Recent searches</p>
+                                      <p className="mt-1 line-clamp-2 text-[11px] text-slate-600 dark:text-slate-300">
+                                        {node.searchQueries.slice(-2).join(" • ")}
+                                      </p>
+                                    </div>
+                                  )}
+
+                                  {(node.latestDetail || node.statusTrail.length > 0) && (
+                                    <p className="mt-1.5 line-clamp-2 text-[11px] text-slate-600 dark:text-slate-300">
+                                      {node.statusTrail.length > 0 ? `${node.statusTrail[node.statusTrail.length - 1]} — ` : ""}
+                                      {node.latestDetail}
+                                    </p>
+                                  )}
+                                </div>
                               </div>
-                            )}
+                            </div>
+                          </motion.div>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
 
-                            {(node.latestDetail || node.statusTrail.length > 0) && (
-                              <p className="mt-1.5 line-clamp-2 text-[11px] text-slate-600 dark:text-slate-300">
-                                {node.statusTrail.length > 0 ? `${node.statusTrail[node.statusTrail.length - 1]} — ` : ""}
-                                {node.latestDetail}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )
-                })}
+                <p className="mt-2 text-xs text-slate-600 dark:text-slate-300">
+                  You’re seeing live progress as each roadmap node is researched and assembled.
+                </p>
+              </>
+            ) : (
+              <div className="flex h-full flex-col items-center justify-start gap-4 pt-1 text-center">
+                <span className="text-[10px] uppercase tracking-[0.18em] text-indigo-600 dark:text-indigo-300">Nodes</span>
+                <div className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-indigo-300/50 bg-indigo-100/60 dark:border-indigo-300/25 dark:bg-indigo-500/20">
+                  <CheckCircle size={16} weight="fill" className="text-indigo-600 dark:text-indigo-300" />
+                </div>
+                <p className="text-xs font-semibold text-slate-700 dark:text-slate-200">{readyNodes}/{nodeLifecycle.length || 0}</p>
+                <div className="h-px w-8 bg-indigo-200 dark:bg-indigo-300/20" />
+                <div className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-violet-300/50 bg-violet-100/60 dark:border-violet-300/25 dark:bg-violet-500/20">
+                  <CircleNotch
+                    size={16}
+                    weight="bold"
+                    className={`${activeNodeId ? "animate-spin text-violet-600 dark:text-violet-300" : "text-violet-400 dark:text-violet-400"}`}
+                  />
+                </div>
               </div>
             )}
-          </div>
-
-          <p className="mt-2 text-xs text-slate-600 dark:text-slate-300">
-            You’re seeing live progress as each roadmap node is researched and assembled.
-          </p>
-        </aside>
+          </SidebarBody>
+        </Sidebar>
       </div>
     </div>
   )
