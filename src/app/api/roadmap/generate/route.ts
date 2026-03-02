@@ -1240,7 +1240,7 @@ export async function POST(request: NextRequest) {
                                 : `Searching the web: ${preview(primaryQuery, 90)}`,
                             detail: matchedNode
                               ? `Finding high-quality sources for ${matchedNode.label}.`
-                              : `(${phase}) Looking up references for "${primaryQuery}".`,
+                              : `${phase}: gathering relevant web references.`,
                             payload: {
                               query: primaryQuery,
                               queries: selectedQueries,

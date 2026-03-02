@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef } from "react"
 import { useTheme } from "next-themes"
-import { AnimatePresence, motion } from "framer-motion"
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion"
 import { CheckCircle, Circle, CircleNotch, MagnifyingGlass } from "@phosphor-icons/react"
 import type { AgentActivityEvent } from "@/utils/aiUtils"
 
@@ -49,44 +49,188 @@ const THREAD_META: Record<ThreadKind, Pick<ThreadEntry, "icon" | "dotClass" | "t
     icon: "✦",
     label: "Thought",
     dotClass: "bg-violet-500/80",
-    titleClass: "text-slate-800 dark:text-slate-200",
+    titleClass: "text-violet-700 dark:text-violet-300",
     markerShape: "dot",
   },
   action: {
     icon: "search",
     label: "Searching",
-    dotClass: "bg-indigo-500/80",
-    titleClass: "text-slate-800 dark:text-slate-200",
+    dotClass: "bg-purple-500/85",
+    titleClass: "text-purple-700 dark:text-purple-300",
     markerShape: "square",
   },
   checkpoint: {
     icon: "◈",
     label: "Checkpoint",
-    dotClass: "bg-amber-500/80",
-    titleClass: "text-amber-700 dark:text-amber-200",
+    dotClass: "bg-indigo-500/85",
+    titleClass: "text-indigo-700 dark:text-indigo-300",
     markerShape: "diamond",
   },
   outcome: {
     icon: "✓",
     label: "Outcome",
-    dotClass: "bg-emerald-500/85",
-    titleClass: "text-emerald-700 dark:text-emerald-300",
+    dotClass: "bg-violet-400/90",
+    titleClass: "text-violet-600 dark:text-violet-200",
     markerShape: "ring",
   },
   warning: {
     icon: "⚑",
     label: "Warning",
-    dotClass: "bg-orange-500/80",
-    titleClass: "text-orange-700 dark:text-orange-300",
+    dotClass: "bg-purple-400/85",
+    titleClass: "text-purple-700 dark:text-purple-300",
     markerShape: "diamond",
   },
   error: {
     icon: "⚠",
     label: "Error",
-    dotClass: "bg-rose-500/85",
-    titleClass: "text-rose-700 dark:text-rose-300",
+    dotClass: "bg-violet-700/90",
+    titleClass: "text-violet-800 dark:text-violet-200",
     markerShape: "square",
   },
+}
+
+const THREAD_GLOW_CLASS: Record<ThreadKind, string> = {
+  thought: "bg-violet-400/25 dark:bg-violet-400/20",
+  action: "bg-blue-400/25 dark:bg-blue-400/20",
+  checkpoint: "bg-indigo-400/25 dark:bg-indigo-400/20",
+  outcome: "bg-violet-300/25 dark:bg-violet-300/20",
+  warning: "bg-purple-400/25 dark:bg-purple-400/20",
+  error: "bg-violet-600/25 dark:bg-violet-500/20",
+}
+
+const THREAD_ROW_CLASS: Record<ThreadKind, string> = {
+  thought: "",
+  action: "",
+  checkpoint: "",
+  outcome: "",
+  warning: "",
+  error: "",
+}
+
+const getLatestMarkerAnimation = (kind: ThreadKind) => {
+  switch (kind) {
+    case "action":
+      return { scale: [1, 1.18, 1], rotate: [0, -10, 10, 0], opacity: [0.88, 1, 0.88] }
+    case "checkpoint":
+      return { scale: [1, 1.24, 1], rotate: [45, 45, 45], opacity: [0.84, 1, 0.84] }
+    case "thought":
+      return { scale: [1, 1.12, 1], y: [0, -1.5, 0], opacity: [0.88, 1, 0.88] }
+    case "outcome":
+      return { scale: [1, 1.16, 1], opacity: [0.9, 1, 0.9] }
+    case "warning":
+      return { scale: [1, 1.14, 1], y: [0, -1, 0], opacity: [0.88, 1, 0.88] }
+    case "error":
+      return { scale: [1, 1.16, 1], x: [0, -1, 1, 0], opacity: [0.86, 1, 0.86] }
+    default:
+      return { scale: [1, 1.14, 1], opacity: [0.88, 1, 0.88] }
+  }
+}
+
+const getLatestMarkerTransition = (kind: ThreadKind) => {
+  switch (kind) {
+    case "action":
+      return { duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" as const }
+    case "checkpoint":
+      return { duration: 1.25, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" as const }
+    case "error":
+      return { duration: 0.8, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" as const }
+    default:
+      return { duration: 1.15, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" as const }
+  }
+}
+
+const getRowSweepAnimation = (kind: ThreadKind) => {
+  switch (kind) {
+    case "action":
+      return { x: [0, 170, 0], opacity: [0.06, 0.18, 0.06] }
+    case "checkpoint":
+      return { y: [0, -2, 0], opacity: [0.06, 0.16, 0.06] }
+    case "outcome":
+      return { x: [0, 140, 0], opacity: [0.06, 0.14, 0.06] }
+    case "warning":
+      return { x: [0, 120, 0], opacity: [0.06, 0.14, 0.06] }
+    case "error":
+      return { x: [0, 80, 0], opacity: [0.06, 0.15, 0.06] }
+    default:
+      return { x: [0, 110, 0], opacity: [0.06, 0.14, 0.06] }
+  }
+}
+
+const getLiveTextAnimation = (kind: ThreadKind) => {
+  switch (kind) {
+    case "action":
+      return { opacity: [0.78, 1, 0.78], textShadow: ["0 0 0px rgba(59,130,246,0)", "0 0 10px rgba(59,130,246,0.28)", "0 0 0px rgba(59,130,246,0)"] }
+    case "checkpoint":
+      return { opacity: [0.8, 1, 0.8], textShadow: ["0 0 0px rgba(99,102,241,0)", "0 0 11px rgba(99,102,241,0.28)", "0 0 0px rgba(99,102,241,0)"] }
+    case "outcome":
+      return { opacity: [0.82, 1, 0.82], textShadow: ["0 0 0px rgba(196,181,253,0)", "0 0 9px rgba(196,181,253,0.3)", "0 0 0px rgba(196,181,253,0)"] }
+    default:
+      return { opacity: [0.8, 1, 0.8], textShadow: ["0 0 0px rgba(139,92,246,0)", "0 0 8px rgba(139,92,246,0.24)", "0 0 0px rgba(139,92,246,0)"] }
+  }
+}
+
+type TypeBlurTextProps = {
+  text: string
+  className: string
+  kind: ThreadKind
+  isLatest: boolean
+  live?: boolean
+  lowPerf?: boolean
+}
+
+const TypeBlurText = ({ text, className, kind, isLatest, live = false, lowPerf = false }: TypeBlurTextProps) => {
+  const blurStart = lowPerf ? "blur(6px)" : "blur(8px)"
+  const segments =
+    lowPerf || text.length > 110
+      ? text.split(/(\s+)/).filter((segment) => segment.length > 0)
+      : Array.from(text)
+
+  const maxIndex = Math.max(segments.length - 1, 1)
+  const maxDelay = lowPerf ? 0.75 : 0.92
+
+  return (
+    <motion.p
+      className={className}
+      animate={
+        isLatest && live
+          ? lowPerf
+            ? { opacity: [0.9, 1, 0.9] }
+            : getLiveTextAnimation(kind)
+          : { opacity: 1, textShadow: "0 0 0px rgba(0,0,0,0)" }
+      }
+      transition={isLatest && live ? { duration: lowPerf ? 2.8 : 2.4, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" } : { duration: 0.2 }}
+    >
+      {segments.map((segment, index) => (
+        (() => {
+          const progress = index / maxIndex
+          const easedProgress = Math.pow(progress, 1.85)
+          const charDelay = easedProgress * maxDelay
+
+          return (
+        <motion.span
+          key={`${segment}-${index}`}
+          className="inline-block"
+          initial={isLatest ? { opacity: 0, filter: blurStart, y: 2 } : { opacity: 1, filter: "blur(0px)", y: 0 }}
+          animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
+          transition={
+            isLatest
+              ? {
+                  delay: charDelay,
+                  type: "spring",
+                  stiffness: lowPerf ? 360 : 560,
+                  damping: lowPerf ? 30 : 22,
+                  mass: lowPerf ? 0.62 : 0.5,
+                }
+              : { duration: 0 }
+          }
+        >
+          {segment === " " ? "\u00A0" : segment}
+        </motion.span>
+          )
+        })()
+      ))}
+    </motion.p>
+  )
 }
 
 const NODE_STAGE_META: Record<NodeLifecycleStage, { label: string; dotClass: string; textClass: string }> = {
@@ -319,7 +463,7 @@ const toThreadEntry = (event: AgentActivityEvent): ThreadEntry => {
       ...THREAD_META.action,
       query: query ?? undefined,
       queries: queries.length > 0 ? queries : query ? [query] : undefined,
-      title: queries.length > 1 ? `Web search (${queries.length} lookups)` : "Web search",
+      title: "Web search",
       detail: summarizeActionDetail(event.detail, query),
       ...eventContext,
     }
@@ -556,7 +700,10 @@ const toNodeLifecycleEntries = (activity: AgentActivityEvent[]): NodeLifecycleEn
 
 export default function LoadingAnimationPage({ activity = [] }: LoadingAnimationPageProps) {
   const { resolvedTheme } = useTheme()
+  const prefersReducedMotion = useReducedMotion()
   const isDark = resolvedTheme !== "light"
+  const lowPerfDevice =
+    prefersReducedMotion || (typeof navigator !== "undefined" && typeof navigator.hardwareConcurrency === "number" ? navigator.hardwareConcurrency <= 4 : false)
   const threadViewportRef = useRef<HTMLDivElement>(null)
   const latestStepAnchorRef = useRef<HTMLDivElement>(null)
   const seenThreadIdsRef = useRef<Set<string>>(new Set())
@@ -705,17 +852,20 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
                   initial={{ opacity: 0, x: -10, y: 6, filter: "blur(10px)" }}
                   animate={{ opacity: 1, x: 0, y: 0, filter: "blur(0px)" }}
                   transition={{ duration: 0.28, delay: Math.min(revealRank * 0.08, 0.28), ease: "easeOut" }}
-                  className={`relative flex items-start gap-2 rounded-md px-1 py-0.5 backdrop-blur-[1px] ${
-                    entry.kind === "thought"
-                      ? "bg-violet-500/[0.04] dark:bg-violet-400/[0.05]"
-                      : ""
-                  }`}
+                  className={`relative flex items-start gap-2 rounded-md px-1 py-0.5 backdrop-blur-[1px] ${THREAD_ROW_CLASS[entry.kind]}`}
                 >
+                  <motion.span
+                    aria-hidden
+                    className={`pointer-events-none absolute inset-y-[2px] -left-8 w-10 -skew-x-12 blur-md ${THREAD_GLOW_CLASS[entry.kind]}`}
+                    animate={lowPerfDevice ? { opacity: isLatest ? [0.08, 0.16, 0.08] : [0.05, 0.1, 0.05] } : getRowSweepAnimation(entry.kind)}
+                    transition={{ duration: lowPerfDevice ? 3.6 : isLatest ? 2.3 : 3.8, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+                  />
+
                   {isLatest && (
                     <motion.span
-                      className="absolute left-[-2px] top-[1px] z-0 h-5 w-5 rounded-full bg-indigo-400/25 blur-[1px] dark:bg-indigo-400/20"
+                      className={`absolute left-[-2px] top-[1px] z-0 h-5 w-5 rounded-full blur-[1px] ${THREAD_GLOW_CLASS[entry.kind]}`}
                       animate={{ scale: [1, 1.4, 1], opacity: [0.24, 0.52, 0.24] }}
-                      transition={{ duration: 1.4, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+                      transition={{ duration: lowPerfDevice ? 2.2 : 1.4, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
                     />
                   )}
 
@@ -723,12 +873,16 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
                     className={`relative z-10 mt-1.5 h-2.5 w-2.5 ${markerClass} ring-[1.5px] ring-white dark:ring-neutral-950 ${entry.dotClass}`}
                     animate={
                       isLatest
-                        ? { scale: [1, 1.15, 1], opacity: [0.9, 1, 0.9] }
+                        ? lowPerfDevice
+                          ? { scale: [1, 1.12, 1], opacity: [0.88, 1, 0.88] }
+                          : getLatestMarkerAnimation(entry.kind)
                         : { scale: 1, opacity: 1 }
                     }
                     transition={
                       isLatest
-                        ? { duration: 1.2, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }
+                        ? lowPerfDevice
+                          ? { duration: 1.9, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }
+                          : getLatestMarkerTransition(entry.kind)
                         : { duration: 0.2 }
                     }
                   />
@@ -737,7 +891,12 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
                     <div className="flex items-center gap-1.5 text-[10px]">
                       <span className={`inline-flex h-4 w-4 items-center justify-center font-semibold ${entry.titleClass}`}>
                         {entry.kind === "action" ? (
-                          <MagnifyingGlass size={13} weight="bold" className="text-indigo-600/90 dark:text-indigo-300/90" />
+                          <motion.span
+                            animate={isLatest ? (lowPerfDevice ? { scale: [1, 1.04, 1] } : { rotate: [0, -8, 8, 0], scale: [1, 1.06, 1] }) : { rotate: 0, scale: 1 }}
+                            transition={isLatest ? { duration: lowPerfDevice ? 1.6 : 0.9, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" } : { duration: 0.2 }}
+                          >
+                            <MagnifyingGlass size={13} weight="bold" className="text-purple-600/90 dark:text-purple-300/90" />
+                          </motion.span>
                         ) : (
                           <span className="text-[12px]">{entry.icon}</span>
                         )}
@@ -753,53 +912,104 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
                       className="mt-1 pl-0.5"
                     >
                       {entry.kind === "action" && (entry.queries?.length || entry.query) ? (
-                        <div className="text-[13px] leading-snug text-slate-800 dark:text-slate-200">
-                          <p>
-                            <span className="font-medium text-slate-500 dark:text-slate-400">
-                              {entry.queries && entry.queries.length > 1 ? "Running grouped web search" : "Looking up web for"}
-                            </span>
-                          </p>
-                          <div className="mt-1 space-y-0.5">
-                            {(entry.queries && entry.queries.length > 0 ? entry.queries : [entry.query as string]).map((search, searchIndex) => (
-                              <p key={`${entry.id}-search-${searchIndex}`} className="font-semibold">
-                                {entry.queries && entry.queries.length > 1 ? `${searchIndex + 1}. ` : ""}
-                                {search}
-                              </p>
-                            ))}
-                          </div>
-                        </div>
+                        <>
+                          <TypeBlurText
+                            text={`Looking up web for: ${(entry.queries && entry.queries.length > 0 ? entry.queries : [entry.query as string]).join(" • ")}`}
+                            className="text-[12px] italic leading-snug text-slate-500 dark:text-slate-400"
+                            kind={entry.kind}
+                            isLatest={isLatest}
+                            live
+                            lowPerf={lowPerfDevice}
+                          />
+                          {isLatest && (
+                            <div className="mt-1.5 flex items-center gap-2 text-[10px] uppercase tracking-[0.1em] text-purple-600/90 dark:text-purple-300/90">
+                              <div className="relative h-[6px] w-[74px] overflow-hidden rounded-full bg-gradient-to-r from-blue-500/20 via-indigo-500/25 to-violet-500/20 dark:from-blue-300/20 dark:via-indigo-300/25 dark:to-violet-300/20">
+                                <motion.span
+                                  className="absolute inset-y-0 left-[-35%] w-[40%] rounded-full bg-gradient-to-r from-transparent via-indigo-400/85 to-transparent dark:via-indigo-300/85"
+                                  animate={lowPerfDevice ? { opacity: [0.25, 0.7, 0.25] } : { x: [0, 92, 0], opacity: [0.2, 0.95, 0.2] }}
+                                  transition={{ duration: lowPerfDevice ? 2.4 : 1.6, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+                                />
+                                <motion.span
+                                  className="absolute top-1/2 h-[8px] w-[8px] -translate-y-1/2 rounded-full bg-blue-500/80 blur-[1px] dark:bg-blue-300/80"
+                                  animate={lowPerfDevice ? { opacity: [0.35, 0.9, 0.35], scale: [0.92, 1.02, 0.92] } : { x: [2, 64, 2], opacity: [0.35, 1, 0.35], scale: [0.9, 1.08, 0.9] }}
+                                  transition={{ duration: lowPerfDevice ? 2.6 : 1.8, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+                                />
+                              </div>
+
+                              <div className="flex items-center gap-1">
+                                <motion.span
+                                  className="h-1.5 w-1.5 rounded-full bg-blue-500 dark:bg-blue-300"
+                                  animate={{ y: [0, -2, 0], opacity: [0.35, 1, 0.35] }}
+                                  transition={{ duration: lowPerfDevice ? 1.4 : 0.95, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut", delay: 0 }}
+                                />
+                                <motion.span
+                                  className="h-1.5 w-1.5 rounded-full bg-indigo-500 dark:bg-indigo-300"
+                                  animate={{ y: [0, -2, 0], opacity: [0.35, 1, 0.35] }}
+                                  transition={{ duration: lowPerfDevice ? 1.4 : 0.95, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut", delay: 0.15 }}
+                                />
+                                <motion.span
+                                  className="h-1.5 w-1.5 rounded-full bg-violet-500 dark:bg-violet-300"
+                                  animate={{ y: [0, -2, 0], opacity: [0.35, 1, 0.35] }}
+                                  transition={{ duration: lowPerfDevice ? 1.4 : 0.95, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut", delay: 0.3 }}
+                                />
+                              </div>
+
+                              <motion.span
+                                animate={{ opacity: [0.62, 1, 0.62], letterSpacing: ["0.1em", "0.12em", "0.1em"] }}
+                                transition={{ duration: 1.9, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+                              >
+                                Scanning sources
+                              </motion.span>
+                            </div>
+                          )}
+                        </>
                       ) : (
-                        <p className={`text-[14px] font-semibold leading-snug ${entry.titleClass}`}>{entry.title}</p>
+                        <TypeBlurText
+                          text={entry.title}
+                          className={`text-[14px] font-semibold leading-snug ${entry.titleClass}`}
+                          kind={entry.kind}
+                          isLatest={isLatest}
+                          live
+                          lowPerf={lowPerfDevice}
+                        />
+                      )}
+                      {entry.kind === "checkpoint" && isLatest && (
+                        <div className="mt-1 flex items-center gap-1.5 text-[10px] uppercase tracking-[0.08em] text-indigo-700/90 dark:text-indigo-300/90">
+                          <motion.span
+                            className="h-1.5 w-1.5 rounded-[2px] bg-indigo-500 dark:bg-indigo-300"
+                            animate={{ rotate: [45, 45, 45], scale: [1, 1.35, 1], opacity: [0.45, 1, 0.45] }}
+                            transition={{ duration: 1.1, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+                          />
+                          <span>Checkpoint synchronized</span>
+                        </div>
                       )}
                       {entry.detail ? (
-                        <p
+                        <TypeBlurText
+                          text={entry.detail}
                           className={`mt-0.5 text-[12px] leading-snug ${
                             entry.kind === "thought"
                               ? "text-slate-600 dark:text-slate-300"
                               : entry.kind === "warning"
-                                ? "text-orange-700/90 dark:text-orange-300"
+                                ? "text-purple-700/90 dark:text-purple-300"
                                 : entry.kind === "error"
-                                  ? "text-rose-700/90 dark:text-rose-300"
+                                  ? "text-violet-700/90 dark:text-violet-300"
                                   : entry.kind === "outcome"
-                                    ? "text-emerald-700/90 dark:text-emerald-300"
+                                    ? "text-violet-600/90 dark:text-violet-200"
+                                    : entry.kind === "checkpoint"
+                                      ? "text-indigo-700/90 dark:text-indigo-300"
                                     : "text-slate-600 dark:text-slate-300"
                           }`}
-                        >
-                          {entry.detail}
-                        </p>
+                          kind={entry.kind}
+                          isLatest={isLatest}
+                          lowPerf={lowPerfDevice}
+                        />
                       ) : null}
 
                       {(entry.objective || (entry.nextNodeLabels && entry.nextNodeLabels.length > 0)) && (
-                        <div className="mt-1 flex flex-wrap gap-1.5 text-[10px]">
-                          {entry.objective && (
-                            <span className="rounded-md border border-indigo-200/70 bg-indigo-50/70 px-1.5 py-0.5 text-slate-600 dark:border-indigo-300/20 dark:bg-indigo-500/10 dark:text-slate-300">
-                              Goal: {entry.objective}
-                            </span>
-                          )}
+                        <div className="mt-1 space-y-0.5 text-[11px] text-slate-600 dark:text-slate-300">
+                          {entry.objective && <p className="leading-snug">Goal — {entry.objective}</p>}
                           {entry.nextNodeLabels && entry.nextNodeLabels.length > 0 && (
-                            <span className="rounded-md border border-violet-200/70 bg-violet-50/70 px-1.5 py-0.5 text-slate-600 dark:border-violet-300/20 dark:bg-violet-500/10 dark:text-slate-300">
-                              Next: {entry.nextNodeLabels.join(" • ")}
-                            </span>
+                            <p className="leading-snug">Next — {entry.nextNodeLabels.join(" • ")}</p>
                           )}
                         </div>
                       )}
