@@ -5,6 +5,7 @@ import Link from "next/link"
 import { motion, useMotionValueEvent, useScroll, useSpring } from "framer-motion"
 import { InteractiveHoverButton } from "./magicui/interactive-hover-button"
 import { hubotSans } from "@/lib/fonts"
+import ThemeSelectorButton from "./ThemeSelectorButton"
 
 const navigation = [
   { label: "Features", href: "#features" },
@@ -74,8 +75,8 @@ const LandingNavbar = () => {
       <motion.nav
         className={`relative mx-auto h-[74px] overflow-hidden rounded-full border transition-[width,transform,background-color,box-shadow,border-color] duration-500 ease-out ${
           isScrolled
-            ? "w-[min(980px,calc(100vw-18px))] border-indigo-300/45 bg-[rgba(8,12,30,0.88)] shadow-[0_24px_55px_-26px_rgba(0,0,0,0.85)]"
-            : "w-[min(1120px,calc(100vw-12px))] border-neutral-700/60 bg-[rgba(6,9,24,0.58)] shadow-[0_14px_38px_-24px_rgba(0,0,0,0.8)]"
+            ? "w-[min(980px,calc(100vw-18px))] border-indigo-300/55 bg-white/88 shadow-[0_24px_55px_-26px_rgba(59,71,111,0.35)] dark:border-indigo-300/45 dark:bg-[rgba(8,12,30,0.88)] dark:shadow-[0_24px_55px_-26px_rgba(0,0,0,0.85)]"
+            : "w-[min(1120px,calc(100vw-12px))] border-neutral-200 bg-white/70 shadow-[0_14px_38px_-24px_rgba(59,71,111,0.3)] dark:border-neutral-700/60 dark:bg-[rgba(6,9,24,0.58)] dark:shadow-[0_14px_38px_-24px_rgba(0,0,0,0.8)]"
         }`}
         animate={{ scale: isScrolled ? 0.988 : 1 }}
         transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
@@ -106,8 +107,8 @@ const LandingNavbar = () => {
               </svg>
             </motion.div>
             <div className="hidden md:block">
-              <p className="text-sm font-medium tracking-wide text-indigo-100">Decipath</p>
-              <p className="-mt-0.5 text-[11px] tracking-[0.2em] text-indigo-200/55">AI ROADMAPS</p>
+              <p className="text-sm font-medium tracking-wide text-indigo-700 dark:text-indigo-100">Decipath</p>
+              <p className="-mt-0.5 text-[11px] tracking-[0.2em] text-indigo-500/80 dark:text-indigo-200/55">AI ROADMAPS</p>
             </div>
           </Link>
 
@@ -121,14 +122,14 @@ const LandingNavbar = () => {
                   {isActive && (
                     <motion.span
                       layoutId="landing-nav-active"
-                      className="absolute inset-0 -z-10 rounded-full border border-indigo-300/35 bg-indigo-500/22"
+                      className="absolute inset-0 -z-10 rounded-full border border-indigo-300/45 bg-indigo-500/18 dark:border-indigo-300/35 dark:bg-indigo-500/22"
                       transition={{ type: "spring", stiffness: 330, damping: 30, mass: 0.55 }}
                     />
                   )}
                   <motion.span
                     whileHover={{ y: -1 }}
                     transition={{ duration: 0.18, ease: "easeOut" }}
-                    className={`block transition-colors ${isActive ? "text-white" : "text-neutral-200 hover:text-indigo-200"}`}
+                    className={`block transition-colors ${isActive ? "text-neutral-900 dark:text-white" : "text-neutral-600 hover:text-indigo-700 dark:text-neutral-200 dark:hover:text-indigo-200"}`}
                   >
                     {item.label}
                   </motion.span>
@@ -137,15 +138,18 @@ const LandingNavbar = () => {
             })}
           </div>
 
-          <Link href="/signin" className="relative inline-flex overflow-hidden rounded-full">
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.985 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
-            >
-              <InteractiveHoverButton className="h-10 min-w-[132px]">Sign In</InteractiveHoverButton>
-            </motion.div>
-          </Link>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <ThemeSelectorButton className="h-10 w-10 rounded-full border border-indigo-300/55 bg-white/85 dark:border-indigo-300/35 dark:bg-neutral-900/55" />
+            <Link href="/signin" className="relative inline-flex overflow-hidden rounded-full">
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.985 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+              >
+                <InteractiveHoverButton className="h-10 min-w-[132px]">Sign In</InteractiveHoverButton>
+              </motion.div>
+            </Link>
+          </div>
         </div>
 
         <motion.div

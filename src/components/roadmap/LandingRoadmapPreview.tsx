@@ -180,7 +180,7 @@ export default function LandingRoadmapPreview() {
   }, [visibleNodeIds]);
 
   return (
-    <div className="relative h-[430px] overflow-hidden rounded-3xl border border-indigo-300/20 bg-neutral-950/58 backdrop-blur-xl">
+    <div className="relative h-[430px] overflow-hidden rounded-3xl border border-indigo-300/35 bg-white/65 backdrop-blur-xl dark:border-indigo-300/20 dark:bg-neutral-950/58">
       <ReactFlow
         nodes={visibleNodes}
         edges={visibleEdges}

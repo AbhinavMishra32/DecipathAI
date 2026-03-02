@@ -20,7 +20,7 @@ export default function LandingIntroOverlay() {
     <AnimatePresence mode="wait">
       {showIntro && (
         <motion.div
-          className="pointer-events-none fixed inset-0 z-[130] overflow-hidden bg-neutral-950"
+          className="pointer-events-none fixed inset-0 z-[130] overflow-hidden bg-neutral-50 dark:bg-neutral-950"
           initial={{ opacity: 1 }}
           exit={{ opacity: 0, transition: { duration: shouldReduceMotion ? 0.25 : 0.5 } }}
         >
@@ -40,8 +40,8 @@ export default function LandingIntroOverlay() {
               ease: "easeOut",
             }}
           >
-            <h1 className="text-[clamp(42px,9vw,116px)] font-semibold tracking-tight text-white">Decipath</h1>
-            <p className="mt-1 text-[clamp(13px,1.6vw,20px)] text-indigo-200/90">abhinavmishra.in</p>
+            <h1 className="text-[clamp(42px,9vw,116px)] font-semibold tracking-tight text-neutral-900 dark:text-white">Decipath</h1>
+            <p className="mt-1 text-[clamp(13px,1.6vw,20px)] text-indigo-600 dark:text-indigo-200/90">abhinavmishra.in</p>
           </motion.div>
 
           <motion.div
@@ -59,8 +59,8 @@ export default function LandingIntroOverlay() {
               ease: "easeOut",
             }}
           >
-            <p className="text-[clamp(14px,2vw,24px)] text-indigo-100/95">
-              Visit <span className="font-medium text-white">abhinavmishra.in</span> to know about me...
+            <p className="text-[clamp(14px,2vw,24px)] text-indigo-700 dark:text-indigo-100/95">
+              Visit <span className="font-medium text-neutral-900 dark:text-white">abhinavmishra.in</span> to know about me...
             </p>
           </motion.div>
         </motion.div>
