@@ -28,20 +28,12 @@ import { VelocityScroll } from '@/components/magicui/scroll-based-velocity';
 import { Button } from '@/components/ui/button';
 import type { LucideIcon } from 'lucide-react';
 import LandingIntroOverlay from '@/components/LandingIntroOverlay';
+import LandingRoadmapPreview from '@/components/roadmap/LandingRoadmapPreview';
 
 type FeatureCard = {
   title: string
   description: string
   icon: LucideIcon
-}
-
-type PreviewNode = {
-  id: string
-  label: string
-  icon: LucideIcon
-  x: number
-  y: number
-  tone: 'violet' | 'blue' | 'cyan'
 }
 
 type FlowStep = {
@@ -113,21 +105,6 @@ const proofStats = [
   { value: 'Any goal', label: 'Career, study, startup, projects' },
 ]
 
-const heroPreviewNodes: PreviewNode[] = [
-  { id: 'start', label: 'Current State', icon: Compass, x: 16, y: 74, tone: 'blue' },
-  { id: 'learn', label: 'Core Skills', icon: BrainCircuit, x: 34, y: 55, tone: 'violet' },
-  { id: 'build', label: 'Projects', icon: PenSquare, x: 52, y: 36, tone: 'cyan' },
-  { id: 'ship', label: 'Execution', icon: Workflow, x: 70, y: 52, tone: 'violet' },
-  { id: 'goal', label: 'Outcome', icon: Target, x: 86, y: 28, tone: 'blue' },
-]
-
-const heroPreviewEdges: Array<[string, string]> = [
-  ['start', 'learn'],
-  ['learn', 'build'],
-  ['build', 'ship'],
-  ['ship', 'goal'],
-  ['learn', 'ship'],
-]
 
 const orbitUseCases = [
   { label: 'Career transitions', x: 50, y: 9 },
@@ -149,15 +126,7 @@ const featureLayout = [
   { index: 5, className: 'lg:col-span-4', tone: 'from-indigo-300/16 via-indigo-500/8 to-transparent' },
 ]
 
-const previewToneClasses: Record<PreviewNode['tone'], string> = {
-  violet: 'border-violet-300/45 bg-violet-500/18 text-violet-100',
-  blue: 'border-sky-300/45 bg-sky-500/16 text-sky-100',
-  cyan: 'border-cyan-300/45 bg-cyan-500/14 text-cyan-100',
-}
-
 const Page = () => {
-  const previewLookup = Object.fromEntries(heroPreviewNodes.map((node) => [node.id, node])) as Record<string, PreviewNode>
-
   return (
     <main className={`${hubotSans.className} relative min-h-screen overflow-x-hidden bg-neutral-950 text-white`}>
       <LandingIntroOverlay />
@@ -249,52 +218,7 @@ const Page = () => {
                 Live roadmap preview
               </div>
 
-              <div className="relative h-[430px] overflow-hidden rounded-3xl border border-indigo-300/20 bg-neutral-950/58 backdrop-blur-xl">
-                <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full">
-                  {heroPreviewEdges.map(([sourceId, targetId], index) => {
-                    const source = previewLookup[sourceId]
-                    const target = previewLookup[targetId]
-
-                    return (
-                      <motion.line
-                        key={`${sourceId}-${targetId}`}
-                        x1={source.x}
-                        y1={source.y}
-                        x2={target.x}
-                        y2={target.y}
-                        stroke="rgba(196, 181, 253, 0.62)"
-                        strokeWidth="0.6"
-                        strokeLinecap="round"
-                        initial={{ pathLength: 0, opacity: 0 }}
-                        whileInView={{ pathLength: 1, opacity: 0.85 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.7, delay: 0.15 + index * 0.08, ease: 'easeOut' }}
-                      />
-                    )
-                  })}
-                </svg>
-
-                {heroPreviewNodes.map((node, index) => {
-                  const NodeIcon = node.icon
-
-                  return (
-                    <motion.div
-                      key={node.id}
-                      initial={{ opacity: 0, scale: 0.85, y: 10, filter: 'blur(6px)' }}
-                      whileInView={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.35, delay: 0.25 + index * 0.12 }}
-                      className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-2xl border px-3 py-2 shadow-[0_12px_35px_-20px_rgba(99,102,241,0.85)] backdrop-blur-xl ${previewToneClasses[node.tone]}`}
-                      style={{ left: `${node.x}%`, top: `${node.y}%` }}
-                    >
-                      <div className="flex items-center gap-2 whitespace-nowrap text-xs font-medium">
-                        <NodeIcon className="h-3.5 w-3.5" />
-                        {node.label}
-                      </div>
-                    </motion.div>
-                  )
-                })}
-              </div>
+              <LandingRoadmapPreview />
 
               <div className="mt-4 rounded-2xl border border-neutral-700/80 bg-neutral-950/65 px-4 py-3 text-xs text-neutral-300 backdrop-blur-md sm:text-sm">
                 Click a node to open detailed tasks, time estimates, and connected path context.
