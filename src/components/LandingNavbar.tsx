@@ -9,6 +9,7 @@ import ThemeSelectorButton from "./ThemeSelectorButton"
 
 const navigation = [
   { label: "Features", href: "#features" },
+  { label: "Pricing", href: "#pricing" },
   { label: "How It Works", href: "#how-it-works" },
   { label: "Use Cases", href: "#use-cases" },
 ]

@@ -40,6 +40,17 @@ type FlowStep = {
   icon: LucideIcon
 }
 
+type PricingPlan = {
+  name: string
+  price: string
+  cadence: string
+  description: string
+  bullets: string[]
+  ctaLabel: string
+  ctaHref: string
+  highlighted?: boolean
+}
+
 const featureCards: FeatureCard[] = [
   {
     title: 'AI-Powered Roadmap Generation',
@@ -101,6 +112,36 @@ const proofStats = [
   { value: '5-8', label: 'Actionable tasks per node' },
   { value: '1 click', label: 'To inspect node details' },
   { value: 'Any goal', label: 'Career, study, startup, projects' },
+]
+
+const pricingPlans: PricingPlan[] = [
+  {
+    name: "Free plan",
+    price: "₹0",
+    cadence: "forever",
+    description: "Great for trying Decipath with focused monthly usage.",
+    bullets: [
+      "10 roadmap generations per month",
+      "Core web research + structured nodes",
+      "Saved roadmaps and progress tracking",
+    ],
+    ctaLabel: "Start Free",
+    ctaHref: "/signup",
+  },
+  {
+    name: "Pro plan",
+    price: "₹499",
+    cadence: "per month",
+    description: "For deeper agent runs, broader research, and higher output volume.",
+    bullets: [
+      "120 roadmap generations per month",
+      "Expanded web research depth and retries",
+      "Priority pathway synthesis capacity",
+    ],
+    ctaLabel: "Upgrade to Pro",
+    ctaHref: "/signup",
+    highlighted: true,
+  },
 ]
 
 
@@ -302,6 +343,64 @@ const Page = () => {
               </motion.article>
             )
           })}
+        </div>
+      </section>
+
+      <section id="pricing" className="mx-auto w-full max-w-[1180px] px-4 py-4 sm:px-6 lg:px-8">
+        <div className="relative overflow-hidden rounded-[2rem] border border-neutral-200 bg-white/75 p-6 backdrop-blur-xl dark:border-neutral-800 dark:bg-neutral-950/70 sm:p-8">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_10%,rgba(99,102,241,0.2),transparent_45%)]" />
+          <div className="relative">
+            <div className="flex items-center gap-2 text-xs uppercase tracking-[0.24em] text-indigo-600 dark:text-indigo-300/85">
+              <BookmarkCheck className="h-4 w-4" />
+              Pricing
+            </div>
+            <h2 className="mt-3 text-3xl font-semibold text-neutral-950 dark:text-white sm:text-4xl">
+              Choose your plan
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm text-neutral-600 dark:text-neutral-300 sm:text-base">
+              Start free and upgrade when you want deeper roadmap generation and more monthly capacity.
+            </p>
+
+            <div className="mt-8 grid gap-4 md:grid-cols-2">
+              {pricingPlans.map((plan) => (
+                <div
+                  key={plan.name}
+                  className={`rounded-[1.4rem] border p-5 sm:p-6 ${
+                    plan.highlighted
+                      ? "border-indigo-300/60 bg-indigo-500/10 shadow-[0_20px_44px_-30px_rgba(79,70,229,0.8)] dark:border-indigo-300/40 dark:bg-indigo-500/12"
+                      : "border-neutral-200 bg-white/85 dark:border-neutral-800 dark:bg-neutral-900/55"
+                  }`}
+                >
+                  <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{plan.name}</p>
+                  <div className="mt-2 flex items-end gap-2">
+                    <p className="text-3xl font-semibold text-indigo-700 dark:text-indigo-100">{plan.price}</p>
+                    <p className="pb-1 text-xs uppercase tracking-[0.16em] text-neutral-500 dark:text-neutral-400">{plan.cadence}</p>
+                  </div>
+                  <p className="mt-3 text-sm text-neutral-600 dark:text-neutral-300">{plan.description}</p>
+
+                  <div className="mt-4 space-y-2">
+                    {plan.bullets.map((bullet) => (
+                      <p key={bullet} className="flex items-start gap-2 text-sm text-neutral-700 dark:text-neutral-300">
+                        <span className="mt-[5px] h-1.5 w-1.5 rounded-full bg-indigo-500/80" />
+                        {bullet}
+                      </p>
+                    ))}
+                  </div>
+
+                  <Button
+                    asChild
+                    className={`mt-6 h-10 w-full rounded-xl text-sm ${
+                      plan.highlighted
+                        ? "bg-indigo-600 text-white hover:bg-indigo-500"
+                        : "bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-indigo-100"
+                    }`}
+                  >
+                    <Link href={plan.ctaHref}>{plan.ctaLabel}</Link>
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 

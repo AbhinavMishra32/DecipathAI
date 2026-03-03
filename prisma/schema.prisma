@@ -25,6 +25,39 @@ enum ProgressStatus {
   COMPLETED
 }
 
+enum PlanTier {
+  FREE
+  PRO
+}
+
+enum BillingProvider {
+  RAZORPAY
+}
+
+enum BillingPeriod {
+  MONTHLY
+  YEARLY
+}
+
+enum SubscriptionStatus {
+  INCOMPLETE
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  EXPIRED
+}
+
+enum UsageMetric {
+  ROADMAP_GENERATION
+}
+
+enum GenerationStatus {
+  STARTED
+  SUCCEEDED
+  FAILED
+  REJECTED_QUOTA
+}
+
 // ───────────────────────────────────────────
 // User — synced from Clerk via webhook
 // ───────────────────────────────────────────
@@ -35,11 +68,15 @@ model User {
   attributes Json
   username   String
   email      String
+  planTier   PlanTier  @default(FREE)
   roadmaps   Roadmap[] @relation("OwnedRoadmaps")
   progressRuns RoadmapProgress[]
   roadmapLikes RoadmapLike[]
   roadmapComments RoadmapComment[]
   roadmapSaves RoadmapSave[]
+  subscription UserSubscription?
+  usageBuckets UsageBucket[]
+  generationRuns RoadmapGenerationRun[]
 }
 
 // ───────────────────────────────────────────
@@ -144,4 +181,83 @@ model RoadmapTaskProgress {
 
   @@unique([progressId, nodeId, taskIndex])
   @@index([progressId, nodeId])
+}
+
+model UserSubscription {
+  id                     String             @id @default(cuid())
+  userId                 String             @unique
+  user                   User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider               BillingProvider    @default(RAZORPAY)
+  providerCustomerId     String?
+  providerSubscriptionId String             @unique
+  providerPlanId         String?
+  status                 SubscriptionStatus @default(INCOMPLETE)
+  billingPeriod          BillingPeriod?
+  currentPeriodStart     DateTime?
+  currentPeriodEnd       DateTime?
+  cancelAtPeriodEnd      Boolean            @default(false)
+  canceledAt             DateTime?
+  metadata               Json?
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+
+  @@index([provider, status, currentPeriodEnd])
+}
+
+model BillingWebhookEvent {
+  id               String          @id @default(cuid())
+  provider         BillingProvider @default(RAZORPAY)
+  providerEventId  String          @unique
+  eventType        String
+  payload          Json
+  receivedAt       DateTime        @default(now())
+  processedAt      DateTime?
+  processingError  String?
+}
+
+model UsageBucket {
+  id          String      @id @default(cuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  metric      UsageMetric
+  periodStart DateTime
+  periodEnd   DateTime
+  used        Int         @default(0)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@unique([userId, metric, periodStart])
+  @@index([userId, metric, periodStart(sort: Desc)])
+}
+
+model RoadmapGenerationRun {
+  id                       String           @id @default(cuid())
+  userId                   String
+  user                     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  requestId                String?
+  status                   GenerationStatus @default(STARTED)
+  planTierSnapshot         PlanTier
+  periodStart              DateTime
+  periodEnd                DateTime
+  monthlyLimit             Int
+  monthlyUsedBefore        Int
+  monthlyUsedAfter         Int?
+  maxSearchCalls           Int
+  searchCallsUsed          Int              @default(0)
+  maxSubqueriesPerCall     Int
+  maxResultsPerQuery       Int
+  maxSearchDepth           String
+  pathwayPlanningMaxSteps  Int
+  roadmapSynthesisMaxSteps Int
+  currentStatePreview      String?
+  desiredOutcomePreview    String?
+  errorCode                String?
+  errorMessage             String?
+  startedAt                DateTime         @default(now())
+  finishedAt               DateTime?
+  createdAt                DateTime         @default(now())
+  updatedAt                DateTime         @updatedAt
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([status, createdAt(sort: Desc)])
 }

@@ -16,7 +16,14 @@ const canReusePrismaClient = (client: PrismaClient | undefined): client is Prism
 
     // In dev, a stale global PrismaClient can survive HMR after schema/model updates.
     // Recreate if newly-added model delegates are missing.
-    return "roadmapProgress" in (client as unknown as Record<string, unknown>);
+    const delegates = client as unknown as Record<string, unknown>;
+    return (
+        "roadmapProgress" in delegates &&
+        "userSubscription" in delegates &&
+        "usageBucket" in delegates &&
+        "roadmapGenerationRun" in delegates &&
+        "billingWebhookEvent" in delegates
+    );
 };
 
 export const prisma = canReusePrismaClient(globalForPrisma.prisma)

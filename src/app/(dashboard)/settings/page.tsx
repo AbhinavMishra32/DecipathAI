@@ -1,7 +1,7 @@
 "use client"
 
 import { useTheme } from "next-themes"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { hubotSans } from "@/lib/fonts"
 import { Moon, Sun, Desktop, Keyboard, Info } from "@phosphor-icons/react"
 import { cn } from "@/lib/utils"
@@ -36,10 +36,99 @@ const shortcuts = [
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
+  const [billingStatus, setBillingStatus] = useState<{
+    planTier: "FREE" | "PRO"
+    planLabel: string
+    pricing: {
+      currency: string
+      proMonthly: number
+      proYearly: number
+    }
+    usage: {
+      monthlyGenerationUsed: number
+      monthlyGenerationLimit: number
+      monthlyGenerationRemaining: number
+      periodEnd: string
+    }
+    subscription: {
+      provider: "RAZORPAY"
+      status: string
+      billingPeriod: "MONTHLY" | "YEARLY" | null
+      currentPeriodEnd: string | null
+      cancelAtPeriodEnd: boolean
+    } | null
+  } | null>(null)
+  const [billingLoading, setBillingLoading] = useState(false)
+  const [billingMessage, setBillingMessage] = useState<string | null>(null)
+
+  const loadBillingStatus = useCallback(async () => {
+    const response = await fetch("/api/billing/status")
+    if (!response.ok) {
+      return
+    }
+
+    const payload = (await response.json()) as typeof billingStatus
+    setBillingStatus(payload)
+  }, [])
 
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  useEffect(() => {
+    if (!mounted) {
+      return
+    }
+
+    loadBillingStatus().catch(() => {})
+  }, [mounted, loadBillingStatus])
+
+  const startCheckout = async (period: "MONTHLY" | "YEARLY") => {
+    setBillingLoading(true)
+    setBillingMessage(null)
+    try {
+      const response = await fetch("/api/billing/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ period }),
+      })
+      const payload = (await response.json().catch(() => null)) as { checkoutUrl?: string; error?: string } | null
+      if (!response.ok || !payload?.checkoutUrl) {
+        setBillingMessage(payload?.error ?? "Unable to start checkout right now.")
+        return
+      }
+
+      window.location.href = payload.checkoutUrl
+    } finally {
+      setBillingLoading(false)
+    }
+  }
+
+  const cancelPro = async () => {
+    setBillingLoading(true)
+    setBillingMessage(null)
+    try {
+      const response = await fetch("/api/billing/cancel", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ atPeriodEnd: true }),
+      })
+      const payload = (await response.json().catch(() => null)) as { error?: string } | null
+      if (!response.ok) {
+        setBillingMessage(payload?.error ?? "Unable to cancel subscription right now.")
+        return
+      }
+
+      setBillingMessage("Your Pro plan will be canceled at the end of the current billing period.")
+      await loadBillingStatus()
+    } finally {
+      setBillingLoading(false)
+    }
+  }
 
   if (!mounted) return null
 
@@ -103,6 +192,83 @@ export default function SettingsPage() {
               </button>
             )
           })}
+        </div>
+      </section>
+
+      {/* ── Billing ─────────────────────────────────────────── */}
+      <section className="mt-10">
+        <div className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-200">
+          <Moon weight="duotone" className="h-4 w-4 text-indigo-500" />
+          Billing & plan
+        </div>
+        <div className="mt-4 rounded-xl border border-slate-200/60 bg-white/70 p-5 dark:border-neutral-800/60 dark:bg-neutral-900/30">
+          {!billingStatus ? (
+            <p className="text-[13px] text-slate-500 dark:text-slate-400">Loading plan details...</p>
+          ) : (
+            <>
+              <div className="flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <p className="text-[13px] font-semibold text-slate-800 dark:text-slate-200">{billingStatus.planLabel}</p>
+                  <p className="mt-1 text-[12px] text-slate-500 dark:text-slate-400">
+                    {billingStatus.usage.monthlyGenerationUsed}/{billingStatus.usage.monthlyGenerationLimit} roadmap generations used this month
+                  </p>
+                </div>
+                <span className="rounded-full border border-slate-200/60 bg-slate-50/70 px-2.5 py-1 text-[10px] font-medium text-slate-500 dark:border-neutral-700/60 dark:bg-neutral-800/70 dark:text-slate-400">
+                  Renews monthly
+                </span>
+              </div>
+              <div className="mt-3 h-1.5 w-full rounded-full bg-slate-200/70 dark:bg-neutral-800/70">
+                <div
+                  className="h-1.5 rounded-full bg-indigo-500"
+                  style={{
+                    width: `${Math.min(
+                      100,
+                      Math.round(
+                        (billingStatus.usage.monthlyGenerationUsed / Math.max(1, billingStatus.usage.monthlyGenerationLimit)) * 100,
+                      ),
+                    )}%`,
+                  }}
+                />
+              </div>
+
+              {billingStatus.planTier === "FREE" ? (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <button
+                    onClick={() => startCheckout("MONTHLY")}
+                    disabled={billingLoading}
+                    className="rounded-lg bg-indigo-600 px-3 py-2 text-[12px] font-semibold text-white transition hover:bg-indigo-500 disabled:opacity-60"
+                  >
+                    Upgrade (₹{billingStatus.pricing.proMonthly}/mo)
+                  </button>
+                  <button
+                    onClick={() => startCheckout("YEARLY")}
+                    disabled={billingLoading}
+                    className="rounded-lg border border-slate-200/70 bg-white px-3 py-2 text-[12px] font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60 dark:border-neutral-700 dark:bg-neutral-900 dark:text-slate-200 dark:hover:bg-neutral-800"
+                  >
+                    Upgrade (₹{billingStatus.pricing.proYearly}/yr)
+                  </button>
+                </div>
+              ) : (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <button
+                    onClick={cancelPro}
+                    disabled={billingLoading || Boolean(billingStatus.subscription?.cancelAtPeriodEnd)}
+                    className="rounded-lg border border-amber-300/70 bg-amber-50 px-3 py-2 text-[12px] font-semibold text-amber-700 transition hover:bg-amber-100 disabled:opacity-60 dark:border-amber-600/40 dark:bg-amber-900/20 dark:text-amber-300 dark:hover:bg-amber-900/30"
+                  >
+                    {billingStatus.subscription?.cancelAtPeriodEnd ? "Cancellation scheduled" : "Cancel at period end"}
+                  </button>
+                  {billingStatus.subscription?.currentPeriodEnd && (
+                    <p className="self-center text-[11px] text-slate-500 dark:text-slate-400">
+                      Current period ends on {new Date(billingStatus.subscription.currentPeriodEnd).toLocaleDateString()}.
+                    </p>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+          {billingMessage && (
+            <p className="mt-3 text-[12px] text-slate-600 dark:text-slate-300">{billingMessage}</p>
+          )}
         </div>
       </section>
 

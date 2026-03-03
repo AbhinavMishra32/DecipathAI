@@ -41,6 +41,10 @@ type RecentRoadmap = {
 type SidebarData = {
   roadmapCount: number
   activeProgressCount: number
+  planTier: "FREE" | "PRO"
+  planLabel: string
+  monthlyGenerationUsed: number
+  monthlyGenerationLimit: number
   recentRoadmaps: RecentRoadmap[]
 }
 
@@ -181,7 +185,7 @@ function RecentItem({
 const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim()
 const hasClerk = Boolean(publishableKey && publishableKey.startsWith("pk_"))
 
-function SidebarUserProfile({ open }: { open: boolean }) {
+function SidebarUserProfile({ open, planLabel }: { open: boolean; planLabel: string }) {
   if (!hasClerk) {
     return (
       <div className="flex items-center rounded-xl px-3 py-2.5 transition-all hover:bg-slate-50/80 dark:hover:bg-white/[0.04]">
@@ -189,16 +193,16 @@ function SidebarUserProfile({ open }: { open: boolean }) {
         {open && (
           <div className="ml-3 min-w-0">
             <p className="truncate text-[13px] font-medium text-slate-700 dark:text-slate-200">Account</p>
-            <p className="text-[10px] text-slate-400 dark:text-slate-500">Sign in to save</p>
+            <p className="text-[10px] text-slate-400 dark:text-slate-500">{planLabel}</p>
           </div>
         )}
       </div>
     )
   }
-  return <ClerkSidebarProfile open={open} />
+  return <ClerkSidebarProfile open={open} planLabel={planLabel} />
 }
 
-function ClerkSidebarProfile({ open }: { open: boolean }) {
+function ClerkSidebarProfile({ open, planLabel }: { open: boolean; planLabel: string }) {
   /* These hooks are safe because ClerkProvider wraps the app when hasClerk is true */
   const [clerkMod, setClerkMod] = useState<{
     UserButton: React.ComponentType<{ appearance?: Record<string, unknown> }>
@@ -226,7 +230,7 @@ function ClerkSidebarProfile({ open }: { open: boolean }) {
   }
 
   return (
-    <ClerkProfileInner open={open} clerkMod={clerkMod} themeMod={themeMod} currentTheme={theme} />
+    <ClerkProfileInner open={open} clerkMod={clerkMod} themeMod={themeMod} currentTheme={theme} planLabel={planLabel} />
   )
 }
 
@@ -235,6 +239,7 @@ function ClerkProfileInner({
   clerkMod,
   themeMod,
   currentTheme,
+  planLabel,
 }: {
   open: boolean
   clerkMod: {
@@ -243,6 +248,7 @@ function ClerkProfileInner({
   }
   themeMod: { dark: unknown }
   currentTheme: string | undefined
+  planLabel: string
 }) {
   const { user } = clerkMod.useUser()
   const { UserButton } = clerkMod
@@ -264,7 +270,7 @@ function ClerkProfileInner({
           <p className="truncate text-[13px] font-medium text-slate-700 dark:text-slate-200">
             {user?.username || user?.fullName || "Account"}
           </p>
-          <p className="text-[10px] text-slate-400 dark:text-slate-500">Free plan</p>
+          <p className="text-[10px] text-slate-400 dark:text-slate-500">{planLabel}</p>
         </div>
       )}
     </div>
@@ -322,6 +328,7 @@ export default function WorkspaceNavSidebar() {
   )
 
   const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark")
+  const planLabel = sidebarData?.planLabel ?? "Free plan"
 
   /* ─── Shared sidebar content (reused for desktop & mobile) ── */
   const sidebarContent = (forMobile: boolean) => {
@@ -450,7 +457,7 @@ export default function WorkspaceNavSidebar() {
 
           {/* User profile */}
           <div className="mt-0.5">
-            <SidebarUserProfile open={isExpanded} />
+            <SidebarUserProfile open={isExpanded} planLabel={planLabel} />
           </div>
         </div>
       </>
