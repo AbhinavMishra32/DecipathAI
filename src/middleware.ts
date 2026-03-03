@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server'
 const isProtectedRoute = createRouteMatcher([
     '/create(.*)',
     '/roadmaps(.*)',
+    '/settings(.*)',
 ])
 
 

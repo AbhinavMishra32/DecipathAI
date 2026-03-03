@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import Link from "next/link"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import {
@@ -37,6 +38,26 @@ const Controls: React.FC<ControlsProps> = ({ onGenerateNewMindMap, isGenerating,
   const [goal, setGoal] = useState('')
   const [customPrompt, setCustomPrompt] = useState<string | null>(null)
   const [validationError, setValidationError] = useState<string | null>(null)
+  const [billingStatus, setBillingStatus] = useState<{
+    planTier: "FREE" | "PRO"
+    planLabel: string
+    usage: {
+      monthlyGenerationUsed: number
+      monthlyGenerationLimit: number
+      monthlyGenerationRemaining: number
+    }
+  } | null>(null)
+
+  useEffect(() => {
+    fetch("/api/billing/status")
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (data) {
+          setBillingStatus(data)
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -145,6 +166,39 @@ const Controls: React.FC<ControlsProps> = ({ onGenerateNewMindMap, isGenerating,
                   className="h-28 w-full resize-none rounded-xl border border-indigo-200 bg-white/90 p-3 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:border-indigo-300/25 dark:bg-neutral-950/70 dark:text-slate-100 dark:placeholder:text-slate-500"
                 />
               </div>
+
+              {billingStatus && (
+                <div className="rounded-xl border border-indigo-200/70 bg-indigo-50/65 p-3 dark:border-indigo-300/20 dark:bg-indigo-500/10">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-xs font-medium text-indigo-700 dark:text-indigo-200">{billingStatus.planLabel}</p>
+                    <p className="text-xs text-indigo-700/85 dark:text-indigo-200/85">
+                      {billingStatus.usage.monthlyGenerationUsed}/{billingStatus.usage.monthlyGenerationLimit} this month
+                    </p>
+                  </div>
+                  <div className="mt-2 h-1.5 w-full rounded-full bg-indigo-200/60 dark:bg-indigo-300/25">
+                    <div
+                      className="h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-300"
+                      style={{
+                        width: `${Math.min(
+                          100,
+                          Math.round(
+                            (billingStatus.usage.monthlyGenerationUsed / Math.max(1, billingStatus.usage.monthlyGenerationLimit)) * 100,
+                          ),
+                        )}%`,
+                      }}
+                    />
+                  </div>
+                  {billingStatus.planTier === "FREE" && billingStatus.usage.monthlyGenerationRemaining <= 2 && (
+                    <p className="mt-2 text-xs text-indigo-700/90 dark:text-indigo-200/90">
+                      You are close to your monthly Free plan limit.{" "}
+                      <Link href="/settings" className="underline underline-offset-2">
+                        Upgrade to Pro
+                      </Link>
+                      {" "}for higher generation capacity.
+                    </p>
+                  )}
+                </div>
+              )}
 
               <Button
                 type="submit"

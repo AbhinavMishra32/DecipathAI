@@ -26,6 +26,8 @@ Traditional roadmaps are static and generic. DecipathAI is different. It generat
 - **Detailed Path Planning**: Each node includes descriptions, time estimates, actionable tasks, and next steps
 - **Theme Support**: Seamless dark/light mode with theme-aware styling
 - **Secure Authentication**: User management powered by Clerk
+- **Free + Pro Plans**: Monthly generation limits with account-tier based AI capability depth
+- **India-First Billing**: Razorpay recurring subscriptions for Pro plan upgrades
 - **Persistent Storage**: Save and retrieve your roadmaps using Prisma and PostgreSQL
 - **Responsive Design**: Fully responsive interface that works across all devices
 
@@ -75,6 +77,8 @@ User inputs are transformed through AI prompt construction, sent to the Gemini A
 - Node.js 18 or higher
 - A Google AI API key
 - Clerk authentication credentials
+- A Tavily API key for web research
+- Razorpay account + recurring subscription plan IDs (for Pro billing)
 
 ### Installation
 
@@ -88,7 +92,7 @@ npm install
 
 # Set up environment variables
 cp .env.example .env.local
-# Add your GEMINI_API_KEY (or GOOGLE_API_KEY), TAVILY_API_KEY, and Clerk keys
+# Add your AI keys, Clerk keys, DB URL, and Razorpay billing keys
 
 # Run the development server
 npm run dev
@@ -116,6 +120,7 @@ Open [http://localhost:3000](http://localhost:3000) to see the application in ac
 - [Google Generative AI](https://ai.google.dev/) - AI capabilities
 - [ReactFlow](https://reactflow.dev/) - Interactive diagrams
 - [Clerk](https://clerk.com/) - Authentication
+- [Razorpay](https://razorpay.com/) - India-first recurring billing
 - [Prisma](https://www.prisma.io/) - Database ORM
 - [Tailwind CSS](https://tailwindcss.com/) - Styling
 - [shadcn/ui](https://ui.shadcn.com/) - UI components
