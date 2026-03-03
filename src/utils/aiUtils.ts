@@ -56,6 +56,33 @@ const parseSseEvent = (chunk: string) => {
   return { event, data }
 }
 
+const toFriendlyAgentError = ({
+  code,
+  message,
+  retryAfterSeconds,
+}: {
+  code?: string
+  message?: string
+  retryAfterSeconds?: number
+}): string => {
+  const normalizedCode = (code ?? "").toUpperCase()
+  const retrySuffix = retryAfterSeconds ? ` Retry in ~${Math.ceil(retryAfterSeconds)}s.` : ""
+
+  if (normalizedCode === "PLAN_LIMIT_REACHED") {
+    return "You have reached this month's roadmap limit for your current plan. Upgrade to Pro plan or wait for the monthly reset."
+  }
+
+  if (normalizedCode === "GEMINI_RATE_LIMITED") {
+    return `The AI service is busy right now.${retrySuffix || " Please retry shortly."}`
+  }
+
+  if (normalizedCode === "GEMINI_QUOTA_EXCEEDED") {
+    return "Roadmap generation is temporarily unavailable due to backend AI quota limits. Please retry later."
+  }
+
+  return `${message || "Failed to generate roadmap"}${retrySuffix}`
+}
+
 const consumeSseRoadmapStream = async (
   response: Response,
   onActivity?: (event: AgentActivityEvent) => void,
@@ -99,11 +126,20 @@ const consumeSseRoadmapStream = async (
       if (parsed.event === "error") {
         const message = typeof parsed.data?.message === "string" ? parsed.data.message : "Agent failed to generate roadmap"
         const code = typeof parsed.data?.code === "string" ? parsed.data.code : undefined
-        const retryAfter =
-          typeof parsed.data?.retryAfterSeconds === "number" ? Math.ceil(parsed.data.retryAfterSeconds) : undefined
+        const retryAfterSeconds =
+          typeof parsed.data?.retryAfterSeconds === "number" ? parsed.data.retryAfterSeconds : undefined
 
-        const formattedMessage = `${code ? `[${code}] ` : ""}${message}${retryAfter ? ` Retry in ~${retryAfter}s.` : ""}`
-        throw new Error(formattedMessage)
+        if (code) {
+          console.warn("[roadmap.generate] SSE error code", code)
+        }
+
+        throw new Error(
+          toFriendlyAgentError({
+            code,
+            message,
+            retryAfterSeconds,
+          }),
+        )
       }
     })
   }
@@ -145,8 +181,17 @@ export async function generateMindMapData({
   })
 
   if (!response.ok) {
-    const payload = (await response.json().catch(() => null)) as { error?: string } | null
-    throw new Error(payload?.error || "Failed to generate roadmap")
+    const payload = (await response.json().catch(() => null)) as
+      | { code?: string; error?: string; message?: string; retryAfterSeconds?: number }
+      | null
+
+    throw new Error(
+      toFriendlyAgentError({
+        code: payload?.code,
+        message: payload?.error || payload?.message || "Failed to generate roadmap",
+        retryAfterSeconds: payload?.retryAfterSeconds,
+      }),
+    )
   }
 
   const contentType = response.headers.get("content-type") ?? ""

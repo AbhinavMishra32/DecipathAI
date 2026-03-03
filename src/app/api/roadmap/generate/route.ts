@@ -564,7 +564,7 @@ const buildAgentThoughtFromModelStep = ({
 
   return {
     title: fallbackTitle,
-    detail: `${finishNote}; tool calls: ${toolCalls}, tool results: ${toolResults}.`,
+    detail: `${finishNote}; research actions: ${toolCalls}, evidence updates: ${toolResults}.`,
   }
 }
 
@@ -580,7 +580,7 @@ const classifyAgentError = (rawMessage: string): ClassifiedAgentError => {
     return {
       code: "GEMINI_QUOTA_EXCEEDED",
       userMessage:
-        "Gemini quota exceeded for this API key/project. Add billing or use a key/project with active quota, then retry.",
+        "The AI service quota is currently exhausted. Please retry after quota refresh or update your AI billing setup.",
       retryAfterSeconds,
       rawMessage,
     }
@@ -589,7 +589,7 @@ const classifyAgentError = (rawMessage: string): ClassifiedAgentError => {
   if (normalized.includes("rate limit") || normalized.includes("429")) {
     return {
       code: "GEMINI_RATE_LIMITED",
-      userMessage: "Gemini rate limit hit. Please retry shortly.",
+      userMessage: "The AI service is rate-limiting requests right now. Please retry shortly.",
       retryAfterSeconds,
       rawMessage,
     }
@@ -611,7 +611,7 @@ const classifyAgentError = (rawMessage: string): ClassifiedAgentError => {
     return {
       code: "GEMINI_THOUGHT_SIGNATURE_ERROR",
       userMessage:
-        "Gemini returned an invalid tool-call signature sequence. The system attempted automatic recovery, but generation still failed. Please retry.",
+        "The research workflow hit an internal formatting issue. Automatic recovery was attempted, but this run still failed. Please retry.",
       rawMessage,
     }
   }
@@ -620,14 +620,14 @@ const classifyAgentError = (rawMessage: string): ClassifiedAgentError => {
     return {
       code: "INVALID_TOOL_ARGUMENTS",
       userMessage:
-        "The model produced malformed tool arguments. Automatic recovery was attempted, but this run still failed. Please retry.",
+        "A web research step failed due to malformed lookup input. Automatic recovery was attempted, but this run still failed. Please retry.",
       rawMessage,
     }
   }
 
   return {
     code: "ROADMAP_GENERATION_FAILED",
-    userMessage: rawMessage,
+    userMessage: "Roadmap generation failed unexpectedly. Please retry.",
     retryAfterSeconds,
     rawMessage,
   }
@@ -1619,7 +1619,7 @@ export async function POST(request: NextRequest) {
                   createActivityEvent({
                     type: "status",
                     title: "Retrying web lookup",
-                    detail: `(${phase}) The lookup input was malformed. Retrying the same step with tighter tool-input constraints.`,
+                    detail: `(${phase}) A web lookup input was malformed. Retrying this step with stricter formatting.`,
                     payload: {
                       model: selectedModel,
                       recoveryMode: "retry-tools",
@@ -1660,7 +1660,7 @@ Tool input guardrails (mandatory):
                       createActivityEvent({
                         type: "status",
                         title: "Trying alternative model",
-                        detail: `(${phase}) Re-running the same lookup step with a backup model for better tool-call compliance.`,
+                        detail: `(${phase}) Re-running this lookup step with a backup model for better recovery.`,
                         payload: {
                           fromModel: selectedModel,
                           toModel: FALLBACK_MODEL,
@@ -1732,7 +1732,7 @@ Tool input guardrails (mandatory):
                   createActivityEvent({
                     type: "status",
                     title: "Recovering automatically",
-                    detail: `(${phase}) Retrying with fallback model due to tool-call signature validation error.`,
+                    detail: `(${phase}) Retrying with a fallback model due to an internal formatting issue.`,
                     payload: {
                       fromModel: PRIMARY_MODEL,
                       toModel: FALLBACK_MODEL,
