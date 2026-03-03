@@ -91,8 +91,8 @@ export const DesktopSidebar = ({
         width: animate ? (open ? "360px" : "72px") : "360px",
       }}
       transition={{ type: "spring", stiffness: 220, damping: 28, mass: 0.8 }}
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
+      onMouseEnter={animate ? () => setOpen(true) : undefined}
+      onMouseLeave={animate ? () => setOpen(false) : undefined}
       {...props}
     >
       {children}
@@ -128,7 +128,7 @@ export const MobileSidebar = ({
             exit={{ x: "-100%", opacity: 0 }}
             transition={{ duration: 0.28, ease: "easeInOut" }}
             className={cn(
-              "fixed inset-0 z-[100] flex h-full w-full flex-col justify-between bg-white/95 p-6 dark:bg-neutral-950/95",
+              "fixed inset-0 z-[100] flex h-full w-full flex-col justify-between bg-white/95 p-6 dark:bg-neutral-950/95 md:hidden",
               className,
             )}
           >

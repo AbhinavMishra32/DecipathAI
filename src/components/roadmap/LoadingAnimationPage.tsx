@@ -11,6 +11,15 @@ interface LoadingAnimationPageProps {
   activity?: AgentActivityEvent[]
 }
 
+type BillingUsageSnapshot = {
+  planTier: "FREE" | "PRO"
+  planLabel: string
+  monthlyGenerationUsed: number
+  monthlyGenerationLimit: number
+  monthlyGenerationRemaining: number
+  maxSearchCalls: number
+}
+
 type ThreadKind = "thought" | "action" | "checkpoint" | "outcome" | "warning" | "error"
 type MarkerShape = "dot" | "diamond" | "square" | "ring"
 type NodeLifecycleStage = "planned" | "researching" | "researched" | "ready"
@@ -262,6 +271,11 @@ const NODE_STAGE_ORDER: Record<NodeLifecycleStage, number> = {
   researching: 1,
   researched: 2,
   ready: 3,
+}
+
+const SEARCH_CALL_LIMIT_BY_TIER: Record<"FREE" | "PRO", number> = {
+  FREE: 6,
+  PRO: 24,
 }
 
 const escapeRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
@@ -703,13 +717,58 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
   const { resolvedTheme } = useTheme()
   const prefersReducedMotion = useReducedMotion()
   const isDark = resolvedTheme !== "light"
-  const [nodeSidebarOpen, setNodeSidebarOpen] = useState(true)
+  const [nodeSidebarOpen, setNodeSidebarOpen] = useState(false)
+  const [accountUsage, setAccountUsage] = useState<BillingUsageSnapshot | null>(null)
   const lowPerfDevice =
     prefersReducedMotion || (typeof navigator !== "undefined" && typeof navigator.hardwareConcurrency === "number" ? navigator.hardwareConcurrency <= 4 : false)
   const threadViewportRef = useRef<HTMLDivElement>(null)
   const latestStepAnchorRef = useRef<HTMLDivElement>(null)
   const seenThreadIdsRef = useRef<Set<string>>(new Set())
   const entryRevealRankRef = useRef<Map<string, number>>(new Map())
+
+  useEffect(() => {
+    let mounted = true
+
+    const fetchUsage = async () => {
+      const response = await fetch("/api/billing/status")
+      if (!response.ok) {
+        return
+      }
+
+      const payload = (await response.json()) as {
+        planTier: "FREE" | "PRO"
+        planLabel: string
+        usage: {
+          monthlyGenerationUsed: number
+          monthlyGenerationLimit: number
+          monthlyGenerationRemaining: number
+        }
+      }
+
+      if (!mounted) {
+        return
+      }
+
+      setAccountUsage({
+        planTier: payload.planTier,
+        planLabel: payload.planLabel,
+        monthlyGenerationUsed: payload.usage.monthlyGenerationUsed,
+        monthlyGenerationLimit: payload.usage.monthlyGenerationLimit,
+        monthlyGenerationRemaining: payload.usage.monthlyGenerationRemaining,
+        maxSearchCalls: SEARCH_CALL_LIMIT_BY_TIER[payload.planTier],
+      })
+    }
+
+    fetchUsage().catch(() => {})
+    const timer = window.setInterval(() => {
+      fetchUsage().catch(() => {})
+    }, 8000)
+
+    return () => {
+      mounted = false
+      window.clearInterval(timer)
+    }
+  }, [])
 
   const { latestEvent, threadEntries, currentSearchQueries, currentThought, nodeLifecycle, roadmapIntent } = useMemo(() => {
     const visibleEvents = activity.filter((event) => event.type !== "tool-result")
@@ -741,6 +800,9 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
   const activeNodeId = [...nodeLifecycle].reverse().find((node) => node.stage === "researching")?.id
   const searchStepCount = threadEntries.filter((entry) => entry.kind === "action").length
   const checkpointCount = threadEntries.filter((entry) => entry.kind === "checkpoint").length
+  const liveSearchLimit = accountUsage?.maxSearchCalls ?? 0
+  const liveSearchUsed = liveSearchLimit > 0 ? Math.min(searchStepCount, liveSearchLimit) : searchStepCount
+  const liveSearchRemaining = Math.max(0, liveSearchLimit - liveSearchUsed)
 
   const threadRevealRanks = useMemo(() => {
     const currentIds = threadEntries.map((entry) => entry.id)
@@ -812,7 +874,7 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
             </p>
           </div>
 
-          <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
+          <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-5">
             <div className="rounded-lg border border-indigo-200/65 px-3 py-2 dark:border-indigo-300/20">
               <p className="text-[10px] uppercase tracking-[0.12em] text-indigo-600/90 dark:text-indigo-300/90">Thread events</p>
               <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{threadEntries.length}</p>
@@ -824,6 +886,24 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
             <div className="rounded-lg border border-violet-200/65 px-3 py-2 dark:border-violet-300/20">
               <p className="text-[10px] uppercase tracking-[0.12em] text-violet-600/90 dark:text-violet-300/90">Checkpoints</p>
               <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{checkpointCount}</p>
+            </div>
+            <div className="rounded-lg border border-emerald-200/65 px-3 py-2 dark:border-emerald-300/20">
+              <p className="text-[10px] uppercase tracking-[0.12em] text-emerald-600/90 dark:text-emerald-300/90">Research budget</p>
+              <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                {liveSearchLimit > 0 ? `${liveSearchUsed}/${liveSearchLimit}` : "--"}
+              </p>
+              <p className="text-[11px] text-slate-600 dark:text-slate-300">
+                {liveSearchLimit > 0 ? `${liveSearchRemaining} left` : "Loading..."}
+              </p>
+            </div>
+            <div className="rounded-lg border border-fuchsia-200/65 px-3 py-2 dark:border-fuchsia-300/20">
+              <p className="text-[10px] uppercase tracking-[0.12em] text-fuchsia-600/90 dark:text-fuchsia-300/90">Plan usage</p>
+              <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                {accountUsage ? `${accountUsage.monthlyGenerationUsed}/${accountUsage.monthlyGenerationLimit}` : "--"}
+              </p>
+              <p className="text-[11px] text-slate-600 dark:text-slate-300">
+                {accountUsage ? `${accountUsage.monthlyGenerationRemaining} left · ${accountUsage.planLabel}` : "Loading..."}
+              </p>
             </div>
           </div>
 
@@ -1043,7 +1123,7 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
           </div>
         </section>
 
-        <Sidebar open={nodeSidebarOpen} setOpen={setNodeSidebarOpen} animate>
+        <Sidebar open={nodeSidebarOpen} setOpen={setNodeSidebarOpen} animate={false}>
           <SidebarBody className="relative min-h-0 flex-col overflow-hidden p-4">
             <motion.div
               aria-hidden
@@ -1052,48 +1132,47 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
               transition={{ duration: 7, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
             />
 
-            {nodeSidebarOpen ? (
-              <>
-                <p className="text-[11px] uppercase tracking-[0.16em] text-indigo-600 dark:text-indigo-300">Node Construction</p>
-                <p className="mt-1 text-sm text-slate-700 dark:text-slate-200">
-                  {nodeLifecycle.length > 0
-                    ? `${readyNodes}/${nodeLifecycle.length} nodes ready`
-                    : "Waiting for pathway blueprint..."}
-                </p>
+            <>
+              <p className="text-[11px] uppercase tracking-[0.16em] text-indigo-600 dark:text-indigo-300">Node Construction</p>
+              <p className="mt-1 text-sm text-slate-700 dark:text-slate-200">
+                {nodeLifecycle.length > 0
+                  ? `${readyNodes}/${nodeLifecycle.length} nodes ready`
+                  : "Waiting for pathway blueprint..."}
+              </p>
 
-                <div className="mt-3 min-h-0 flex-1 overflow-auto pr-1">
-                  {nodeLifecycle.length === 0 ? (
-                    <div className="rounded-xl border border-indigo-200/60 bg-indigo-100/40 p-3 text-xs text-slate-600 dark:border-indigo-300/20 dark:bg-indigo-500/10 dark:text-slate-300">
-                      The agent will populate this panel as soon as planned roadmap nodes are identified.
-                    </div>
-                  ) : (
-                    <div className="space-y-2 pb-2">
-                      {nodeLifecycle.map((node, index) => {
-                        const stageMeta = NODE_STAGE_META[node.stage]
-                        const isActive = node.id === activeNodeId
+              <div className="mt-3 min-h-0 flex-1 overflow-auto pr-1">
+                {nodeLifecycle.length === 0 ? (
+                  <div className="rounded-xl border border-indigo-200/60 bg-indigo-100/40 p-3 text-xs text-slate-600 dark:border-indigo-300/20 dark:bg-indigo-500/10 dark:text-slate-300">
+                    The agent will populate this panel as soon as planned roadmap nodes are identified.
+                  </div>
+                ) : (
+                  <div className="space-y-2 pb-2">
+                    {nodeLifecycle.map((node, index) => {
+                      const stageMeta = NODE_STAGE_META[node.stage]
+                      const isActive = node.id === activeNodeId
 
-                        return (
-                          <motion.div
-                            key={node.id}
-                            initial={{ opacity: 0, x: 12 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.22, delay: Math.min(index * 0.03, 0.2), ease: "easeOut" }}
-                            className={`group relative overflow-hidden rounded-xl border px-3 py-2.5 backdrop-blur-md transition-colors ${
-                              isActive
-                                ? isDark
-                                  ? "border-indigo-300/35 bg-indigo-500/10 shadow-lg shadow-indigo-500/10"
-                                  : "border-indigo-400/50 bg-indigo-100/45 shadow-lg shadow-indigo-500/10"
-                                : "border-indigo-200/60 bg-white/65 dark:border-indigo-300/15 dark:bg-neutral-900/40"
+                      return (
+                        <motion.div
+                          key={node.id}
+                          initial={{ opacity: 0, x: 12 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.22, delay: Math.min(index * 0.03, 0.2), ease: "easeOut" }}
+                          className={`group relative overflow-hidden rounded-xl border px-3 py-2.5 backdrop-blur-md transition-colors ${
+                            isActive
+                              ? isDark
+                                ? "border-indigo-300/35 bg-indigo-500/10 shadow-lg shadow-indigo-500/10"
+                                : "border-indigo-400/50 bg-indigo-100/45 shadow-lg shadow-indigo-500/10"
+                              : "border-indigo-200/60 bg-white/65 dark:border-indigo-300/15 dark:bg-neutral-900/40"
+                          }`}
+                        >
+                          <motion.span
+                            aria-hidden
+                            className={`pointer-events-none absolute inset-y-0 -left-10 w-16 -skew-x-12 blur-md ${
+                              isActive ? "bg-indigo-300/15 dark:bg-indigo-300/12" : "bg-indigo-200/20 dark:bg-indigo-400/10"
                             }`}
-                          >
-                            <motion.span
-                              aria-hidden
-                              className={`pointer-events-none absolute inset-y-0 -left-10 w-16 -skew-x-12 blur-md ${
-                                isActive ? "bg-indigo-300/15 dark:bg-indigo-300/12" : "bg-indigo-200/20 dark:bg-indigo-400/10"
-                              }`}
-                              animate={{ x: [0, 150, 0], opacity: isActive ? [0.08, 0.2, 0.08] : [0.06, 0.14, 0.06] }}
-                              transition={{ duration: isActive ? 3.4 : 4.8, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
-                            />
+                            animate={{ x: [0, 150, 0], opacity: isActive ? [0.08, 0.2, 0.08] : [0.06, 0.14, 0.06] }}
+                            transition={{ duration: isActive ? 3.4 : 4.8, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+                          />
 
                             <div className="flex items-start gap-2.5">
                               <span
@@ -1144,34 +1223,17 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
                                 </div>
                               </div>
                             </div>
-                          </motion.div>
-                        )
-                      })}
-                    </div>
-                  )}
-                </div>
-
-                <p className="mt-2 text-xs text-slate-600 dark:text-slate-300">
-                  You’re seeing live progress as each roadmap node is researched and assembled.
-                </p>
-              </>
-            ) : (
-              <div className="flex h-full flex-col items-center justify-start gap-4 pt-1 text-center">
-                <span className="text-[10px] uppercase tracking-[0.18em] text-indigo-600 dark:text-indigo-300">Nodes</span>
-                <div className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-indigo-300/50 bg-indigo-100/60 dark:border-indigo-300/25 dark:bg-indigo-500/20">
-                  <CheckCircle size={16} weight="fill" className="text-indigo-600 dark:text-indigo-300" />
-                </div>
-                <p className="text-xs font-semibold text-slate-700 dark:text-slate-200">{readyNodes}/{nodeLifecycle.length || 0}</p>
-                <div className="h-px w-8 bg-indigo-200 dark:bg-indigo-300/20" />
-                <div className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-violet-300/50 bg-violet-100/60 dark:border-violet-300/25 dark:bg-violet-500/20">
-                  <CircleNotch
-                    size={16}
-                    weight="bold"
-                    className={`${activeNodeId ? "animate-spin text-violet-600 dark:text-violet-300" : "text-violet-400 dark:text-violet-400"}`}
-                  />
-                </div>
+                        </motion.div>
+                      )
+                    })}
+                  </div>
+                )}
               </div>
-            )}
+
+              <p className="mt-2 text-xs text-slate-600 dark:text-slate-300">
+                You’re seeing live progress as each roadmap node is researched and assembled.
+              </p>
+            </>
           </SidebarBody>
         </Sidebar>
       </div>
