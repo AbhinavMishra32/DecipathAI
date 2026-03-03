@@ -11,9 +11,9 @@ const AUTH_SCENE_URL = "https://prod.spline.design/MBuRFh8T2tstsb4D/scene.spline
 
 const clerkAppearance = {
   elements: {
-    rootBox: "w-full",
-    cardBox: "w-full",
-    card: "w-full border-0 bg-transparent p-0 shadow-none",
+    rootBox: "!w-full !bg-transparent",
+    cardBox: "!w-full !bg-transparent",
+    card: "!w-full !border-0 !bg-transparent !p-0 !shadow-none",
     header: "hidden",
     footer: "hidden",
     socialButtonsBlockButton:
@@ -38,7 +38,7 @@ export default function SignInPage() {
   return (
     <main className={`${hubotSans.className} relative min-h-screen overflow-hidden bg-[#05060f] text-white`}>
       <Spline scene={AUTH_SCENE_URL} className="absolute inset-0 h-full w-full" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_12%,rgba(129,140,248,0.28),transparent_44%),radial-gradient(circle_at_82%_82%,rgba(56,189,248,0.12),transparent_34%),linear-gradient(180deg,rgba(2,6,23,0.35)_0%,rgba(2,6,23,0.64)_58%,rgba(2,6,23,0.88)_100%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_12%,rgba(129,140,248,0.14),transparent_46%),linear-gradient(180deg,rgba(2,6,23,0.14)_0%,rgba(2,6,23,0.24)_58%,rgba(2,6,23,0.4)_100%)]" />
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-[1240px] flex-col px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8">
         <header className="flex items-center justify-between">
@@ -60,7 +60,7 @@ export default function SignInPage() {
         </header>
 
         <section className="flex flex-1 items-center justify-center py-8 sm:py-10">
-          <div className="w-full max-w-[560px] rounded-[2rem] border border-white/18 bg-white/[0.07] p-6 shadow-[0_40px_95px_-54px_rgba(0,0,0,0.95)] backdrop-blur-2xl sm:p-9">
+          <div className="w-full max-w-[560px] rounded-[2rem] border border-white/20 bg-black/35 p-6 shadow-[0_40px_95px_-54px_rgba(0,0,0,0.95)] backdrop-blur-[16px] sm:p-9">
             <h1 className="text-4xl font-semibold tracking-tight text-white sm:text-5xl">Welcome back</h1>
             <p className="mt-3 text-base text-neutral-200/90">
               Don&apos;t have an account?{" "}
@@ -69,11 +69,11 @@ export default function SignInPage() {
               </Link>
             </p>
 
-            <div className="mt-8">
+            <div className="mt-8 [&_.cl-card]:!bg-transparent [&_.cl-card]:!shadow-none [&_.cl-main]:!bg-transparent [&_.cl-rootBox]:!bg-transparent [&_.cl-header]:!hidden [&_.cl-footer]:!hidden">
               {hasValidClerkPublishableKey ? (
                 <SignIn forceRedirectUrl="/roadmaps" fallbackRedirectUrl="/roadmaps" appearance={clerkAppearance} />
               ) : (
-                <div className="rounded-xl border border-amber-300/45 bg-amber-500/12 p-4 text-sm text-amber-100">
+                <div className="rounded-xl border border-white/20 bg-black/30 p-4 text-sm text-neutral-200">
                   Clerk auth is not configured. Set <span className="font-semibold">NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY</span> to enable sign in.
                 </div>
               )}
