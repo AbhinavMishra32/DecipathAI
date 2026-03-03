@@ -41,6 +41,7 @@ export default function SignInPage() {
     <main className={`${hubotSans.className} auth-shell relative min-h-screen overflow-hidden bg-[#05060f] text-white`}>
       <AuthSplineScene scene={AUTH_SCENE_URL} className="absolute inset-0 h-full w-full auth-enter" />
       <div className="pointer-events-none absolute inset-0 bg-black/38 auth-enter" />
+      <div className="pointer-events-none absolute bottom-4 right-4 z-[150] h-12 w-[11rem] rounded-xl bg-black" />
 
       <div className="pointer-events-none relative z-10 mx-auto flex min-h-screen w-full max-w-[1240px] flex-col px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8">
         <header className="pointer-events-auto flex items-center justify-between">

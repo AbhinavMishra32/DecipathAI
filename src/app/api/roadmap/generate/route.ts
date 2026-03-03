@@ -4,6 +4,7 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google"
 import { z } from "zod"
 
 export const runtime = "nodejs"
+export const maxDuration = 60
 
 type GenerateRoadmapRequest = {
   currentState?: string
@@ -495,6 +496,7 @@ const parseRetryAfterSeconds = (message: string): number | undefined => {
 
 const PRIMARY_MODEL = "gemini-3-flash-preview"
 const FALLBACK_MODEL = "gemini-2.5-flash"
+const TAVILY_HTTP_TIMEOUT_MS = 4500
 
 const hasThoughtSignatureError = (message: string): boolean => {
   const normalized = message.toLowerCase()
@@ -986,21 +988,40 @@ const runTavilySearch = async ({
   const startedAt = Date.now()
   log.debug("Tavily HTTP request started", { query, maxResults, searchDepth })
 
-  const response = await fetch("https://api.tavily.com/search", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      api_key: apiKey,
-      query,
-      max_results: maxResults,
-      search_depth: searchDepth,
-      include_answer: true,
-      include_raw_content: false,
-      include_images: false,
-    }),
-  })
+  const controller = new AbortController()
+  const timeoutHandle = setTimeout(() => controller.abort(), TAVILY_HTTP_TIMEOUT_MS)
+  let response: Response
+
+  try {
+    response = await fetch("https://api.tavily.com/search", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        api_key: apiKey,
+        query,
+        max_results: maxResults,
+        search_depth: searchDepth,
+        include_answer: true,
+        include_raw_content: false,
+        include_images: false,
+      }),
+      signal: controller.signal,
+    })
+  } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") {
+      log.warn("Tavily HTTP request timed out", {
+        query,
+        timeoutMs: TAVILY_HTTP_TIMEOUT_MS,
+      })
+      throw new Error(`Tavily search timed out after ${TAVILY_HTTP_TIMEOUT_MS}ms`)
+    }
+
+    throw error
+  } finally {
+    clearTimeout(timeoutHandle)
+  }
 
   if (!response.ok) {
     const bodyText = await response.text().catch(() => "")
@@ -1263,15 +1284,22 @@ export async function POST(request: NextRequest) {
                         const aggregatedResults = new Map<string, NodeReference>()
                         const answerFragments: string[] = []
 
-                        for (const selectedQuery of selectedQueries) {
-                          try {
-                            const searchPayload = await runTavilySearch({
+                        const subQueryResults = await Promise.allSettled(
+                          selectedQueries.map(async (selectedQuery) => ({
+                            selectedQuery,
+                            searchPayload: await runTavilySearch({
                               apiKey: tavilyApiKey,
                               query: selectedQuery,
                               maxResults: safeMaxResults,
                               searchDepth,
                               log,
-                            })
+                            }),
+                          })),
+                        )
+
+                        subQueryResults.forEach((subQueryResult, index) => {
+                          if (subQueryResult.status === "fulfilled") {
+                            const { searchPayload } = subQueryResult.value
 
                             searchPayload.results.forEach((entry) => {
                               if (!sourceRegistry.has(entry.url)) {
@@ -1286,14 +1314,16 @@ export async function POST(request: NextRequest) {
                             if (searchPayload.answer) {
                               answerFragments.push(searchPayload.answer)
                             }
-                          } catch (searchError) {
-                            log.warn("Sub-query failed inside tavily_search execution", {
-                              phase,
-                              query: selectedQuery,
-                              error: getErrorMessage(searchError),
-                            })
+
+                            return
                           }
-                        }
+
+                          log.warn("Sub-query failed inside tavily_search execution", {
+                            phase,
+                            query: selectedQueries[index],
+                            error: getErrorMessage(subQueryResult.reason),
+                          })
+                        })
 
                         const mergedResults = Array.from(aggregatedResults.values())
                         const mergedAnswer = answerFragments.join("\n\n").trim()
