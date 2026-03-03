@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
 import { generateText, tool } from "ai"
 import { createGoogleGenerativeAI } from "@ai-sdk/google"
+import { GenerationStatus } from "@prisma/client"
 import { z } from "zod"
+import { AuthError, requireDbUser } from "@/lib/auth"
+import { completeRoadmapGenerationRun, reserveRoadmapGenerationQuota } from "@/lib/entitlements"
 
 export const runtime = "nodejs"
 export const maxDuration = 600
@@ -1093,6 +1096,19 @@ export async function POST(request: NextRequest) {
     path: request.nextUrl.pathname,
   })
 
+  let dbUser: Awaited<ReturnType<typeof requireDbUser>>
+  try {
+    dbUser = await requireDbUser()
+  } catch (error) {
+    if (error instanceof AuthError) {
+      log.warn("Unauthorized roadmap generation request")
+      return NextResponse.json({ error: error.message }, { status: 401 })
+    }
+
+    log.error("Unexpected auth resolution failure", { error: getErrorMessage(error) })
+    return NextResponse.json({ error: "Failed to resolve user identity" }, { status: 500 })
+  }
+
   const geminiApiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY
   const tavilyApiKey = process.env.TAVILY_API_KEY
 
@@ -1143,6 +1159,44 @@ export async function POST(request: NextRequest) {
     theme: theme || "unset",
   })
 
+  const quotaReservation = await reserveRoadmapGenerationQuota({
+    userId: dbUser.id,
+    requestId,
+    currentStatePreview: preview(currentState, 180),
+    desiredOutcomePreview: preview(desiredOutcome, 180),
+  })
+
+  if (!quotaReservation.ok) {
+    log.warn("Roadmap generation request denied due to plan limits", {
+      planTier: quotaReservation.entitlement.planTier,
+      used: quotaReservation.entitlement.monthlyGenerationUsed,
+      limit: quotaReservation.entitlement.monthlyGenerationLimit,
+    })
+
+    return NextResponse.json(
+      {
+        code: quotaReservation.code,
+        error: quotaReservation.message,
+        planLabel: quotaReservation.entitlement.planLabel,
+        monthlyGenerationUsed: quotaReservation.entitlement.monthlyGenerationUsed,
+        monthlyGenerationLimit: quotaReservation.entitlement.monthlyGenerationLimit,
+      },
+      { status: 429 },
+    )
+  }
+
+  const entitlement = quotaReservation.entitlement
+  const generationRunId = quotaReservation.generationRunId
+  const limits = entitlement.limits
+  const clampPathwaySteps = (candidate: number, fallback: number): number => {
+    const safeCandidate = Number.isFinite(candidate) ? candidate : fallback
+    return Math.max(1, Math.min(safeCandidate, limits.pathwayPlanningMaxSteps))
+  }
+  const clampRoadmapSteps = (candidate: number, fallback: number): number => {
+    const safeCandidate = Number.isFinite(candidate) ? candidate : fallback
+    return Math.max(1, Math.min(safeCandidate, limits.roadmapSynthesisMaxSteps))
+  }
+
   const encoder = new TextEncoder()
   const stream = new ReadableStream<Uint8Array>({
     start(controller) {
@@ -1166,13 +1220,17 @@ export async function POST(request: NextRequest) {
         const sourceRegistry = new Map<string, NodeReference>()
         const researchedNodeIds = new Set<string>()
         let stepCounter = 0
+        let searchCallCount = 0
 
         try {
           const google = createGoogleGenerativeAI({ apiKey: geminiApiKey })
           log.info("Agent initialized", {
             model: PRIMARY_MODEL,
             fallbackModel: FALLBACK_MODEL,
-            maxSteps: 10,
+            planTier: entitlement.planTier,
+            pathwayPlanningMaxSteps: limits.pathwayPlanningMaxSteps,
+            roadmapSynthesisMaxSteps: limits.roadmapSynthesisMaxSteps,
+            maxSearchCalls: limits.maxSearchCalls,
             temperature: 0.2,
           })
           pushActivity(
@@ -1226,18 +1284,43 @@ export async function POST(request: NextRequest) {
                           message: "Either query or queries must be provided",
                         }),
                       execute: async ({ query, queries, maxResults, searchDepth }) => {
-                        const safeMaxResults = Math.max(1, Math.min(8, maxResults ?? 3))
+                        if (searchCallCount >= limits.maxSearchCalls) {
+                          log.warn("Search call budget exhausted for this generation", {
+                            phase,
+                            searchCallCount,
+                            maxSearchCalls: limits.maxSearchCalls,
+                          })
+
+                          pushActivity(
+                            createActivityEvent({
+                              type: "status",
+                              title: "Web research budget reached",
+                              detail: "Continuing with references already collected for this roadmap.",
+                            }),
+                          )
+
+                          return {
+                            query: safeString(query, `${phase} roadmap implementation evidence`),
+                            queries: [],
+                            answer: "",
+                            results: [],
+                          }
+                        }
+
+                        searchCallCount += 1
+                        const safeMaxResults = Math.max(1, Math.min(limits.maxResultsPerQuery, maxResults ?? 3))
                         const normalizedQueries = [...(query ? [query] : []), ...(queries ?? [])]
                           .map((item) => safeString(item))
                           .filter((item) => item.length >= 3)
                           .filter((item, index, list) => list.findIndex((entry) => entry.toLowerCase() === item.toLowerCase()) === index)
-                          .slice(0, 3)
+                          .slice(0, limits.maxSubqueriesPerSearchCall)
 
                         const selectedQueries =
                           normalizedQueries.length > 0
                             ? normalizedQueries
                             : [`${phase} roadmap implementation evidence`]
                         const primaryQuery = selectedQueries[0]
+                        const effectiveSearchDepth = limits.maxSearchDepth === "basic" ? "basic" : searchDepth
 
                         const matchedNode =
                           activePathwayPlan && phase.toLowerCase().includes("roadmap")
@@ -1248,7 +1331,7 @@ export async function POST(request: NextRequest) {
                           primaryQuery,
                           queryCount: selectedQueries.length,
                           maxResults: safeMaxResults,
-                          searchDepth,
+                          searchDepth: effectiveSearchDepth,
                           phase,
                         })
 
@@ -1266,7 +1349,7 @@ export async function POST(request: NextRequest) {
                               query: primaryQuery,
                               queries: selectedQueries,
                               maxResults: safeMaxResults,
-                              searchDepth,
+                              searchDepth: effectiveSearchDepth,
                               showcase: matchedNode
                                 ? {
                                     kind: "node-research",
@@ -1291,7 +1374,7 @@ export async function POST(request: NextRequest) {
                               apiKey: tavilyApiKey,
                               query: selectedQuery,
                               maxResults: safeMaxResults,
-                              searchDepth,
+                              searchDepth: effectiveSearchDepth,
                               log,
                             }),
                           })),
@@ -1548,7 +1631,7 @@ export async function POST(request: NextRequest) {
 
 Tool input guardrails (mandatory):
 - For tavily_search, pass either a single "query" string OR "queries" array.
-- If using "queries", include at most 3 concise queries.
+- If using "queries", include at most ${limits.maxSubqueriesPerSearchCall} concise queries.
 - Prefer one focused query when possible.`
 
                 try {
@@ -1759,7 +1842,7 @@ Recovery constraints:
             phase: "Pathway planning",
             system: pathwayPlanningSystemPrompt,
             prompt: pathwayPlanningPrompt,
-            maxSteps: 8,
+            maxSteps: clampPathwaySteps(limits.pathwayPlanningMaxSteps, 8),
           })
 
           let pathwayPlan: PathwayPlan
@@ -1771,7 +1854,7 @@ Recovery constraints:
               initialPass: pathwayPass,
               parse: (rawText) => normalizePathwayPlan(JSON.parse(extractJsonObject(rawText))),
               maxRepairAttempts: 2,
-              repairMaxSteps: 5,
+              repairMaxSteps: clampPathwaySteps(5, limits.pathwayPlanningMaxSteps),
             })
 
             pathwayPass = pathwayParsed.pass
@@ -1857,7 +1940,7 @@ Recovery constraints:
             phase: "Roadmap synthesis",
             system: roadmapSystemPrompt,
             prompt: roadmapBasePrompt,
-            maxSteps: 9,
+            maxSteps: clampRoadmapSteps(limits.roadmapSynthesisMaxSteps, 9),
           })
 
           const parseNormalizedRoadmap = (rawText: string) =>
@@ -1902,7 +1985,7 @@ Critical fixes:
                 phase: "Roadmap synthesis (structure repair)",
                 system: roadmapSystemPrompt,
                 prompt: repairPrompt,
-                maxSteps: 6,
+                maxSteps: clampRoadmapSteps(6, limits.roadmapSynthesisMaxSteps),
               })
             }
           }
@@ -1945,7 +2028,7 @@ Regenerate a better branched graph using web evidence via tools.`
               phase: "Roadmap synthesis (repair)",
               system: roadmapSystemPrompt,
               prompt: strictPrompt,
-              maxSteps: 7,
+              maxSteps: clampRoadmapSteps(7, limits.roadmapSynthesisMaxSteps),
             })
 
             const strictParsed = await parseWithJsonRecovery({
@@ -1955,7 +2038,7 @@ Regenerate a better branched graph using web evidence via tools.`
               initialPass: roadmapPass,
               parse: parseNormalizedRoadmap,
               maxRepairAttempts: 1,
-              repairMaxSteps: 5,
+              repairMaxSteps: clampRoadmapSteps(5, limits.roadmapSynthesisMaxSteps),
             })
 
             roadmapPass = strictParsed.pass
@@ -1998,7 +2081,7 @@ Non-negotiable graph rules:
                   phase: "Roadmap synthesis (topology salvage)",
                   system: roadmapSystemPrompt,
                   prompt: salvagePrompt,
-                  maxSteps: 6,
+                  maxSteps: clampRoadmapSteps(6, limits.roadmapSynthesisMaxSteps),
                 })
 
                 const salvageParsed = await parseWithJsonRecovery({
@@ -2008,7 +2091,7 @@ Non-negotiable graph rules:
                   initialPass: salvagePass,
                   parse: parseNormalizedRoadmap,
                   maxRepairAttempts: 1,
-                  repairMaxSteps: 5,
+                  repairMaxSteps: clampRoadmapSteps(5, limits.roadmapSynthesisMaxSteps),
                 })
 
                 const salvagedPayload = salvageParsed.parsed
@@ -2150,6 +2233,17 @@ Non-negotiable graph rules:
             }),
           )
 
+          await completeRoadmapGenerationRun({
+            runId: generationRunId,
+            status: GenerationStatus.SUCCEEDED,
+            searchCallsUsed: searchCallCount,
+          }).catch((trackingError) => {
+            log.warn("Failed to mark generation run as succeeded", {
+              generationRunId,
+              error: getErrorMessage(trackingError),
+            })
+          })
+
           write("result", {
             initialNodes: enrichedNodes,
             initialEdges: normalized.aiEdges,
@@ -2185,6 +2279,19 @@ Non-negotiable graph rules:
             message: classified.userMessage,
             retryAfterSeconds: classified.retryAfterSeconds,
             rawMessage: classified.rawMessage,
+          })
+
+          await completeRoadmapGenerationRun({
+            runId: generationRunId,
+            status: GenerationStatus.FAILED,
+            searchCallsUsed: searchCallCount,
+            errorCode: classified.code,
+            errorMessage: classified.userMessage,
+          }).catch((trackingError) => {
+            log.warn("Failed to mark generation run as failed", {
+              generationRunId,
+              error: getErrorMessage(trackingError),
+            })
           })
         } finally {
           log.info("SSE stream closed")
