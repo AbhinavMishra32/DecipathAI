@@ -4,7 +4,7 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google"
 import { z } from "zod"
 
 export const runtime = "nodejs"
-export const maxDuration = 60
+export const maxDuration = 600
 
 type GenerateRoadmapRequest = {
   currentState?: string
