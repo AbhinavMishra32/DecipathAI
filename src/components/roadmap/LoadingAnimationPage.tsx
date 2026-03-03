@@ -58,54 +58,54 @@ const THREAD_META: Record<ThreadKind, Pick<ThreadEntry, "icon" | "dotClass" | "t
   thought: {
     icon: "✦",
     label: "Thought",
-    dotClass: "bg-violet-500/80",
+    dotClass: "bg-violet-500/85",
     titleClass: "text-violet-700 dark:text-violet-300",
     markerShape: "dot",
   },
   action: {
     icon: "search",
     label: "Searching",
-    dotClass: "bg-purple-500/85",
-    titleClass: "text-purple-700 dark:text-purple-300",
+    dotClass: "bg-fuchsia-500/85",
+    titleClass: "text-fuchsia-700 dark:text-fuchsia-300",
     markerShape: "square",
   },
   checkpoint: {
     icon: "◈",
     label: "Checkpoint",
-    dotClass: "bg-indigo-500/85",
-    titleClass: "text-indigo-700 dark:text-indigo-300",
+    dotClass: "bg-purple-500/85",
+    titleClass: "text-purple-700 dark:text-purple-300",
     markerShape: "diamond",
   },
   outcome: {
     icon: "✓",
     label: "Outcome",
-    dotClass: "bg-violet-400/90",
-    titleClass: "text-violet-600 dark:text-violet-200",
+    dotClass: "bg-emerald-500/90",
+    titleClass: "text-emerald-700 dark:text-emerald-300",
     markerShape: "ring",
   },
   warning: {
     icon: "⚑",
     label: "Warning",
-    dotClass: "bg-purple-400/85",
-    titleClass: "text-purple-700 dark:text-purple-300",
+    dotClass: "bg-amber-500/85",
+    titleClass: "text-amber-700 dark:text-amber-300",
     markerShape: "diamond",
   },
   error: {
     icon: "⚠",
     label: "Error",
-    dotClass: "bg-violet-700/90",
-    titleClass: "text-violet-800 dark:text-violet-200",
+    dotClass: "bg-rose-500/90",
+    titleClass: "text-rose-700 dark:text-rose-300",
     markerShape: "square",
   },
 }
 
 const THREAD_GLOW_CLASS: Record<ThreadKind, string> = {
   thought: "bg-violet-400/25 dark:bg-violet-400/20",
-  action: "bg-blue-400/25 dark:bg-blue-400/20",
-  checkpoint: "bg-indigo-400/25 dark:bg-indigo-400/20",
-  outcome: "bg-violet-300/25 dark:bg-violet-300/20",
-  warning: "bg-purple-400/25 dark:bg-purple-400/20",
-  error: "bg-violet-600/25 dark:bg-violet-500/20",
+  action: "bg-fuchsia-400/25 dark:bg-fuchsia-400/20",
+  checkpoint: "bg-purple-400/25 dark:bg-purple-400/20",
+  outcome: "bg-emerald-400/25 dark:bg-emerald-400/20",
+  warning: "bg-amber-400/25 dark:bg-amber-400/20",
+  error: "bg-rose-500/25 dark:bg-rose-400/20",
 }
 
 const THREAD_ROW_CLASS: Record<ThreadKind, string> = {
@@ -169,11 +169,11 @@ const getRowSweepAnimation = (kind: ThreadKind) => {
 const getLiveTextAnimation = (kind: ThreadKind) => {
   switch (kind) {
     case "action":
-      return { opacity: [0.78, 1, 0.78], textShadow: ["0 0 0px rgba(59,130,246,0)", "0 0 10px rgba(59,130,246,0.28)", "0 0 0px rgba(59,130,246,0)"] }
+      return { opacity: [0.78, 1, 0.78], textShadow: ["0 0 0px rgba(217,70,239,0)", "0 0 10px rgba(217,70,239,0.28)", "0 0 0px rgba(217,70,239,0)"] }
     case "checkpoint":
-      return { opacity: [0.8, 1, 0.8], textShadow: ["0 0 0px rgba(99,102,241,0)", "0 0 11px rgba(99,102,241,0.28)", "0 0 0px rgba(99,102,241,0)"] }
+      return { opacity: [0.8, 1, 0.8], textShadow: ["0 0 0px rgba(168,85,247,0)", "0 0 11px rgba(168,85,247,0.28)", "0 0 0px rgba(168,85,247,0)"] }
     case "outcome":
-      return { opacity: [0.82, 1, 0.82], textShadow: ["0 0 0px rgba(196,181,253,0)", "0 0 9px rgba(196,181,253,0.3)", "0 0 0px rgba(196,181,253,0)"] }
+      return { opacity: [0.82, 1, 0.82], textShadow: ["0 0 0px rgba(16,185,129,0)", "0 0 9px rgba(16,185,129,0.3)", "0 0 0px rgba(16,185,129,0)"] }
     default:
       return { opacity: [0.8, 1, 0.8], textShadow: ["0 0 0px rgba(139,92,246,0)", "0 0 8px rgba(139,92,246,0.24)", "0 0 0px rgba(139,92,246,0)"] }
   }
@@ -246,18 +246,18 @@ const TypeBlurText = ({ text, className, kind, isLatest, live = false, lowPerf =
 const NODE_STAGE_META: Record<NodeLifecycleStage, { label: string; dotClass: string; textClass: string }> = {
   planned: {
     label: "Planned",
-    dotClass: "bg-slate-400/80 dark:bg-slate-500/80",
-    textClass: "text-slate-600 dark:text-slate-300",
+    dotClass: "bg-violet-300/80 dark:bg-violet-400/80",
+    textClass: "text-violet-600 dark:text-violet-300",
   },
   researching: {
     label: "Researching",
-    dotClass: "bg-indigo-500/90 dark:bg-indigo-400/90",
-    textClass: "text-indigo-700 dark:text-indigo-300",
+    dotClass: "bg-purple-500/90 dark:bg-purple-400/90",
+    textClass: "text-purple-700 dark:text-purple-300",
   },
   researched: {
     label: "Evidence ready",
-    dotClass: "bg-violet-500/90 dark:bg-violet-400/90",
-    textClass: "text-violet-700 dark:text-violet-300",
+    dotClass: "bg-fuchsia-500/90 dark:bg-fuchsia-400/90",
+    textClass: "text-fuchsia-700 dark:text-fuchsia-300",
   },
   ready: {
     label: "Node card ready",
@@ -799,10 +799,14 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
   const readyNodes = nodeLifecycle.filter((node) => node.stage === "ready").length
   const activeNodeId = [...nodeLifecycle].reverse().find((node) => node.stage === "researching")?.id
   const searchStepCount = threadEntries.filter((entry) => entry.kind === "action").length
-  const checkpointCount = threadEntries.filter((entry) => entry.kind === "checkpoint").length
   const liveSearchLimit = accountUsage?.maxSearchCalls ?? 0
   const liveSearchUsed = liveSearchLimit > 0 ? Math.min(searchStepCount, liveSearchLimit) : searchStepCount
   const liveSearchRemaining = Math.max(0, liveSearchLimit - liveSearchUsed)
+  const generationUsed = accountUsage?.monthlyGenerationUsed ?? 0
+  const generationLimit = accountUsage?.monthlyGenerationLimit ?? 0
+  const generationRemaining = accountUsage?.monthlyGenerationRemaining ?? 0
+  const generationProgress = generationLimit > 0 ? Math.min(generationUsed / generationLimit, 1) : 0
+  const searchProgress = liveSearchLimit > 0 ? Math.min(liveSearchUsed / liveSearchLimit, 1) : 0
 
   const threadRevealRanks = useMemo(() => {
     const currentIds = threadEntries.map((entry) => entry.id)
@@ -850,10 +854,10 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
       }`}
     >
       <div className="mx-auto grid h-full min-h-0 w-full max-w-[1280px] grid-cols-1 items-stretch gap-6 px-6 py-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-8">
-        <section className="relative flex min-h-0 flex-col overflow-hidden rounded-2xl border border-indigo-200/50 bg-white/80 p-5 shadow-2xl shadow-indigo-900/10 backdrop-blur-xl dark:border-indigo-300/20 dark:bg-neutral-950/55 dark:shadow-indigo-950/40">
+        <section className="relative flex min-h-0 flex-col overflow-hidden rounded-2xl border border-violet-200/50 bg-white/80 p-5 shadow-2xl shadow-violet-900/10 backdrop-blur-xl dark:border-violet-300/20 dark:bg-neutral-950/55 dark:shadow-violet-950/40">
           <motion.div
             aria-hidden
-            className="pointer-events-none absolute -left-10 top-10 h-36 w-36 rounded-full bg-indigo-300/20 blur-3xl dark:bg-indigo-500/20"
+            className="pointer-events-none absolute -left-10 top-10 h-36 w-36 rounded-full bg-violet-300/20 blur-3xl dark:bg-violet-500/20"
             animate={{ opacity: [0.2, 0.42, 0.2], x: [0, 10, 0], y: [0, -6, 0] }}
             transition={{ duration: 8, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
           />
@@ -863,9 +867,9 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
             animate={{ opacity: [0.16, 0.34, 0.16], x: [0, -10, 0], y: [0, 8, 0] }}
             transition={{ duration: 9, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
           />
-          <div className="mb-4 flex flex-wrap items-end justify-between gap-3 border-b border-indigo-200/70 pb-3 dark:border-indigo-300/20">
+          <div className="mb-4 flex flex-wrap items-end justify-between gap-3 border-b border-violet-200/70 pb-3 dark:border-violet-300/20">
             <div>
-              <p className="text-[11px] uppercase tracking-[0.16em] text-indigo-600 dark:text-indigo-300">Agent Research Thread</p>
+              <p className="text-[11px] uppercase tracking-[0.16em] text-violet-600 dark:text-violet-300">Agent Research Thread</p>
               <h2 className="mt-1 text-xl font-semibold text-slate-900 dark:text-slate-100">Building your roadmap step by step</h2>
               <p className="mt-1 text-[13px] leading-snug text-slate-600 dark:text-slate-300">{roadmapIntent}</p>
             </div>
@@ -874,36 +878,60 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
             </p>
           </div>
 
-          <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-5">
-            <div className="rounded-lg border border-indigo-200/65 px-3 py-2 dark:border-indigo-300/20">
-              <p className="text-[10px] uppercase tracking-[0.12em] text-indigo-600/90 dark:text-indigo-300/90">Thread events</p>
-              <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{threadEntries.length}</p>
+          <div className="mb-4 rounded-xl border border-violet-200/65 bg-white/55 px-3.5 py-2.5 backdrop-blur-md dark:border-violet-300/20 dark:bg-violet-500/5">
+            <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+              <span className="inline-flex items-center rounded-full border border-violet-300/70 bg-violet-100/80 px-2 py-0.5 font-medium text-violet-700 dark:border-violet-300/30 dark:bg-violet-500/15 dark:text-violet-200">
+                {accountUsage ? accountUsage.planLabel : "Loading plan..."}
+              </span>
+              <span className="text-slate-600 dark:text-slate-300">
+                {accountUsage ? `${generationRemaining} generation credits left this month` : "Fetching account credits..."}
+              </span>
+              <span className="hidden h-1 w-1 rounded-full bg-violet-300/90 sm:inline-block" />
+              <span className="text-slate-600 dark:text-slate-300">
+                {liveSearchLimit > 0 ? `${liveSearchRemaining} research calls left in this run` : "Calculating run budget..."}
+              </span>
             </div>
-            <div className="rounded-lg border border-blue-200/65 px-3 py-2 dark:border-blue-300/20">
-              <p className="text-[10px] uppercase tracking-[0.12em] text-blue-600/90 dark:text-blue-300/90">Search steps</p>
-              <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{searchStepCount}</p>
-            </div>
-            <div className="rounded-lg border border-violet-200/65 px-3 py-2 dark:border-violet-300/20">
-              <p className="text-[10px] uppercase tracking-[0.12em] text-violet-600/90 dark:text-violet-300/90">Checkpoints</p>
-              <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{checkpointCount}</p>
-            </div>
-            <div className="rounded-lg border border-emerald-200/65 px-3 py-2 dark:border-emerald-300/20">
-              <p className="text-[10px] uppercase tracking-[0.12em] text-emerald-600/90 dark:text-emerald-300/90">Research budget</p>
-              <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
-                {liveSearchLimit > 0 ? `${liveSearchUsed}/${liveSearchLimit}` : "--"}
-              </p>
-              <p className="text-[11px] text-slate-600 dark:text-slate-300">
-                {liveSearchLimit > 0 ? `${liveSearchRemaining} left` : "Loading..."}
-              </p>
-            </div>
-            <div className="rounded-lg border border-fuchsia-200/65 px-3 py-2 dark:border-fuchsia-300/20">
-              <p className="text-[10px] uppercase tracking-[0.12em] text-fuchsia-600/90 dark:text-fuchsia-300/90">Plan usage</p>
-              <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
-                {accountUsage ? `${accountUsage.monthlyGenerationUsed}/${accountUsage.monthlyGenerationLimit}` : "--"}
-              </p>
-              <p className="text-[11px] text-slate-600 dark:text-slate-300">
-                {accountUsage ? `${accountUsage.monthlyGenerationRemaining} left · ${accountUsage.planLabel}` : "Loading..."}
-              </p>
+
+            <div className="mt-2.5 grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <div className="rounded-lg border border-violet-200/60 px-2.5 py-2 dark:border-violet-300/20">
+                <div className="flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-300">
+                  <span>Monthly generation credits</span>
+                  <span className="font-semibold text-slate-900 dark:text-slate-100">
+                    {accountUsage ? `${generationUsed}/${generationLimit}` : "--"}
+                  </span>
+                </div>
+                <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-violet-100/80 dark:bg-violet-500/20">
+                  <motion.span
+                    className="block h-full rounded-full bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500 dark:from-violet-300 dark:via-purple-300 dark:to-fuchsia-300"
+                    animate={{ width: `${Math.max(Math.round(generationProgress * 100), accountUsage ? 2 : 8)}%` }}
+                    transition={{ duration: 0.35, ease: "easeOut" }}
+                  />
+                </div>
+                <p className="mt-1 text-[10px] uppercase tracking-[0.08em] text-violet-600/90 dark:text-violet-300/90">
+                  {accountUsage ? `${generationRemaining} remaining` : "Loading..."}
+                </p>
+              </div>
+
+              <div className="rounded-lg border border-fuchsia-200/60 px-2.5 py-2 dark:border-fuchsia-300/20">
+                <div className="flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-300">
+                  <span>Live research calls</span>
+                  <span className="font-semibold text-slate-900 dark:text-slate-100">
+                    {liveSearchLimit > 0 ? `${liveSearchUsed}/${liveSearchLimit}` : "--"}
+                  </span>
+                </div>
+                <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-fuchsia-100/80 dark:bg-fuchsia-500/20">
+                  <motion.span
+                    className="block h-full rounded-full bg-gradient-to-r from-fuchsia-500 via-violet-500 to-purple-500 dark:from-fuchsia-300 dark:via-violet-300 dark:to-purple-300"
+                    animate={{ width: `${Math.max(Math.round(searchProgress * 100), liveSearchLimit > 0 ? 2 : 8)}%` }}
+                    transition={{ duration: 0.35, ease: "easeOut" }}
+                  />
+                </div>
+                <p className="mt-1 text-[10px] uppercase tracking-[0.08em] text-fuchsia-600/90 dark:text-fuchsia-300/90">
+                  {accountUsage
+                    ? `${liveSearchRemaining} left · ${accountUsage.planTier === "PRO" ? "Advanced research depth" : "Basic research depth"}`
+                    : "Loading..."}
+                </p>
+              </div>
             </div>
           </div>
 
@@ -914,22 +942,39 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.2 }}
-              className="mb-5 rounded-xl border border-indigo-200/60 bg-indigo-50/55 px-3.5 py-2.5 backdrop-blur-md dark:border-indigo-300/20 dark:bg-indigo-500/10"
+              className="mb-4 rounded-lg border border-violet-200/65 bg-gradient-to-r from-violet-50/85 via-white/40 to-fuchsia-50/50 px-3 py-2 backdrop-blur-md dark:border-violet-300/20 dark:from-violet-500/12 dark:via-violet-500/5 dark:to-fuchsia-500/10"
             >
-              <p className="text-xs uppercase tracking-wide text-indigo-600 dark:text-indigo-300">Current focus</p>
-              <p className="mt-1 text-base font-medium text-slate-900 dark:text-slate-100">{currentThought}</p>
-              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300/90">
-                {currentSearchQueries.length > 0
-                  ? currentSearchQueries.length === 1
-                    ? `Live query: ${currentSearchQueries[0]}`
-                    : `Live grouped queries: ${currentSearchQueries.join(" • ")}`
-                  : latestEvent?.title || "Initializing roadmap research..."}
-              </p>
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-[11px] uppercase tracking-[0.13em] text-violet-600 dark:text-violet-300">Current focus</p>
+                {currentSearchQueries.length > 0 && (
+                  <span className="rounded-full border border-violet-300/60 px-2 py-0.5 text-[10px] uppercase tracking-[0.1em] text-violet-700 dark:border-violet-300/30 dark:text-violet-300">
+                    {currentSearchQueries.length} live query{currentSearchQueries.length > 1 ? "ies" : ""}
+                  </span>
+                )}
+              </div>
+              <p className="mt-1 text-[15px] font-medium leading-snug text-slate-900 dark:text-slate-100">{currentThought}</p>
+
+              {currentSearchQueries.length > 0 ? (
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {currentSearchQueries.slice(0, 3).map((query) => (
+                    <span
+                      key={query}
+                      className="rounded-full border border-violet-200/80 bg-white/70 px-2 py-0.5 text-[11px] text-slate-700 dark:border-violet-300/20 dark:bg-violet-500/10 dark:text-slate-200"
+                    >
+                      {query}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-1 text-[12px] text-slate-600 dark:text-slate-300/90">
+                  {latestEvent?.title || "Initializing roadmap research..."}
+                </p>
+              )}
             </motion.div>
           </AnimatePresence>
 
           <div ref={threadViewportRef} className="relative min-h-0 flex-1 overflow-auto pr-1">
-            <span className="absolute bottom-2 left-[6px] top-1 w-px bg-indigo-200 dark:bg-indigo-300/20" />
+            <span className="absolute bottom-2 left-[6px] top-1 w-px bg-violet-200 dark:bg-violet-300/20" />
 
             <div className="space-y-2 pb-6">
               {threadEntries.map((entry, index) => (
@@ -994,7 +1039,7 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
                             animate={isLatest ? (lowPerfDevice ? { scale: [1, 1.04, 1] } : { rotate: [0, -8, 8, 0], scale: [1, 1.06, 1] }) : { rotate: 0, scale: 1 }}
                             transition={isLatest ? { duration: lowPerfDevice ? 1.6 : 0.9, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" } : { duration: 0.2 }}
                           >
-                            <MagnifyingGlass size={13} weight="bold" className="text-purple-600/90 dark:text-purple-300/90" />
+                            <MagnifyingGlass size={13} weight="bold" className="text-fuchsia-600/90 dark:text-fuchsia-300/90" />
                           </motion.span>
                         ) : (
                           <span className="text-[12px]">{entry.icon}</span>
@@ -1021,15 +1066,15 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
                             lowPerf={lowPerfDevice}
                           />
                           {isLatest && (
-                            <div className="mt-1.5 flex items-center gap-2 text-[10px] uppercase tracking-[0.1em] text-purple-600/90 dark:text-purple-300/90">
-                              <div className="relative h-[6px] w-[74px] overflow-hidden rounded-full bg-gradient-to-r from-blue-500/20 via-indigo-500/25 to-violet-500/20 dark:from-blue-300/20 dark:via-indigo-300/25 dark:to-violet-300/20">
+                            <div className="mt-1.5 flex items-center gap-2 text-[10px] uppercase tracking-[0.1em] text-fuchsia-600/90 dark:text-fuchsia-300/90">
+                              <div className="relative h-[6px] w-[74px] overflow-hidden rounded-full bg-gradient-to-r from-violet-500/20 via-fuchsia-500/25 to-purple-500/20 dark:from-violet-300/20 dark:via-fuchsia-300/25 dark:to-purple-300/20">
                                 <motion.span
-                                  className="absolute inset-y-0 left-[-35%] w-[40%] rounded-full bg-gradient-to-r from-transparent via-indigo-400/85 to-transparent dark:via-indigo-300/85"
+                                  className="absolute inset-y-0 left-[-35%] w-[40%] rounded-full bg-gradient-to-r from-transparent via-fuchsia-400/85 to-transparent dark:via-fuchsia-300/85"
                                   animate={lowPerfDevice ? { opacity: [0.25, 0.7, 0.25] } : { x: [0, 92, 0], opacity: [0.2, 0.95, 0.2] }}
                                   transition={{ duration: lowPerfDevice ? 2.4 : 1.6, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
                                 />
                                 <motion.span
-                                  className="absolute top-1/2 h-[8px] w-[8px] -translate-y-1/2 rounded-full bg-blue-500/80 blur-[1px] dark:bg-blue-300/80"
+                                  className="absolute top-1/2 h-[8px] w-[8px] -translate-y-1/2 rounded-full bg-violet-500/80 blur-[1px] dark:bg-violet-300/80"
                                   animate={lowPerfDevice ? { opacity: [0.35, 0.9, 0.35], scale: [0.92, 1.02, 0.92] } : { x: [2, 64, 2], opacity: [0.35, 1, 0.35], scale: [0.9, 1.08, 0.9] }}
                                   transition={{ duration: lowPerfDevice ? 2.6 : 1.8, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
                                 />
@@ -1037,17 +1082,17 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
 
                               <div className="flex items-center gap-1">
                                 <motion.span
-                                  className="h-1.5 w-1.5 rounded-full bg-blue-500 dark:bg-blue-300"
+                                  className="h-1.5 w-1.5 rounded-full bg-violet-500 dark:bg-violet-300"
                                   animate={{ y: [0, -2, 0], opacity: [0.35, 1, 0.35] }}
                                   transition={{ duration: lowPerfDevice ? 1.4 : 0.95, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut", delay: 0 }}
                                 />
                                 <motion.span
-                                  className="h-1.5 w-1.5 rounded-full bg-indigo-500 dark:bg-indigo-300"
+                                  className="h-1.5 w-1.5 rounded-full bg-fuchsia-500 dark:bg-fuchsia-300"
                                   animate={{ y: [0, -2, 0], opacity: [0.35, 1, 0.35] }}
                                   transition={{ duration: lowPerfDevice ? 1.4 : 0.95, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut", delay: 0.15 }}
                                 />
                                 <motion.span
-                                  className="h-1.5 w-1.5 rounded-full bg-violet-500 dark:bg-violet-300"
+                                  className="h-1.5 w-1.5 rounded-full bg-purple-500 dark:bg-purple-300"
                                   animate={{ y: [0, -2, 0], opacity: [0.35, 1, 0.35] }}
                                   transition={{ duration: lowPerfDevice ? 1.4 : 0.95, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut", delay: 0.3 }}
                                 />
@@ -1073,9 +1118,9 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
                         />
                       )}
                       {entry.kind === "checkpoint" && isLatest && (
-                        <div className="mt-1 flex items-center gap-1.5 text-[10px] uppercase tracking-[0.08em] text-indigo-700/90 dark:text-indigo-300/90">
+                        <div className="mt-1 flex items-center gap-1.5 text-[10px] uppercase tracking-[0.08em] text-purple-700/90 dark:text-purple-300/90">
                           <motion.span
-                            className="h-1.5 w-1.5 rounded-[2px] bg-indigo-500 dark:bg-indigo-300"
+                            className="h-1.5 w-1.5 rounded-[2px] bg-purple-500 dark:bg-purple-300"
                             animate={{ rotate: [45, 45, 45], scale: [1, 1.35, 1], opacity: [0.45, 1, 0.45] }}
                             transition={{ duration: 1.1, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
                           />
@@ -1089,13 +1134,13 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
                             entry.kind === "thought"
                               ? "text-slate-600 dark:text-slate-300"
                               : entry.kind === "warning"
-                                ? "text-purple-700/90 dark:text-purple-300"
+                                ? "text-amber-700/90 dark:text-amber-300"
                                 : entry.kind === "error"
-                                  ? "text-violet-700/90 dark:text-violet-300"
+                                  ? "text-rose-700/90 dark:text-rose-300"
                                   : entry.kind === "outcome"
-                                    ? "text-violet-600/90 dark:text-violet-200"
+                                    ? "text-emerald-700/90 dark:text-emerald-300"
                                     : entry.kind === "checkpoint"
-                                      ? "text-indigo-700/90 dark:text-indigo-300"
+                                      ? "text-purple-700/90 dark:text-purple-300"
                                     : "text-slate-600 dark:text-slate-300"
                           }`}
                           kind={entry.kind}
@@ -1127,13 +1172,13 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
           <SidebarBody className="relative min-h-0 flex-col overflow-hidden p-4">
             <motion.div
               aria-hidden
-              className="pointer-events-none absolute -right-10 top-10 h-32 w-32 rounded-full bg-indigo-300/25 blur-3xl dark:bg-indigo-500/20"
+              className="pointer-events-none absolute -right-10 top-10 h-32 w-32 rounded-full bg-violet-300/25 blur-3xl dark:bg-violet-500/20"
               animate={{ opacity: [0.2, 0.4, 0.2], x: [0, -8, 0], y: [0, 6, 0] }}
               transition={{ duration: 7, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
             />
 
             <>
-              <p className="text-[11px] uppercase tracking-[0.16em] text-indigo-600 dark:text-indigo-300">Node Construction</p>
+              <p className="text-[11px] uppercase tracking-[0.16em] text-violet-600 dark:text-violet-300">Node Construction</p>
               <p className="mt-1 text-sm text-slate-700 dark:text-slate-200">
                 {nodeLifecycle.length > 0
                   ? `${readyNodes}/${nodeLifecycle.length} nodes ready`
@@ -1142,7 +1187,7 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
 
               <div className="mt-3 min-h-0 flex-1 overflow-auto pr-1">
                 {nodeLifecycle.length === 0 ? (
-                  <div className="rounded-xl border border-indigo-200/60 bg-indigo-100/40 p-3 text-xs text-slate-600 dark:border-indigo-300/20 dark:bg-indigo-500/10 dark:text-slate-300">
+                  <div className="rounded-xl border border-violet-200/60 bg-violet-100/40 p-3 text-xs text-slate-600 dark:border-violet-300/20 dark:bg-violet-500/10 dark:text-slate-300">
                     The agent will populate this panel as soon as planned roadmap nodes are identified.
                   </div>
                 ) : (
@@ -1160,15 +1205,15 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
                           className={`group relative overflow-hidden rounded-xl border px-3 py-2.5 backdrop-blur-md transition-colors ${
                             isActive
                               ? isDark
-                                ? "border-indigo-300/35 bg-indigo-500/10 shadow-lg shadow-indigo-500/10"
-                                : "border-indigo-400/50 bg-indigo-100/45 shadow-lg shadow-indigo-500/10"
-                              : "border-indigo-200/60 bg-white/65 dark:border-indigo-300/15 dark:bg-neutral-900/40"
+                                ? "border-violet-300/35 bg-violet-500/10 shadow-lg shadow-violet-500/10"
+                                : "border-violet-400/50 bg-violet-100/45 shadow-lg shadow-violet-500/10"
+                              : "border-violet-200/60 bg-white/65 dark:border-violet-300/15 dark:bg-neutral-900/40"
                           }`}
                         >
                           <motion.span
                             aria-hidden
                             className={`pointer-events-none absolute inset-y-0 -left-10 w-16 -skew-x-12 blur-md ${
-                              isActive ? "bg-indigo-300/15 dark:bg-indigo-300/12" : "bg-indigo-200/20 dark:bg-indigo-400/10"
+                              isActive ? "bg-violet-300/15 dark:bg-violet-300/12" : "bg-violet-200/20 dark:bg-violet-400/10"
                             }`}
                             animate={{ x: [0, 150, 0], opacity: isActive ? [0.08, 0.2, 0.08] : [0.06, 0.14, 0.06] }}
                             transition={{ duration: isActive ? 3.4 : 4.8, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
@@ -1176,7 +1221,7 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
 
                             <div className="flex items-start gap-2.5">
                               <span
-                                className={`mt-[3px] inline-flex h-5 w-5 items-center justify-center rounded-full ring-1 ring-indigo-200/70 dark:ring-indigo-300/20 ${stageMeta.dotClass}`}
+                                className={`mt-[3px] inline-flex h-5 w-5 items-center justify-center rounded-full ring-1 ring-violet-200/70 dark:ring-violet-300/20 ${stageMeta.dotClass}`}
                               >
                                 {node.stage === "ready" ? (
                                   <CheckCircle size={13} weight="fill" className="text-white" />
@@ -1206,8 +1251,8 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
 
                                 <div className="mt-1.5 max-h-0 overflow-hidden opacity-0 transition-all duration-300 ease-out group-hover:max-h-28 group-hover:opacity-100">
                                   {node.searchQueries.length > 0 && (
-                                    <div className="rounded-lg border border-indigo-200/60 bg-indigo-50/55 px-2 py-1.5 dark:border-indigo-300/20 dark:bg-indigo-500/10">
-                                      <p className="text-[10px] uppercase tracking-[0.12em] text-indigo-600 dark:text-indigo-300">Recent searches</p>
+                                    <div className="rounded-lg border border-violet-200/60 bg-violet-50/55 px-2 py-1.5 dark:border-violet-300/20 dark:bg-violet-500/10">
+                                      <p className="text-[10px] uppercase tracking-[0.12em] text-violet-600 dark:text-violet-300">Recent searches</p>
                                       <p className="mt-1 line-clamp-2 text-[11px] text-slate-600 dark:text-slate-300">
                                         {node.searchQueries.slice(-2).join(" • ")}
                                       </p>
