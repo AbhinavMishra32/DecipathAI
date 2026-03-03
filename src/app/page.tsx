@@ -2,8 +2,8 @@
 
 import React from 'react'
 import Link from 'next/link';
-import Image from 'next/image';
 import { motion } from 'framer-motion';
+import Spline from '@splinetool/react-spline';
 import {
   ArrowRight,
   BookmarkCheck,
@@ -21,14 +21,12 @@ import {
 } from 'lucide-react';
 
 import LandingNavbar from '../components/LandingNavbar';
-import LandingImage from '../assets/landing.png';
 import { FlipWords } from '../components/ui/flip-words';
 import { hubotSans } from '@/lib/fonts';
 import { VelocityScroll } from '@/components/magicui/scroll-based-velocity';
 import { Button } from '@/components/ui/button';
 import type { LucideIcon } from 'lucide-react';
 import LandingIntroOverlay from '@/components/LandingIntroOverlay';
-import LandingRoadmapPreview from '@/components/roadmap/LandingRoadmapPreview';
 
 type FeatureCard = {
   title: string
@@ -183,13 +181,13 @@ const Page = () => {
                 </span>
               </h1>
 
-              <p className="mt-5 max-w-xl text-sm leading-relaxed text-neutral-600 dark:text-neutral-300 sm:text-lg">
+              <div className="mt-5 max-w-xl text-sm leading-relaxed text-neutral-600 dark:text-neutral-300 sm:text-lg">
                 Decipath turns uncertainty into a live execution map so you can move from
                 <span className="mx-2 inline-flex text-indigo-600 dark:text-indigo-200">
                   <FlipWords words={['confusion', 'overthinking', 'stalled progress']} duration={2800} />
                 </span>
                 to forward momentum.
-              </p>
+              </div>
 
               <div className="mt-8 flex flex-wrap items-center gap-3">
                 <Button asChild className="h-11 rounded-full bg-indigo-500 px-6 text-sm text-white hover:bg-indigo-400">
@@ -224,24 +222,30 @@ const Page = () => {
             transition={{ duration: 0.65, ease: 'easeOut', delay: 0.12 }}
             className="relative min-h-[560px] overflow-hidden rounded-[2rem] border border-indigo-300/35 bg-[linear-gradient(160deg,rgba(244,247,255,0.96),rgba(232,239,255,0.95))] shadow-[0_30px_90px_-42px_rgba(99,102,241,0.42)] dark:border-indigo-300/25 dark:bg-[linear-gradient(160deg,rgba(13,18,41,0.96),rgba(8,9,20,0.95))] dark:shadow-[0_30px_90px_-42px_rgba(99,102,241,0.7)]"
           >
-            <Image
-              src={LandingImage}
-              alt="Decipath roadmap interface preview"
-              className="absolute inset-0 h-full w-full object-cover opacity-20 dark:opacity-25"
-              priority
+            <Spline
+              scene="https://prod.spline.design/mED5xBp0MzF2r0xi/scene.splinecode"
+              className="absolute inset-0 h-full w-full"
             />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(129,140,248,0.22),transparent_45%),radial-gradient(circle_at_80%_80%,rgba(56,189,248,0.12),transparent_40%)]" />
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(129,140,248,0.28),transparent_42%),radial-gradient(circle_at_78%_74%,rgba(56,189,248,0.17),transparent_40%),linear-gradient(180deg,rgba(244,247,255,0.20)_0%,rgba(244,247,255,0.02)_42%,rgba(244,247,255,0.34)_100%)] dark:bg-[radial-gradient(circle_at_20%_15%,rgba(129,140,248,0.34),transparent_42%),radial-gradient(circle_at_78%_74%,rgba(56,189,248,0.2),transparent_40%),linear-gradient(180deg,rgba(7,10,26,0.10)_0%,rgba(7,10,26,0.04)_44%,rgba(7,10,26,0.50)_100%)]" />
 
-            <div className="relative h-full p-6 sm:p-7">
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-indigo-300/45 bg-indigo-500/12 px-3 py-1 text-xs text-indigo-700 dark:border-indigo-300/35 dark:bg-indigo-500/15 dark:text-indigo-100">
-                <Waypoints className="h-3.5 w-3.5" />
-                Live roadmap preview
+            <div className="pointer-events-none relative z-10 flex h-full flex-col justify-between p-6 sm:p-7">
+              <div className="max-w-sm space-y-3">
+                <div className="inline-flex items-center gap-2 rounded-full border border-indigo-300/45 bg-indigo-500/12 px-3 py-1 text-xs text-indigo-700 backdrop-blur-sm dark:border-indigo-300/35 dark:bg-indigo-500/18 dark:text-indigo-100">
+                  <Waypoints className="h-3.5 w-3.5" />
+                  Live roadmap canvas
+                </div>
+                <h3 className="text-2xl font-semibold leading-tight text-white drop-shadow-[0_3px_20px_rgba(15,23,42,0.6)] sm:text-3xl">
+                  See the path before you commit.
+                </h3>
+                <p className="max-w-[26rem] rounded-2xl border border-indigo-200/65 bg-white/78 px-4 py-3 text-xs leading-relaxed text-neutral-700 shadow-[0_16px_36px_-30px_rgba(79,70,229,0.7)] backdrop-blur-md dark:border-indigo-200/25 dark:bg-neutral-950/68 dark:text-neutral-200 sm:text-sm">
+                  This view shows how Decipath connects milestones, dependencies, and next actions into one execution map.
+                </p>
               </div>
 
-              <LandingRoadmapPreview />
-
-              <div className="mt-4 rounded-2xl border border-neutral-200 bg-white/75 px-4 py-3 text-xs text-neutral-600 backdrop-blur-md dark:border-neutral-700/80 dark:bg-neutral-950/65 dark:text-neutral-300 sm:text-sm">
-                Click a node to open detailed tasks, time estimates, and connected path context.
+              <div className="flex flex-wrap items-center gap-2 self-start rounded-2xl border border-neutral-200/85 bg-white/76 px-4 py-3 text-[11px] leading-relaxed text-neutral-700 shadow-[0_18px_42px_-34px_rgba(56,189,248,0.9)] backdrop-blur-md dark:border-neutral-700/85 dark:bg-neutral-950/68 dark:text-neutral-200 sm:self-end sm:text-xs">
+                <span className="rounded-full border border-indigo-300/60 bg-indigo-500/10 px-2.5 py-1">Milestones</span>
+                <span className="rounded-full border border-sky-300/60 bg-sky-500/10 px-2.5 py-1">Dependencies</span>
+                <span className="rounded-full border border-violet-300/60 bg-violet-500/10 px-2.5 py-1">Actionable tasks</span>
               </div>
             </div>
           </motion.div>
