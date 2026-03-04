@@ -38,12 +38,14 @@ export default function SettingsPage() {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
   const [billingStatus, setBillingStatus] = useState<{
-    planTier: "FREE" | "PRO"
+    planTier: "FREE" | "PRO" | "PREMIUM"
     planLabel: string
     pricing: {
       currency: string
       proMonthly: number
       proYearly: number
+      premiumMonthly: number
+      premiumYearly: number
     }
     usage: {
       monthlyGenerationUsed: number
@@ -84,7 +86,7 @@ export default function SettingsPage() {
     loadBillingStatus().catch(() => {})
   }, [mounted, loadBillingStatus])
 
-  const startCheckout = async (period: "MONTHLY" | "YEARLY") => {
+  const startCheckout = async (tier: "PRO" | "PREMIUM", period: "MONTHLY" | "YEARLY") => {
     setBillingLoading(true)
     setBillingMessage(null)
     try {
@@ -93,7 +95,7 @@ export default function SettingsPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ period }),
+        body: JSON.stringify({ tier, period }),
       })
       const payload = (await response.json().catch(() => null)) as { checkoutUrl?: string; error?: string } | null
       if (!response.ok || !payload?.checkoutUrl) {
@@ -124,7 +126,7 @@ export default function SettingsPage() {
         return
       }
 
-      setBillingMessage("Your Pro plan will be canceled at the end of the current billing period.")
+      setBillingMessage("Your paid plan will be canceled at the end of the current billing period.")
       await loadBillingStatus()
     } finally {
       setBillingLoading(false)
@@ -233,20 +235,34 @@ export default function SettingsPage() {
               </div>
 
               {billingStatus.planTier === "FREE" ? (
-                <div className="mt-4 flex flex-wrap gap-2">
+                <div className="mt-4 grid gap-2 sm:grid-cols-2">
                   <button
-                    onClick={() => startCheckout("MONTHLY")}
+                    onClick={() => startCheckout("PRO", "MONTHLY")}
                     disabled={billingLoading}
                     className="rounded-lg bg-indigo-600 px-3 py-2 text-[12px] font-semibold text-white transition hover:bg-indigo-500 disabled:opacity-60"
                   >
-                    Upgrade (₹{billingStatus.pricing.proMonthly}/mo)
+                    Pro · ₹{billingStatus.pricing.proMonthly}/mo
                   </button>
                   <button
-                    onClick={() => startCheckout("YEARLY")}
+                    onClick={() => startCheckout("PRO", "YEARLY")}
                     disabled={billingLoading}
                     className="rounded-lg border border-slate-200/70 bg-white px-3 py-2 text-[12px] font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60 dark:border-neutral-700 dark:bg-neutral-900 dark:text-slate-200 dark:hover:bg-neutral-800"
                   >
-                    Upgrade (₹{billingStatus.pricing.proYearly}/yr)
+                    Pro · ₹{billingStatus.pricing.proYearly}/yr
+                  </button>
+                  <button
+                    onClick={() => startCheckout("PREMIUM", "MONTHLY")}
+                    disabled={billingLoading}
+                    className="rounded-lg bg-violet-600 px-3 py-2 text-[12px] font-semibold text-white transition hover:bg-violet-500 disabled:opacity-60"
+                  >
+                    Premium · ₹{billingStatus.pricing.premiumMonthly}/mo
+                  </button>
+                  <button
+                    onClick={() => startCheckout("PREMIUM", "YEARLY")}
+                    disabled={billingLoading}
+                    className="rounded-lg border border-violet-300/70 bg-violet-50 px-3 py-2 text-[12px] font-semibold text-violet-700 transition hover:bg-violet-100 disabled:opacity-60 dark:border-violet-500/35 dark:bg-violet-900/15 dark:text-violet-300 dark:hover:bg-violet-900/25"
+                  >
+                    Premium · ₹{billingStatus.pricing.premiumYearly}/yr
                   </button>
                 </div>
               ) : (

@@ -69,7 +69,7 @@ const toFriendlyAgentError = ({
   const retrySuffix = retryAfterSeconds ? ` Retry in ~${Math.ceil(retryAfterSeconds)}s.` : ""
 
   if (normalizedCode === "PLAN_LIMIT_REACHED") {
-    return "You have reached this month's roadmap limit for your current plan. Upgrade to Pro plan or wait for the monthly reset."
+    return "You have reached this month's roadmap limit for your current plan. Upgrade to a paid plan or wait for the monthly reset."
   }
 
   if (normalizedCode === "GEMINI_RATE_LIMITED") {

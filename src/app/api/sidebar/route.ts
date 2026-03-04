@@ -14,7 +14,7 @@ export async function GET() {
         planTier: "FREE",
         planLabel: "Free plan",
         monthlyGenerationUsed: 0,
-        monthlyGenerationLimit: 10,
+        monthlyGenerationLimit: 2,
         recentRoadmaps: [],
       })
     }
@@ -78,7 +78,7 @@ export async function GET() {
       planTier: "FREE",
       planLabel: "Free plan",
       monthlyGenerationUsed: 0,
-      monthlyGenerationLimit: 10,
+      monthlyGenerationLimit: 2,
       recentRoadmaps: [],
     })
   }

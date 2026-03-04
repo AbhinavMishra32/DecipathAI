@@ -28,6 +28,7 @@ enum ProgressStatus {
 enum PlanTier {
   FREE
   PRO
+  PREMIUM
 }
 
 enum BillingProvider {

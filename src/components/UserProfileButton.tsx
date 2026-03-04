@@ -63,7 +63,7 @@ function ClerkUserProfileButton({ className, ...props }: { className?: string; [
           {user?.username || user?.fullName || "Account"}
         </p>
         <p className="text-right text-[10px] uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
-          Free account
+          Account
         </p>
       </div>
     </div>

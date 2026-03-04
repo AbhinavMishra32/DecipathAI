@@ -2,14 +2,26 @@ import { NextResponse } from "next/server";
 import { BillingProvider, PlanTier, Prisma, UsageMetric } from "@prisma/client";
 import { AuthError, requireDbUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { getPlanDefinition } from "@/lib/plans";
 import {
   getRazorpaySubscription,
   normalizeSubscriptionSnapshot,
-  planTierFromSubscriptionStatus,
+  resolvePlanTierFromSubscription,
 } from "@/lib/billing/razorpay";
 
-const FREE_MONTHLY_LIMIT = 10;
-const PRO_MONTHLY_LIMIT = 120;
+const toErrorLog = (error: unknown) => {
+  if (error instanceof Error) {
+    return {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+    };
+  }
+
+  return {
+    message: String(error),
+  };
+};
 
 const getUtcMonthWindow = () => {
   const now = new Date();
@@ -19,10 +31,20 @@ const getUtcMonthWindow = () => {
 };
 
 export async function GET() {
+  const requestId = `billing_status_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  let step = "init";
+
+  console.info("[billing/status] request_started", { requestId });
+
   try {
+    step = "require_db_user";
     const user = await requireDbUser();
+    console.info("[billing/status] user_resolved", { requestId, userId: user.id });
+
+    step = "resolve_period_window";
     const { periodStart, periodEnd } = getUtcMonthWindow();
 
+    step = "load_user_and_subscription";
     const initialDbUser = await prisma.user.findUnique({
       where: { id: user.id },
       select: {
@@ -46,6 +68,7 @@ export async function GET() {
 
     let usageBucket: { used: number } | null = null;
     try {
+      step = "load_usage_bucket";
       usageBucket = await prisma.usageBucket.findUnique({
         where: {
           userId_metric_periodStart: {
@@ -56,7 +79,13 @@ export async function GET() {
         },
         select: { used: true },
       });
-    } catch {
+    } catch (usageError) {
+      console.error("[billing/status] usage_bucket_failed", {
+        requestId,
+        userId: user.id,
+        periodStart: periodStart.toISOString(),
+        error: toErrorLog(usageError),
+      });
       usageBucket = null;
     }
 
@@ -68,17 +97,24 @@ export async function GET() {
 
     if (shouldAttemptSync) {
       try {
+        step = "razorpay_fetch_subscription";
         const providerSubscription = await getRazorpaySubscription({
           subscriptionId: dbUser!.subscription!.providerSubscriptionId,
         });
 
+        step = "normalize_subscription_snapshot";
         const normalized = normalizeSubscriptionSnapshot({
           entity: providerSubscription,
           existingPeriod: dbUser?.subscription?.billingPeriod ?? null,
         });
 
-        const nextTier = planTierFromSubscriptionStatus(normalized.status);
+        const nextTier = resolvePlanTierFromSubscription({
+          status: normalized.status,
+          providerPlanId: normalized.providerPlanId,
+          currentPlanTier: dbUser?.planTier,
+        });
 
+        step = "persist_subscription_sync";
         await prisma.$transaction(async (tx) => {
           await tx.userSubscription.update({
             where: { userId: user.id },
@@ -122,21 +158,47 @@ export async function GET() {
             canceledAt: normalized.canceledAt,
           },
         };
-      } catch {
+        console.info("[billing/status] subscription_synced", {
+          requestId,
+          userId: user.id,
+          providerSubscriptionId: normalized.providerSubscriptionId,
+          status: normalized.status,
+          planTier: nextTier,
+        });
+      } catch (syncError) {
+        console.error("[billing/status] subscription_sync_failed", {
+          requestId,
+          userId: user.id,
+          providerSubscriptionId: dbUser?.subscription?.providerSubscriptionId ?? null,
+          error: toErrorLog(syncError),
+        });
       }
     }
 
+    step = "build_response";
     const tier = dbUser?.planTier ?? PlanTier.FREE;
-    const monthlyGenerationLimit = tier === PlanTier.PRO ? PRO_MONTHLY_LIMIT : FREE_MONTHLY_LIMIT;
+    const plan = getPlanDefinition(tier);
+    const monthlyGenerationLimit = plan.capabilities.monthlyGenerationLimit;
     const monthlyGenerationUsed = usageBucket?.used ?? 0;
 
-    return NextResponse.json({
+    console.info("[billing/status] request_succeeded", {
+      requestId,
+      userId: user.id,
       planTier: tier,
-      planLabel: tier === PlanTier.PRO ? "Pro plan" : "Free plan",
+      monthlyGenerationUsed,
+      monthlyGenerationLimit,
+    });
+
+    return NextResponse.json({
+      requestId,
+      planTier: tier,
+      planLabel: plan.label,
       pricing: {
-        currency: "INR",
-        proMonthly: 499,
-        proYearly: 4999,
+        currency: plan.pricing.currency,
+        proMonthly: getPlanDefinition(PlanTier.PRO).pricing.monthly,
+        proYearly: getPlanDefinition(PlanTier.PRO).pricing.yearly,
+        premiumMonthly: getPlanDefinition(PlanTier.PREMIUM).pricing.monthly,
+        premiumYearly: getPlanDefinition(PlanTier.PREMIUM).pricing.yearly,
       },
       usage: {
         monthlyGenerationUsed,
@@ -158,9 +220,20 @@ export async function GET() {
     });
   } catch (error) {
     if (error instanceof AuthError) {
+      console.warn("[billing/status] auth_failed", {
+        requestId,
+        step,
+        error: toErrorLog(error),
+      });
       return NextResponse.json({ error: error.message }, { status: 401 });
     }
 
-    return NextResponse.json({ error: "Failed to fetch billing status" }, { status: 500 });
+    console.error("[billing/status] request_failed", {
+      requestId,
+      step,
+      error: toErrorLog(error),
+    });
+
+    return NextResponse.json({ error: "Failed to fetch billing status", requestId }, { status: 500 });
   }
 }

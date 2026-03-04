@@ -5,11 +5,21 @@ import { prisma } from "@/lib/db";
 import {
   createRazorpaySubscriptionCheckout,
   normalizeSubscriptionSnapshot,
-  planTierFromSubscriptionStatus,
+  resolvePlanTierFromSubscription,
 } from "@/lib/billing/razorpay";
+import type { PaidPlanTier } from "@/lib/plans";
 
 type CheckoutBody = {
+  tier?: "PRO" | "PREMIUM";
   period?: "MONTHLY" | "YEARLY";
+};
+
+const parsePaidPlanTier = (tier: unknown): PaidPlanTier | null => {
+  if (tier === PlanTier.PRO || tier === PlanTier.PREMIUM) {
+    return tier;
+  }
+
+  return null;
 };
 
 const parseBillingPeriod = (period: unknown): BillingPeriod | null => {
@@ -24,22 +34,39 @@ export async function POST(request: NextRequest) {
   try {
     const user = await requireDbUser();
     const body = (await request.json()) as CheckoutBody;
+    const targetTier = parsePaidPlanTier(body.tier);
     const billingPeriod = parseBillingPeriod(body.period);
+
+    if (!targetTier) {
+      return NextResponse.json({ error: "Invalid plan tier" }, { status: 400 });
+    }
 
     if (!billingPeriod) {
       return NextResponse.json({ error: "Invalid billing period" }, { status: 400 });
     }
 
-    const existing = await prisma.userSubscription.findUnique({
-      where: { userId: user.id },
-      select: { status: true },
-    });
+    const [existing, currentUser] = await Promise.all([
+      prisma.userSubscription.findUnique({
+        where: { userId: user.id },
+        select: { status: true },
+      }),
+      prisma.user.findUnique({
+        where: { id: user.id },
+        select: { planTier: true },
+      }),
+    ]);
 
-    if (existing?.status === SubscriptionStatus.ACTIVE && (await prisma.user.findUnique({ where: { id: user.id }, select: { planTier: true } }))?.planTier === PlanTier.PRO) {
-      return NextResponse.json({ error: "Pro plan is already active" }, { status: 409 });
+    if (existing?.status === SubscriptionStatus.ACTIVE || existing?.status === SubscriptionStatus.PAST_DUE) {
+      return NextResponse.json(
+        {
+          error: "An active paid subscription already exists. Cancel the current plan before switching tiers.",
+        },
+        { status: 409 },
+      );
     }
 
     const subscription = await createRazorpaySubscriptionCheckout({
+      tier: targetTier,
       period: billingPeriod,
       userId: user.id,
       email: user.email,
@@ -53,7 +80,7 @@ export async function POST(request: NextRequest) {
 
     await prisma.$transaction(async (tx) => {
       await tx.userSubscription.upsert({
-        where: { userId: user.id },
+      where: { userId: user.id },
         create: {
           userId: user.id,
           provider: BillingProvider.RAZORPAY,
@@ -86,7 +113,11 @@ export async function POST(request: NextRequest) {
       await tx.user.update({
         where: { id: user.id },
         data: {
-          planTier: planTierFromSubscriptionStatus(normalized.status),
+          planTier: resolvePlanTierFromSubscription({
+            status: normalized.status,
+            providerPlanId: normalized.providerPlanId,
+            currentPlanTier: currentUser?.planTier,
+          }),
         },
       });
     });
@@ -113,7 +144,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error:
-            "Razorpay plan configuration is invalid. Verify RAZORPAY_PLAN_ID_PRO_MONTHLY and RAZORPAY_PLAN_ID_PRO_YEARLY use real plan_ IDs from the same mode (both Test or both Live) as your Razorpay key.",
+            "Razorpay plan configuration is invalid. Verify all RAZORPAY_PLAN_ID_* values (PRO/PREMIUM + MONTHLY/YEARLY) use real plan_ IDs from the same mode (both Test or both Live) as your Razorpay key.",
         },
         { status: 400 },
       );

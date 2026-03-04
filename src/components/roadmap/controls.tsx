@@ -39,7 +39,7 @@ const Controls: React.FC<ControlsProps> = ({ onGenerateNewMindMap, isGenerating,
   const [customPrompt, setCustomPrompt] = useState<string | null>(null)
   const [validationError, setValidationError] = useState<string | null>(null)
   const [billingStatus, setBillingStatus] = useState<{
-    planTier: "FREE" | "PRO"
+    planTier: "FREE" | "PRO" | "PREMIUM"
     planLabel: string
     usage: {
       monthlyGenerationUsed: number
@@ -188,13 +188,15 @@ const Controls: React.FC<ControlsProps> = ({ onGenerateNewMindMap, isGenerating,
                       }}
                     />
                   </div>
-                  {billingStatus.planTier === "FREE" && billingStatus.usage.monthlyGenerationRemaining <= 2 && (
+                  {billingStatus.planTier === "FREE" && billingStatus.usage.monthlyGenerationRemaining <= 1 && (
                     <p className="mt-2 text-xs text-indigo-700/90 dark:text-indigo-200/90">
-                      You are close to your monthly Free plan limit.{" "}
-                      <Link href="/settings" className="underline underline-offset-2">
-                        Upgrade to Pro
+                      {billingStatus.usage.monthlyGenerationRemaining === 0
+                        ? "You have used your 2 free roadmap generations. "
+                        : "You are close to your free roadmap limit. "}
+                      <Link href="/pricing" className="underline underline-offset-2">
+                        Upgrade to a paid plan
                       </Link>
-                      {" "}for higher generation capacity.
+                      {" "}to continue creating more roadmaps.
                     </p>
                   )}
                 </div>

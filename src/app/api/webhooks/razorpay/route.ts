@@ -1,10 +1,10 @@
 import { createHash } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { BillingProvider, Prisma } from "@prisma/client";
+import { BillingProvider, PlanTier, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import {
   normalizeSubscriptionSnapshot,
-  planTierFromSubscriptionStatus,
+  resolvePlanTierFromSubscription,
   verifyRazorpayWebhookSignature,
   type RazorpayWebhookPayload,
 } from "@/lib/billing/razorpay";
@@ -102,6 +102,17 @@ export async function POST(request: NextRequest) {
     existingPeriod: existingSubscription?.billingPeriod,
   });
 
+  const existingUser = await prisma.user.findUnique({
+    where: { id: resolvedUserId },
+    select: { planTier: true },
+  });
+
+  const nextTier = resolvePlanTierFromSubscription({
+    status: normalized.status,
+    providerPlanId: normalized.providerPlanId,
+    currentPlanTier: existingUser?.planTier ?? PlanTier.FREE,
+  });
+
   await prisma.$transaction(async (tx) => {
     await tx.userSubscription.upsert({
       where: { userId: resolvedUserId },
@@ -137,7 +148,7 @@ export async function POST(request: NextRequest) {
     await tx.user.update({
       where: { id: resolvedUserId },
       data: {
-        planTier: planTierFromSubscriptionStatus(normalized.status),
+        planTier: nextTier,
       },
     });
 

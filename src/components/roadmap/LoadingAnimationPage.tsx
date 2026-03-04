@@ -12,7 +12,7 @@ interface LoadingAnimationPageProps {
 }
 
 type BillingUsageSnapshot = {
-  planTier: "FREE" | "PRO"
+  planTier: "FREE" | "PRO" | "PREMIUM"
   planLabel: string
   monthlyGenerationUsed: number
   monthlyGenerationLimit: number
@@ -273,9 +273,10 @@ const NODE_STAGE_ORDER: Record<NodeLifecycleStage, number> = {
   ready: 3,
 }
 
-const SEARCH_CALL_LIMIT_BY_TIER: Record<"FREE" | "PRO", number> = {
+const SEARCH_CALL_LIMIT_BY_TIER: Record<"FREE" | "PRO" | "PREMIUM", number> = {
   FREE: 6,
-  PRO: 24,
+  PRO: 16,
+  PREMIUM: 30,
 }
 
 const escapeRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
@@ -736,7 +737,7 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
       }
 
       const payload = (await response.json()) as {
-        planTier: "FREE" | "PRO"
+        planTier: "FREE" | "PRO" | "PREMIUM"
         planLabel: string
         usage: {
           monthlyGenerationUsed: number
@@ -928,7 +929,7 @@ export default function LoadingAnimationPage({ activity = [] }: LoadingAnimation
                 </div>
                 <p className="mt-1 text-[10px] uppercase tracking-[0.08em] text-fuchsia-600/90 dark:text-fuchsia-300/90">
                   {accountUsage
-                    ? `${liveSearchRemaining} left · ${accountUsage.planTier === "PRO" ? "Advanced research depth" : "Basic research depth"}`
+                    ? `${liveSearchRemaining} left · ${accountUsage.planTier === "FREE" ? "Basic research depth" : "Advanced research depth"}`
                     : "Loading..."}
                 </p>
               </div>

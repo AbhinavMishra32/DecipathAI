@@ -7,7 +7,11 @@ import {
   UsageMetric,
 } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { getPlanDefinition, type PlanCapabilities } from "@/lib/plans";
+import {
+  getPlanDefinition,
+  inferPaidPlanTierFromProviderPlanId,
+  type PlanCapabilities,
+} from "@/lib/plans";
 
 type TxClient = Prisma.TransactionClient;
 
@@ -50,11 +54,23 @@ export const getCurrentUtcMonthWindow = (at = new Date()): { periodStart: Date; 
 const resolveEffectivePlanTier = ({
   planTier,
   subscriptionStatus,
+  providerPlanId,
 }: {
   planTier: PlanTier;
   subscriptionStatus: SubscriptionStatus | null;
+  providerPlanId?: string | null;
 }): PlanTier => {
   if (subscriptionStatus === SubscriptionStatus.ACTIVE || subscriptionStatus === SubscriptionStatus.PAST_DUE) {
+    const inferred = inferPaidPlanTierFromProviderPlanId(providerPlanId);
+
+    if (inferred) {
+      return inferred;
+    }
+
+    if (planTier === PlanTier.PRO || planTier === PlanTier.PREMIUM) {
+      return planTier;
+    }
+
     return PlanTier.PRO;
   }
 
@@ -87,6 +103,7 @@ export const getUserEntitlementSnapshot = async ({
         subscription: {
           select: {
             status: true,
+            providerPlanId: true,
           },
         },
       },
@@ -108,6 +125,7 @@ export const getUserEntitlementSnapshot = async ({
   const effectiveTier = resolveEffectivePlanTier({
     planTier: user?.planTier ?? PlanTier.FREE,
     subscriptionStatus: user?.subscription?.status ?? null,
+    providerPlanId: user?.subscription?.providerPlanId ?? null,
   });
   const plan = getPlanDefinition(effectiveTier);
 

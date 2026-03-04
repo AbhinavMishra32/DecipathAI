@@ -1,5 +1,6 @@
 import { createHmac, timingSafeEqual } from "crypto";
 import { BillingPeriod, PlanTier, SubscriptionStatus } from "@prisma/client";
+import { inferPaidPlanTierFromProviderPlanId, type PaidPlanTier } from "@/lib/plans";
 
 const RAZORPAY_BASE_URL = "https://api.razorpay.com/v1";
 
@@ -52,8 +53,28 @@ const buildAuthHeader = (): string => {
   return `Basic ${Buffer.from(`${keyId}:${keySecret}`).toString("base64")}`;
 };
 
-const getPlanIdForPeriod = (period: BillingPeriod): string => {
-  const envName = period === BillingPeriod.MONTHLY ? "RAZORPAY_PLAN_ID_PRO_MONTHLY" : "RAZORPAY_PLAN_ID_PRO_YEARLY";
+const getPlanEnvName = ({
+  tier,
+  period,
+}: {
+  tier: PaidPlanTier;
+  period: BillingPeriod;
+}): string => {
+  if (tier === PlanTier.PRO) {
+    return period === BillingPeriod.MONTHLY ? "RAZORPAY_PLAN_ID_PRO_MONTHLY" : "RAZORPAY_PLAN_ID_PRO_YEARLY";
+  }
+
+  return period === BillingPeriod.MONTHLY ? "RAZORPAY_PLAN_ID_PREMIUM_MONTHLY" : "RAZORPAY_PLAN_ID_PREMIUM_YEARLY";
+};
+
+const getPlanIdForSelection = ({
+  tier,
+  period,
+}: {
+  tier: PaidPlanTier;
+  period: BillingPeriod;
+}): string => {
+  const envName = getPlanEnvName({ tier, period });
   const planId = requireEnv(envName);
 
   if (!planId.startsWith("plan_")) {
@@ -93,12 +114,14 @@ const inferBillingPeriodFromPlanId = (planId?: string | null): BillingPeriod | n
 
   const monthly = process.env.RAZORPAY_PLAN_ID_PRO_MONTHLY?.trim();
   const yearly = process.env.RAZORPAY_PLAN_ID_PRO_YEARLY?.trim();
+  const premiumMonthly = process.env.RAZORPAY_PLAN_ID_PREMIUM_MONTHLY?.trim();
+  const premiumYearly = process.env.RAZORPAY_PLAN_ID_PREMIUM_YEARLY?.trim();
 
-  if (monthly && planId === monthly) {
+  if ((monthly && planId === monthly) || (premiumMonthly && planId === premiumMonthly)) {
     return BillingPeriod.MONTHLY;
   }
 
-  if (yearly && planId === yearly) {
+  if ((yearly && planId === yearly) || (premiumYearly && planId === premiumYearly)) {
     return BillingPeriod.YEARLY;
   }
 
@@ -135,8 +158,25 @@ const mapStatus = (status?: string | null): SubscriptionStatus => {
   return SubscriptionStatus.INCOMPLETE;
 };
 
-export const planTierFromSubscriptionStatus = (status: SubscriptionStatus): PlanTier => {
+export const resolvePlanTierFromSubscription = ({
+  status,
+  providerPlanId,
+  currentPlanTier,
+}: {
+  status: SubscriptionStatus;
+  providerPlanId?: string | null;
+  currentPlanTier?: PlanTier;
+}): PlanTier => {
   if (status === SubscriptionStatus.ACTIVE || status === SubscriptionStatus.PAST_DUE) {
+    const inferred = inferPaidPlanTierFromProviderPlanId(providerPlanId);
+    if (inferred) {
+      return inferred;
+    }
+
+    if (currentPlanTier === PlanTier.PRO || currentPlanTier === PlanTier.PREMIUM) {
+      return currentPlanTier;
+    }
+
     return PlanTier.PRO;
   }
 
@@ -168,18 +208,20 @@ const razorpayRequest = async <T>(path: string, init?: RequestInit): Promise<T> 
 };
 
 export const createRazorpaySubscriptionCheckout = async ({
+  tier,
   period,
   userId,
   email,
   name,
 }: {
+  tier: PaidPlanTier;
   period: BillingPeriod;
   userId: string;
   email: string;
   name: string;
 }): Promise<RazorpaySubscriptionEntity> => {
   const payload = {
-    plan_id: getPlanIdForPeriod(period),
+    plan_id: getPlanIdForSelection({ tier, period }),
     total_count: getTotalCount(period),
     quantity: 1,
     customer_notify: 1,
@@ -188,8 +230,9 @@ export const createRazorpaySubscriptionCheckout = async ({
     },
     notes: {
       userId,
+      tier,
       period,
-      product: "decipath_pro_plan",
+      product: "decipath_paid_plan",
       name,
     },
   };

@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db";
 import {
   cancelRazorpaySubscription,
   normalizeSubscriptionSnapshot,
-  planTierFromSubscriptionStatus,
+  resolvePlanTierFromSubscription,
 } from "@/lib/billing/razorpay";
 
 type CancelBody = {
@@ -20,6 +20,11 @@ export async function POST(request: NextRequest) {
 
     const subscription = await prisma.userSubscription.findUnique({
       where: { userId: user.id },
+    });
+
+    const currentUserTier = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { planTier: true },
     });
 
     if (!subscription) {
@@ -59,7 +64,11 @@ export async function POST(request: NextRequest) {
         await tx.user.update({
           where: { id: user.id },
           data: {
-            planTier: planTierFromSubscriptionStatus(nextStatus),
+            planTier: resolvePlanTierFromSubscription({
+              status: nextStatus,
+              providerPlanId: normalized.providerPlanId,
+              currentPlanTier: currentUserTier?.planTier,
+            }),
           },
         });
       }

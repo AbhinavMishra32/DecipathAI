@@ -42,7 +42,7 @@ type RecentRoadmap = {
 type SidebarData = {
   roadmapCount: number
   activeProgressCount: number
-  planTier: "FREE" | "PRO"
+  planTier: "FREE" | "PRO" | "PREMIUM"
   planLabel: string
   monthlyGenerationUsed: number
   monthlyGenerationLimit: number
