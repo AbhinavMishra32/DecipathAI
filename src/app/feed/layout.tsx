@@ -17,7 +17,7 @@ export default function FeedLayout({
   return (
     <ThemeProvider>
       <div
-        className={`${sen.variable} relative min-h-screen w-screen overflow-hidden bg-gradient-to-b from-slate-100 via-indigo-50/55 to-slate-100 antialiased dark:from-[#04060d] dark:via-[#070b18] dark:to-[#04060d]`}
+        className={`${sen.variable} relative min-h-screen w-screen overflow-hidden bg-gradient-to-b from-neutral-50 via-indigo-50/50 to-neutral-50 antialiased dark:from-[#04060d] dark:via-[#070b18] dark:to-[#04060d]`}
       >
         <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
           <div className="absolute left-1/2 top-[-16rem] h-[34rem] w-[34rem] -translate-x-1/2 rounded-full bg-indigo-500/18 blur-[120px] dark:bg-indigo-600/25" />

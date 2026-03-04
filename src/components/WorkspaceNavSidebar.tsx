@@ -51,7 +51,7 @@ type SidebarData = {
 
 /* ─── Navigation config ─────────────────────────────────────── */
 const BASE_NAV: Omit<NavItem, "badge">[] = [
-  { label: "Home Feed", href: "/feed", icon: House },
+  { label: "Community Roadmaps", href: "/feed", icon: House },
   { label: "My Roadmaps", href: "/roadmaps", icon: SquaresFour },
   { label: "Create Roadmap", href: "/create", icon: Sparkle },
 ]
@@ -472,8 +472,8 @@ export default function WorkspaceNavSidebar() {
       <motion.aside
         className={cn(
           "fixed left-0 top-0 z-40 hidden h-screen flex-col",
-          "border-r border-slate-200/50 bg-white/[0.97] backdrop-blur-2xl",
-          "dark:border-neutral-800/50 dark:bg-neutral-950/[0.97]",
+          "border-r border-indigo-200/45 bg-white/82 backdrop-blur-2xl",
+          "dark:border-indigo-300/15 dark:bg-[#060913]/85",
           "lg:flex",
         )}
         animate={{ width: isOpen ? EXPANDED : COLLAPSED }}
@@ -491,7 +491,7 @@ export default function WorkspaceNavSidebar() {
       {/* ── Mobile hamburger trigger ── */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="fixed left-3 top-3 z-40 inline-flex items-center justify-center rounded-xl border border-slate-200/50 bg-white/90 p-2.5 shadow-sm backdrop-blur-xl transition-colors hover:bg-slate-50 dark:border-neutral-800/50 dark:bg-neutral-950/90 dark:hover:bg-neutral-900 lg:hidden"
+        className="fixed left-3 top-3 z-40 inline-flex items-center justify-center rounded-xl border border-indigo-200/45 bg-white/90 p-2.5 shadow-sm backdrop-blur-xl transition-colors hover:bg-indigo-50 dark:border-indigo-300/15 dark:bg-neutral-950/90 dark:hover:bg-neutral-900 lg:hidden"
       >
         <List weight="bold" className="h-5 w-5 text-slate-600 dark:text-slate-300" />
       </button>
@@ -516,7 +516,7 @@ export default function WorkspaceNavSidebar() {
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={SPRING}
-              className="fixed left-0 top-0 z-50 flex h-screen w-[280px] flex-col border-r border-slate-200/50 bg-white shadow-2xl shadow-slate-200/40 dark:border-neutral-800/50 dark:bg-neutral-950 dark:shadow-black/30 lg:hidden"
+              className="fixed left-0 top-0 z-50 flex h-screen w-[280px] flex-col border-r border-indigo-200/45 bg-white shadow-2xl shadow-slate-200/40 dark:border-indigo-300/15 dark:bg-neutral-950 dark:shadow-black/30 lg:hidden"
             >
               {sidebarContent(true)}
             </motion.aside>

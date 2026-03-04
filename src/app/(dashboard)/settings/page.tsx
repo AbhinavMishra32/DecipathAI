@@ -136,16 +136,21 @@ export default function SettingsPage() {
   if (!mounted) return null
 
   return (
-    <div className={`${hubotSans.className} mx-auto max-w-2xl px-6 py-12 sm:px-8`}>
-      <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
-        Settings
-      </h1>
-      <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-        Manage your preferences and account settings.
-      </p>
+    <div className={`${hubotSans.className} mx-auto max-w-[1100px] px-4 py-10 sm:px-6 lg:px-8`}>
+      <div className="relative overflow-hidden rounded-[2rem] border border-neutral-200 bg-white/75 p-7 shadow-[0_26px_80px_-46px_rgba(79,70,229,0.78)] backdrop-blur-xl dark:border-neutral-800 dark:bg-neutral-950/70 sm:p-9">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_8%,rgba(99,102,241,0.22),transparent_45%)]" />
+        <div className="relative">
+          <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-4xl">
+            Settings
+          </h1>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 sm:text-base">
+            Manage appearance, billing, and workspace preferences.
+          </p>
+        </div>
+      </div>
 
       {/* ── Appearance ──────────────────────────────────────── */}
-      <section className="mt-10">
+      <section className="mt-8 rounded-[1.6rem] border border-slate-200/60 bg-white/70 p-6 backdrop-blur-xl dark:border-neutral-800/60 dark:bg-neutral-900/35">
         <div className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-200">
           <Sun weight="duotone" className="h-4 w-4 text-indigo-500" />
           Appearance
@@ -199,12 +204,12 @@ export default function SettingsPage() {
       </section>
 
       {/* ── Billing ─────────────────────────────────────────── */}
-      <section className="mt-10">
+      <section className="mt-6 rounded-[1.6rem] border border-slate-200/60 bg-white/70 p-6 backdrop-blur-xl dark:border-neutral-800/60 dark:bg-neutral-900/35">
         <div className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-200">
           <Moon weight="duotone" className="h-4 w-4 text-indigo-500" />
           Billing & plan
         </div>
-        <div className="mt-4 rounded-xl border border-slate-200/60 bg-white/70 p-5 dark:border-neutral-800/60 dark:bg-neutral-900/30">
+        <div className="mt-4 rounded-xl border border-slate-200/60 bg-white/80 p-5 dark:border-neutral-800/60 dark:bg-neutral-900/45">
           {!billingStatus ? (
             <p className="text-[13px] text-slate-500 dark:text-slate-400">Loading plan details...</p>
           ) : (
@@ -290,7 +295,7 @@ export default function SettingsPage() {
       </section>
 
       {/* ── Keyboard shortcuts ─────────────────────────────── */}
-      <section className="mt-10">
+      <section className="mt-6 rounded-[1.6rem] border border-slate-200/60 bg-white/70 p-6 backdrop-blur-xl dark:border-neutral-800/60 dark:bg-neutral-900/35">
         <div className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-200">
           <Keyboard weight="duotone" className="h-4 w-4 text-indigo-500" />
           Keyboard shortcuts
@@ -324,7 +329,7 @@ export default function SettingsPage() {
       </section>
 
       {/* ── About ──────────────────────────────────────────── */}
-      <section className="mt-10 pb-12">
+      <section className="mt-6 rounded-[1.6rem] border border-slate-200/60 bg-white/70 p-6 pb-8 backdrop-blur-xl dark:border-neutral-800/60 dark:bg-neutral-900/35">
         <div className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-200">
           <Info weight="duotone" className="h-4 w-4 text-indigo-500" />
           About Decipath

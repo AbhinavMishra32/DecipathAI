@@ -2,7 +2,7 @@ import { Prisma } from "@prisma/client";
 import { getDbUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { toSlugId } from "@/lib/roadmap-repository";
-import HomeFeedClient from "../home-feed-client";
+import HomeFeedClient from "@/app/home-feed-client";
 
 const FEED_LIMIT = 20;
 
@@ -209,6 +209,18 @@ export default async function FeedPage() {
           y: typeof node.position?.y === "number" ? node.position.y : 0,
         })),
         edges: edges.slice(0, 18).map((edge) => ({
+          source: edge.source,
+          target: edge.target,
+        })),
+      },
+      graphFull: {
+        nodes: nodes.slice(0, 120).map((node) => ({
+          id: node.id,
+          label: node.data?.label ?? node.id,
+          x: typeof node.position?.x === "number" ? node.position.x : 0,
+          y: typeof node.position?.y === "number" ? node.position.y : 0,
+        })),
+        edges: edges.slice(0, 220).map((edge) => ({
           source: edge.source,
           target: edge.target,
         })),
