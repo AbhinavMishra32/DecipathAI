@@ -23,28 +23,30 @@ export async function GET() {
     const user = await requireDbUser();
     const { periodStart, periodEnd } = getUtcMonthWindow();
 
-    const [initialDbUser, usageBucket] = await Promise.all([
-      prisma.user.findUnique({
-        where: { id: user.id },
-        select: {
-          planTier: true,
-          subscription: {
-            select: {
-              provider: true,
-              providerSubscriptionId: true,
-              providerPlanId: true,
-              providerCustomerId: true,
-              status: true,
-              billingPeriod: true,
-              currentPeriodStart: true,
-              currentPeriodEnd: true,
-              cancelAtPeriodEnd: true,
-              canceledAt: true,
-            },
+    const initialDbUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: {
+        planTier: true,
+        subscription: {
+          select: {
+            provider: true,
+            providerSubscriptionId: true,
+            providerPlanId: true,
+            providerCustomerId: true,
+            status: true,
+            billingPeriod: true,
+            currentPeriodStart: true,
+            currentPeriodEnd: true,
+            cancelAtPeriodEnd: true,
+            canceledAt: true,
           },
         },
-      }),
-      prisma.usageBucket.findUnique({
+      },
+    });
+
+    let usageBucket: { used: number } | null = null;
+    try {
+      usageBucket = await prisma.usageBucket.findUnique({
         where: {
           userId_metric_periodStart: {
             userId: user.id,
@@ -53,8 +55,10 @@ export async function GET() {
           },
         },
         select: { used: true },
-      }),
-    ]);
+      });
+    } catch {
+      usageBucket = null;
+    }
 
     let dbUser = initialDbUser;
 
