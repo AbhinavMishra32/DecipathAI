@@ -17,6 +17,7 @@ import {
   X,
 } from "@phosphor-icons/react"
 import { cn } from "@/lib/utils"
+import DecipathLogo from "@/components/DecipathLogo"
 
 /* ─── Constants ─────────────────────────────────────────────── */
 const COLLAPSED = 64
@@ -338,11 +339,12 @@ export default function WorkspaceNavSidebar() {
       <>
         {/* ── Header with logo ── */}
         <div className="flex h-14 shrink-0 items-center gap-0 border-b border-slate-100/80 px-[18px] dark:border-neutral-800/50">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-900 shadow-sm dark:bg-white">
-            <span className="text-[13px] font-bold leading-none text-white dark:text-slate-900">
-              D
-            </span>
-          </div>
+          <DecipathLogo
+            showName={false}
+            size={32}
+            markClassName="rounded-[10px]"
+            className="shrink-0"
+          />
           <SidebarLabel
             text="Decipath"
             open={isExpanded}

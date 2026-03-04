@@ -3,9 +3,10 @@
 import React, { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { motion, useMotionValueEvent, useScroll, useSpring } from "framer-motion"
-import { InteractiveHoverButton } from "./magicui/interactive-hover-button"
 import { hubotSans } from "@/lib/fonts"
 import ThemeSelectorButton from "./ThemeSelectorButton"
+import DecipathLogo from "@/components/DecipathLogo"
+import { Button } from "@/components/ui/button"
 
 const navigation = [
   { label: "Features", href: "#features" },
@@ -87,30 +88,16 @@ const LandingNavbar = () => {
 
         <div className="relative flex h-full items-center justify-between px-5 sm:px-8">
           <Link href="/" aria-label="Decipath home" className="group inline-flex items-center gap-2.5">
-            <motion.div whileHover={{ rotate: -5, scale: 1.04 }} transition={{ duration: 0.2, ease: "easeOut" }}>
-              <svg
-                width="30"
-                height="39"
-                viewBox="0 0 104 116"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <rect width="89" height="89" rx="28" fill="white" />
-                <rect
-                  x="15"
-                  y="27"
-                  width="89"
-                  height="89"
-                  rx="28"
-                  fill="white"
-                  style={{ mixBlendMode: "difference" }}
-                />
-              </svg>
+            <motion.div>
+              <DecipathLogo
+                size={34}
+                subtitle="AI Roadmaps"
+                markClassName="rounded-[11px]"
+                className="gap-2"
+                nameClassName="hidden text-sm font-medium tracking-wide text-indigo-700 dark:text-indigo-100 md:block"
+                subtitleClassName="hidden -mt-0.5 text-[11px] tracking-[0.2em] text-indigo-500/80 dark:text-indigo-200/55 md:block"
+              />
             </motion.div>
-            <div className="hidden md:block">
-              <p className="text-sm font-medium tracking-wide text-indigo-700 dark:text-indigo-100">Decipath</p>
-              <p className="-mt-0.5 text-[11px] tracking-[0.2em] text-indigo-500/80 dark:text-indigo-200/55">AI ROADMAPS</p>
-            </div>
           </Link>
 
           <div id="navigation" className={`hidden items-center gap-2 sm:flex ${hubotSans.className}`}>
@@ -141,15 +128,16 @@ const LandingNavbar = () => {
 
           <div className="flex items-center gap-2 sm:gap-3">
             <ThemeSelectorButton className="h-10 w-10 rounded-full border border-indigo-300/55 bg-white/85 dark:border-indigo-300/35 dark:bg-neutral-900/55" />
-            <Link href="/signin" className="relative inline-flex overflow-hidden rounded-full">
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.985 }}
-                transition={{ duration: 0.15, ease: "easeOut" }}
-              >
-                <InteractiveHoverButton className="h-10 min-w-[132px]">Sign In</InteractiveHoverButton>
-              </motion.div>
-            </Link>
+            <Button
+              asChild
+              variant="outline"
+              className="hidden h-10 rounded-full border-indigo-400/45 bg-white/70 px-5 text-sm text-indigo-700 hover:border-indigo-400 hover:bg-indigo-500/10 hover:text-indigo-900 dark:border-indigo-300/45 dark:bg-neutral-900/50 dark:text-indigo-100 dark:hover:border-indigo-200 dark:hover:bg-indigo-500/20 dark:hover:text-white sm:inline-flex"
+            >
+              <Link href="/signin">Sign In</Link>
+            </Button>
+            <Button asChild className="h-10 rounded-full bg-indigo-500 px-5 text-sm text-white hover:bg-indigo-400">
+              <Link href="/signup">Get Started</Link>
+            </Button>
           </div>
         </div>
 

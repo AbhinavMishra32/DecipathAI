@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback } from "react"
 import { hubotSans } from "@/lib/fonts"
 import { Moon, Sun, Desktop, Keyboard, Info } from "@phosphor-icons/react"
 import { cn } from "@/lib/utils"
+import DecipathLogo from "@/components/DecipathLogo"
 
 const themeOptions = [
   {
@@ -314,19 +315,14 @@ export default function SettingsPage() {
         </div>
         <div className="mt-4 rounded-xl border border-slate-200/60 bg-white/70 p-5 dark:border-neutral-800/60 dark:bg-neutral-900/30">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 shadow-sm dark:bg-white">
-              <span className="text-[15px] font-bold text-white dark:text-slate-900">
-                D
-              </span>
-            </div>
-            <div>
-              <p className="text-[13px] font-semibold text-slate-800 dark:text-slate-200">
-                Decipath
-              </p>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                AI-powered roadmap generator
-              </p>
-            </div>
+            <DecipathLogo
+              size={40}
+              subtitle="AI-powered roadmap generator"
+              markClassName="rounded-xl"
+              className="gap-3"
+              nameClassName="text-[13px] font-semibold text-slate-800 dark:text-slate-200"
+              subtitleClassName="mt-1 text-[11px] normal-case tracking-normal text-slate-500 dark:text-slate-400"
+            />
           </div>
           <p className="mt-4 text-[12px] leading-relaxed text-slate-500 dark:text-slate-400">
             Generate deep, interactive roadmaps from any goal. Every milestone

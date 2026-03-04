@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
-import { PlanTier, UsageMetric } from "@prisma/client";
+import { BillingProvider, PlanTier, Prisma, UsageMetric } from "@prisma/client";
 import { AuthError, requireDbUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import {
+  getRazorpaySubscription,
+  normalizeSubscriptionSnapshot,
+  planTierFromSubscriptionStatus,
+} from "@/lib/billing/razorpay";
 
 const FREE_MONTHLY_LIMIT = 10;
 const PRO_MONTHLY_LIMIT = 120;
@@ -18,7 +23,7 @@ export async function GET() {
     const user = await requireDbUser();
     const { periodStart, periodEnd } = getUtcMonthWindow();
 
-    const [dbUser, usageBucket] = await Promise.all([
+    const [initialDbUser, usageBucket] = await Promise.all([
       prisma.user.findUnique({
         where: { id: user.id },
         select: {
@@ -27,10 +32,14 @@ export async function GET() {
             select: {
               provider: true,
               providerSubscriptionId: true,
+              providerPlanId: true,
+              providerCustomerId: true,
               status: true,
               billingPeriod: true,
+              currentPeriodStart: true,
               currentPeriodEnd: true,
               cancelAtPeriodEnd: true,
+              canceledAt: true,
             },
           },
         },
@@ -46,6 +55,72 @@ export async function GET() {
         select: { used: true },
       }),
     ]);
+
+    let dbUser = initialDbUser;
+
+    const shouldAttemptSync =
+      dbUser?.subscription?.provider === BillingProvider.RAZORPAY &&
+      Boolean(dbUser.subscription.providerSubscriptionId);
+
+    if (shouldAttemptSync) {
+      try {
+        const providerSubscription = await getRazorpaySubscription({
+          subscriptionId: dbUser!.subscription!.providerSubscriptionId,
+        });
+
+        const normalized = normalizeSubscriptionSnapshot({
+          entity: providerSubscription,
+          existingPeriod: dbUser?.subscription?.billingPeriod ?? null,
+        });
+
+        const nextTier = planTierFromSubscriptionStatus(normalized.status);
+
+        await prisma.$transaction(async (tx) => {
+          await tx.userSubscription.update({
+            where: { userId: user.id },
+            data: {
+              provider: BillingProvider.RAZORPAY,
+              providerCustomerId: normalized.providerCustomerId,
+              providerSubscriptionId: normalized.providerSubscriptionId,
+              providerPlanId: normalized.providerPlanId,
+              status: normalized.status,
+              billingPeriod: normalized.billingPeriod,
+              currentPeriodStart: normalized.currentPeriodStart,
+              currentPeriodEnd: normalized.currentPeriodEnd,
+              cancelAtPeriodEnd: normalized.cancelAtPeriodEnd,
+              canceledAt: normalized.canceledAt,
+              metadata: normalized.metadata as Prisma.InputJsonValue,
+            },
+          });
+
+          await tx.user.update({
+            where: { id: user.id },
+            data: {
+              planTier: nextTier,
+            },
+          });
+        });
+
+        dbUser = {
+          ...dbUser!,
+          planTier: nextTier,
+          subscription: {
+            ...dbUser!.subscription!,
+            provider: BillingProvider.RAZORPAY,
+            providerSubscriptionId: normalized.providerSubscriptionId,
+            providerPlanId: normalized.providerPlanId,
+            providerCustomerId: normalized.providerCustomerId,
+            status: normalized.status,
+            billingPeriod: normalized.billingPeriod,
+            currentPeriodStart: normalized.currentPeriodStart,
+            currentPeriodEnd: normalized.currentPeriodEnd,
+            cancelAtPeriodEnd: normalized.cancelAtPeriodEnd,
+            canceledAt: normalized.canceledAt,
+          },
+        };
+      } catch {
+      }
+    }
 
     const tier = dbUser?.planTier ?? PlanTier.FREE;
     const monthlyGenerationLimit = tier === PlanTier.PRO ? PRO_MONTHLY_LIMIT : FREE_MONTHLY_LIMIT;

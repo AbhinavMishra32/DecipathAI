@@ -3,6 +3,7 @@ import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 
 import AuthSplineScene from "@/components/AuthSplineScene"
+import DecipathLogo from "@/components/DecipathLogo"
 import { hubotSans } from "@/lib/fonts"
 
 const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim()
@@ -46,11 +47,12 @@ export default function SignUpPage() {
       <div className="pointer-events-none relative z-10 mx-auto flex min-h-screen w-full max-w-[1240px] flex-col px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8">
         <header className="pointer-events-auto flex items-center justify-between">
           <Link href="/" className="auth-enter inline-flex items-center gap-2 text-sm text-white/90">
-            <svg width="28" height="34" viewBox="0 0 104 116" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <rect width="89" height="89" rx="28" fill="white" />
-              <rect x="15" y="27" width="89" height="89" rx="28" fill="white" style={{ mixBlendMode: "difference" }} />
-            </svg>
-            <span className="tracking-wide">Decipath</span>
+            <DecipathLogo
+              size={32}
+              className="gap-2"
+              nameClassName="tracking-wide text-white"
+              markClassName="rounded-[10px]"
+            />
           </Link>
 
           <Link

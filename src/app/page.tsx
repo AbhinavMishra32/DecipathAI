@@ -237,13 +237,12 @@ const Page = () => {
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
-                <Button
-                  asChild
-                  variant="outline"
-                  className="h-11 rounded-full border-indigo-400/45 bg-indigo-500/10 px-6 text-sm text-indigo-700 hover:border-indigo-400 hover:bg-indigo-500/20 hover:text-indigo-900 dark:border-indigo-300/45 dark:text-indigo-100 dark:hover:border-indigo-200 dark:hover:bg-indigo-500/20 dark:hover:text-white"
-                >
-                  <Link href="/signin">Sign In</Link>
-                </Button>
+                <p className="text-sm text-neutral-600 dark:text-neutral-300">
+                  Already have an account?{" "}
+                  <Link href="/signin" className="font-medium text-indigo-700 underline decoration-indigo-400/70 underline-offset-4 transition-colors hover:text-indigo-900 dark:text-indigo-100 dark:hover:text-white">
+                    Sign In
+                  </Link>
+                </p>
               </div>
 
               <div className="mt-9 divide-y divide-neutral-200 rounded-2xl border border-neutral-200 bg-white/70 backdrop-blur-xl dark:divide-neutral-800/90 dark:border-neutral-800/90 dark:bg-neutral-900/55">

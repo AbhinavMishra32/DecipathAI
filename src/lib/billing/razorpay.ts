@@ -53,11 +53,16 @@ const buildAuthHeader = (): string => {
 };
 
 const getPlanIdForPeriod = (period: BillingPeriod): string => {
-  if (period === BillingPeriod.MONTHLY) {
-    return requireEnv("RAZORPAY_PLAN_ID_PRO_MONTHLY");
+  const envName = period === BillingPeriod.MONTHLY ? "RAZORPAY_PLAN_ID_PRO_MONTHLY" : "RAZORPAY_PLAN_ID_PRO_YEARLY";
+  const planId = requireEnv(envName);
+
+  if (!planId.startsWith("plan_")) {
+    throw new Error(
+      `Invalid ${envName}. Expected a Razorpay Plan ID starting with \"plan_\", received \"${planId}\".`,
+    );
   }
 
-  return requireEnv("RAZORPAY_PLAN_ID_PRO_YEARLY");
+  return planId;
 };
 
 const getTotalCount = (period: BillingPeriod): number => {
@@ -193,6 +198,14 @@ export const createRazorpaySubscriptionCheckout = async ({
     method: "POST",
     body: JSON.stringify(payload),
   });
+};
+
+export const getRazorpaySubscription = async ({
+  subscriptionId,
+}: {
+  subscriptionId: string;
+}): Promise<RazorpaySubscriptionEntity> => {
+  return razorpayRequest<RazorpaySubscriptionEntity>(`/subscriptions/${subscriptionId}`);
 };
 
 export const cancelRazorpaySubscription = async ({

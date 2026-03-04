@@ -104,9 +104,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 401 });
     }
 
+    const message = error instanceof Error ? error.message : "Failed to initialize checkout";
+    const isRazorpayBadRequest =
+      message.includes("Razorpay request failed (400)") &&
+      (message.includes("BAD_REQUEST_ERROR") || message.toLowerCase().includes("does not exist"));
+
+    if (isRazorpayBadRequest || message.includes("Expected a Razorpay Plan ID starting with \"plan_\"")) {
+      return NextResponse.json(
+        {
+          error:
+            "Razorpay plan configuration is invalid. Verify RAZORPAY_PLAN_ID_PRO_MONTHLY and RAZORPAY_PLAN_ID_PRO_YEARLY use real plan_ IDs from the same mode (both Test or both Live) as your Razorpay key.",
+        },
+        { status: 400 },
+      );
+    }
+
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : "Failed to initialize checkout",
+        error: message,
       },
       { status: 500 },
     );
