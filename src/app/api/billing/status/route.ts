@@ -9,6 +9,10 @@ import {
   resolvePlanTierFromSubscription,
 } from "@/lib/billing/razorpay";
 
+const TIER_FREE = "FREE" as PlanTier;
+const TIER_PRO = "PRO" as PlanTier;
+const TIER_PREMIUM = "PREMIUM" as PlanTier;
+
 const toErrorLog = (error: unknown) => {
   if (error instanceof Error) {
     return {
@@ -176,7 +180,7 @@ export async function GET() {
     }
 
     step = "build_response";
-    const tier = dbUser?.planTier ?? PlanTier.FREE;
+    const tier = dbUser?.planTier ?? TIER_FREE;
     const plan = getPlanDefinition(tier);
     const monthlyGenerationLimit = plan.capabilities.monthlyGenerationLimit;
     const monthlyGenerationUsed = usageBucket?.used ?? 0;
@@ -195,10 +199,10 @@ export async function GET() {
       planLabel: plan.label,
       pricing: {
         currency: plan.pricing.currency,
-        proMonthly: getPlanDefinition(PlanTier.PRO).pricing.monthly,
-        proYearly: getPlanDefinition(PlanTier.PRO).pricing.yearly,
-        premiumMonthly: getPlanDefinition(PlanTier.PREMIUM).pricing.monthly,
-        premiumYearly: getPlanDefinition(PlanTier.PREMIUM).pricing.yearly,
+        proMonthly: getPlanDefinition(TIER_PRO).pricing.monthly,
+        proYearly: getPlanDefinition(TIER_PRO).pricing.yearly,
+        premiumMonthly: getPlanDefinition(TIER_PREMIUM).pricing.monthly,
+        premiumYearly: getPlanDefinition(TIER_PREMIUM).pricing.yearly,
       },
       usage: {
         monthlyGenerationUsed,

@@ -67,7 +67,7 @@ const resolveEffectivePlanTier = ({
       return inferred;
     }
 
-    if (planTier === PlanTier.PRO || planTier === PlanTier.PREMIUM) {
+    if (planTier === ("PRO" as PlanTier) || planTier === ("PREMIUM" as PlanTier)) {
       return planTier;
     }
 

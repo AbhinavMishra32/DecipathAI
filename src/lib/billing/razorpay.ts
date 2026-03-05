@@ -173,7 +173,7 @@ export const resolvePlanTierFromSubscription = ({
       return inferred;
     }
 
-    if (currentPlanTier === PlanTier.PRO || currentPlanTier === PlanTier.PREMIUM) {
+    if (currentPlanTier === ("PRO" as PlanTier) || currentPlanTier === ("PREMIUM" as PlanTier)) {
       return currentPlanTier;
     }
 
