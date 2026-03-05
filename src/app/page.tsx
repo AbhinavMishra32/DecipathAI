@@ -26,8 +26,8 @@ import { hubotSans } from '@/lib/fonts';
 import { VelocityScroll } from '@/components/magicui/scroll-based-velocity';
 import { Button } from '@/components/ui/button';
 import type { LucideIcon } from 'lucide-react';
-import LandingIntroOverlay from '@/components/LandingIntroOverlay';
 import PricingComparisonSection from '@/components/pricing/PricingComparisonSection';
+import AgentSseShowcase from '@/components/landing/AgentSseShowcase';
 
 type FeatureCard = {
   title: string
@@ -43,23 +43,23 @@ type FlowStep = {
 
 const featureCards: FeatureCard[] = [
   {
-    title: 'AI-Powered Roadmap Generation',
-    description: 'Describe where you are and where you want to go. Decipath creates a deep roadmap in seconds.',
+    title: 'Agent-Based Research Engine',
+    description: 'A multi-step agent researches the web, reasons over evidence, and turns findings into roadmap decisions.',
     icon: Sparkles,
   },
   {
-    title: 'Interactive Graph View',
-    description: 'Every milestone becomes a clickable node with connected context, so you see the full decision tree.',
+    title: 'Live Agent Thread + Node Lifecycle',
+    description: 'Watch each node move from planned → researching → researched → card-ready in real time.',
     icon: Waypoints,
   },
   {
-    title: 'Actionable Tasks Per Step',
-    description: 'Each node includes focused tasks, next steps, and realistic time estimates you can execute immediately.',
+    title: 'Research-Backed Action Cards',
+    description: 'Every roadmap node ships with practical tasks and clear next steps backed by collected evidence.',
     icon: PenSquare,
   },
   {
-    title: 'Branching + Converging Paths',
-    description: 'Explore alternate routes, prerequisites, and merged tracks without losing the bigger picture.',
+    title: 'Pathway Planning + Convergence',
+    description: 'The agent builds branching routes and convergence points instead of static one-lane checklists.',
     icon: GitBranch,
   },
   {
@@ -76,31 +76,31 @@ const featureCards: FeatureCard[] = [
 
 const flowSteps: FlowStep[] = [
   {
-    title: 'Define your starting point',
-    description: 'Tell Decipath your current state and constraints.',
+    title: 'Frame objective + constraints',
+    description: 'Describe your current state, desired outcome, and optional constraints.',
     icon: Compass,
   },
   {
-    title: 'Set the target',
-    description: 'Describe what success looks like in concrete terms.',
+    title: 'Agent researches the web',
+    description: 'Decipath runs guided searches, gathers references, and synthesizes evidence.',
     icon: Target,
   },
   {
-    title: 'Generate the map',
-    description: 'Get a multi-branch roadmap with timelines and dependencies.',
+    title: 'Build pathways + nodes',
+    description: 'The agent composes branching pathways, transitions, and node cards.',
     icon: Workflow,
   },
   {
-    title: 'Execute node by node',
-    description: 'Open a node, complete tasks, and move forward with clarity.',
+    title: 'Execute with clarity',
+    description: 'Follow actionable node tasks while tracking progress from start to finish.',
     icon: Waypoints,
   },
 ]
 
 const proofStats = [
-  { value: '10-15+', label: 'Roadmap paths generated' },
-  { value: '5-8', label: 'Actionable tasks per node' },
-  { value: '1 click', label: 'To inspect node details' },
+  { value: 'Multi-step', label: 'Agent reasoning + tool calls' },
+  { value: 'Live Stream', label: 'Real-time activity updates' },
+  { value: 'Node lifecycle', label: 'Planned → researched → ready' },
   { value: 'Any goal', label: 'Career, study, startup, projects' },
 ]
 
@@ -148,8 +148,6 @@ const featureLayout = [
 const Page = () => {
   return (
     <main className={`${hubotSans.className} relative min-h-screen overflow-x-hidden bg-neutral-50 text-neutral-900 dark:bg-neutral-950 dark:text-white`}>
-      <LandingIntroOverlay />
-
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute left-1/2 top-[-24rem] h-[42rem] w-[42rem] -translate-x-1/2 rounded-full bg-indigo-300/35 blur-[140px] dark:bg-indigo-600/30" />
         <div className="absolute right-[-8rem] top-[28rem] h-[20rem] w-[20rem] rounded-full bg-indigo-300/25 blur-[110px] dark:bg-indigo-400/20" />
@@ -172,7 +170,7 @@ const Page = () => {
             <div className="relative">
               <div className="inline-flex items-center gap-2 rounded-full border border-indigo-300/55 bg-indigo-500/10 px-3 py-1 text-xs text-indigo-700 dark:border-indigo-300/40 dark:bg-indigo-500/12 dark:text-indigo-100 sm:text-sm">
                 <BrainCircuit className="h-3.5 w-3.5" />
-                Custom AI roadmaps that you can actually execute
+                Agent-first roadmap generation with live research
               </div>
 
               <h1 className="mt-5 max-w-3xl text-4xl font-semibold leading-[1.03] text-neutral-950 dark:text-white sm:text-6xl">
@@ -183,7 +181,7 @@ const Page = () => {
               </h1>
 
               <div className="mt-5 max-w-xl text-sm leading-relaxed text-neutral-600 dark:text-neutral-300 sm:text-lg">
-                Decipath turns uncertainty into a live execution map so you can move from
+                Decipath runs an autonomous research agent that turns uncertainty into a live execution map, moving you from
                 <span className="mx-2 inline-flex text-indigo-600 dark:text-indigo-200">
                   <FlipWords words={['confusion', 'overthinking', 'stalled progress']} duration={2800} />
                 </span>
@@ -199,7 +197,7 @@ const Page = () => {
                 </Button>
                 <p className="text-sm text-neutral-600 dark:text-neutral-300">
                   Already have an account?{" "}
-                  <Link href="/signin" className="font-medium text-indigo-700 underline decoration-indigo-400/70 underline-offset-4 transition-colors hover:text-indigo-900 dark:text-indigo-100 dark:hover:text-white">
+                  <Link href="/signin" className="font-medium text-neutral-800 underline decoration-neutral-400/70 underline-offset-4 transition-colors hover:text-neutral-950 dark:text-neutral-100 dark:hover:text-white">
                     Sign In
                   </Link>
                 </p>
@@ -208,7 +206,7 @@ const Page = () => {
               <div className="mt-9 divide-y divide-neutral-200 rounded-2xl border border-neutral-200 bg-white/70 backdrop-blur-xl dark:divide-neutral-800/90 dark:border-neutral-800/90 dark:bg-neutral-900/55">
                 {proofStats.map((stat) => (
                   <div key={stat.label} className="flex items-end justify-between px-4 py-3 sm:px-5">
-                    <p className="text-lg font-semibold text-indigo-700 dark:text-indigo-100 sm:text-xl">{stat.value}</p>
+                    <p className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 sm:text-xl">{stat.value}</p>
                     <p className="text-right text-xs text-neutral-500 dark:text-neutral-400 sm:text-sm">{stat.label}</p>
                   </div>
                 ))}
@@ -253,7 +251,7 @@ const Page = () => {
       </section>
 
       <section className="relative mt-2 w-full overflow-hidden">
-        <div className="relative flex w-full items-center justify-center text-indigo-700 dark:text-indigo-100">
+        <div className="relative flex w-full items-center justify-center text-neutral-700 dark:text-neutral-200">
           <VelocityScroll>Anything you want to achieve can be mapped</VelocityScroll>
           <div className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-neutral-50 via-neutral-50/70 to-transparent dark:from-neutral-950 dark:via-neutral-950/70" />
           <div className="pointer-events-none absolute inset-y-0 right-0 w-1/3 bg-gradient-to-l from-neutral-50 via-neutral-50/70 to-transparent dark:from-neutral-950 dark:via-neutral-950/70" />
@@ -261,12 +259,12 @@ const Page = () => {
       </section>
 
       <section id="features" className="mx-auto w-full max-w-[1180px] px-4 py-16 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-2 text-xs uppercase tracking-[0.24em] text-indigo-600 dark:text-indigo-300/85">
+        <div className="flex items-center gap-2 text-xs uppercase tracking-[0.24em] text-neutral-600 dark:text-neutral-300/85">
           <Workflow className="h-4 w-4" />
           Product Architecture
         </div>
         <h2 className="mt-3 max-w-3xl text-3xl font-semibold text-neutral-950 dark:text-white sm:text-4xl">
-          Custom building blocks for deep planning, not template-level output
+          Agent-native infrastructure for deep planning and execution
         </h2>
 
         <div className="mt-8 grid auto-rows-[minmax(165px,auto)] gap-4 lg:grid-cols-12">
@@ -297,12 +295,26 @@ const Page = () => {
                   <h3 className="mt-4 max-w-xl text-xl font-medium text-neutral-900 dark:text-white">{feature.title}</h3>
                   <p className="mt-2 max-w-xl text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">{feature.description}</p>
 
-                  <div className="mt-auto pt-5 text-xs uppercase tracking-[0.18em] text-indigo-600/75 dark:text-indigo-200/70">Built into the core workflow</div>
+                  <div className="mt-auto pt-5 text-xs uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-400">Built into the core workflow</div>
                 </div>
               </motion.article>
             )
           })}
         </div>
+      </section>
+
+      <section id="agent-runtime" className="mx-auto w-full max-w-[1180px] px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mb-4 flex items-center gap-2 text-xs uppercase tracking-[0.24em] text-neutral-600 dark:text-neutral-300/85">
+          <BrainCircuit className="h-4 w-4" />
+          Agent Runtime
+        </div>
+        <h2 className="mb-3 max-w-3xl text-3xl font-semibold text-neutral-950 dark:text-white sm:text-4xl">
+          Watch the agent research and build your roadmap live
+        </h2>
+        <p className="mb-6 max-w-3xl text-sm text-neutral-600 dark:text-neutral-300 sm:text-base">
+          Decipath continuously surfaces agent reasoning, research progress, and node construction as your roadmap is generated step by step.
+        </p>
+        <AgentSseShowcase />
       </section>
 
       <section id="pricing" className="mx-auto w-full max-w-[1180px] px-4 py-4 sm:px-6 lg:px-8">
@@ -315,7 +327,7 @@ const Page = () => {
 
           <h2 className="relative text-3xl font-semibold text-neutral-900 dark:text-white sm:text-4xl">How it flows</h2>
           <p className="relative mt-2 max-w-2xl text-sm text-neutral-600 dark:text-neutral-300 sm:text-base">
-            One clean loop from intent to execution, with enough depth for complex goals.
+            A continuous agent loop from objective to researched milestones to actionable roadmap cards.
           </p>
 
           <div className="relative mt-9 grid gap-8 lg:grid-cols-4">
@@ -339,7 +351,7 @@ const Page = () => {
                       <StepIcon className="h-5 w-5" />
                     </div>
                     <div className="mt-4">
-                      <p className="text-xs uppercase tracking-[0.18em] text-indigo-600/75 dark:text-indigo-200/70">Step {index + 1}</p>
+                      <p className="text-xs uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-400">Step {index + 1}</p>
                       <h3 className="mt-1 text-lg text-neutral-900 dark:text-white">{step.title}</h3>
                       <p className="mt-2 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">{step.description}</p>
                     </div>
@@ -354,7 +366,7 @@ const Page = () => {
       <section id="use-cases" className="mx-auto w-full max-w-[1180px] px-4 py-16 sm:px-6 lg:px-8">
         <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="rounded-[2rem] border border-neutral-200 bg-white/80 p-7 backdrop-blur-xl dark:border-neutral-800 dark:bg-neutral-950/70">
-            <div className="flex items-center gap-2 text-xs uppercase tracking-[0.24em] text-indigo-600 dark:text-indigo-300/80">
+            <div className="flex items-center gap-2 text-xs uppercase tracking-[0.24em] text-neutral-600 dark:text-neutral-300/80">
               <TimerReset className="h-4 w-4" />
               Works Across Domains
             </div>
@@ -422,7 +434,7 @@ const Page = () => {
                     whileInView={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' }}
                     viewport={{ once: true, amount: 0.4 }}
                     transition={{ duration: 0.35, delay: index * 0.06 }}
-                    className="absolute w-max -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full border border-indigo-200/80 bg-white/92 px-3 py-1 text-xs text-indigo-700 shadow-[0_10px_28px_-18px_rgba(99,102,241,0.65)] dark:border-neutral-700/80 dark:bg-neutral-950/80 dark:text-indigo-100 dark:shadow-[0_10px_28px_-18px_rgba(99,102,241,0.85)] sm:text-sm"
+                    className="absolute w-max -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full border border-neutral-200/90 bg-white/92 px-3 py-1 text-xs text-neutral-700 shadow-[0_10px_28px_-18px_rgba(99,102,241,0.65)] dark:border-neutral-700/80 dark:bg-neutral-950/80 dark:text-neutral-200 dark:shadow-[0_10px_28px_-18px_rgba(99,102,241,0.85)] sm:text-sm"
                     style={{ left: `${point.x - 5}px`, top: `${point.y - 10}px` }}
                   >
                     {label}
@@ -448,10 +460,10 @@ const Page = () => {
           <div className="relative grid gap-8 md:grid-cols-[1fr_auto] md:items-end">
             <div>
               <h2 className="max-w-2xl text-3xl font-semibold text-neutral-900 dark:text-white sm:text-4xl">
-                Build your next roadmap with a system that actually feels premium
+                Put an agent researcher behind every roadmap you generate
               </h2>
-              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-indigo-800/90 dark:text-indigo-100/90 sm:text-base">
-                Decipath gives you structure, flexibility, and momentum from your first step to your final milestone.
+              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-neutral-700 dark:text-neutral-200 sm:text-base">
+                Decipath combines planning intelligence, web research, and roadmap synthesis into one interactive workflow.
               </p>
 
               <div className="mt-7 flex flex-wrap items-center gap-3">
@@ -462,18 +474,18 @@ const Page = () => {
                   </Link>
                 </Button>
                 <div className="inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-white/75 px-4 py-2 text-xs text-neutral-700 dark:border-neutral-700/80 dark:bg-neutral-950/62 dark:text-neutral-300">
-                  <LockKeyhole className="h-3.5 w-3.5 text-indigo-200" />
+                  <LockKeyhole className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-300" />
                   Secure auth + saved roadmap history
                 </div>
               </div>
             </div>
 
             <div className="min-w-[220px] space-y-3">
-              <div className="rounded-2xl border border-indigo-300/55 bg-indigo-500/14 px-4 py-3 text-sm text-indigo-700 dark:border-indigo-300/35 dark:bg-indigo-500/18 dark:text-indigo-100">
-                Structured AI planning engine
+              <div className="rounded-2xl border border-indigo-300/55 bg-indigo-500/14 px-4 py-3 text-sm text-neutral-800 dark:border-indigo-300/35 dark:bg-indigo-500/18 dark:text-neutral-100">
+                Agent thread + tool orchestration
               </div>
               <div className="rounded-2xl border border-neutral-300 bg-white/70 px-4 py-3 text-sm text-neutral-700 dark:border-neutral-700/80 dark:bg-neutral-950/70 dark:text-neutral-200">
-                Interactive graph + actionable tasking
+                Research-backed node cards + execution map
               </div>
             </div>
           </div>

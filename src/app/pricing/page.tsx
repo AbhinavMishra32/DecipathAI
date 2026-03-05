@@ -39,10 +39,10 @@ export default function PricingPage() {
         <div className="rounded-[2rem] border border-neutral-200 bg-white/75 p-7 backdrop-blur-xl dark:border-neutral-800 dark:bg-neutral-950/70 sm:p-10">
           <h2 className="text-2xl font-semibold sm:text-3xl">How billing and limits work</h2>
           <div className="mt-4 space-y-3 text-sm leading-relaxed text-neutral-600 dark:text-neutral-300 sm:text-base">
-            <p>Free plan is intended as an onboarding trial with 2 roadmap generations.</p>
-            <p>Paid plans are recurring subscriptions through Razorpay, with monthly quota resets.</p>
-            <p>When you hit your current plan limit, Decipath prompts you to upgrade before creating more roadmaps.</p>
-            <p>Your saved roadmaps and account data remain available across all plans.</p>
+            <p>The Free plan is designed for onboarding and includes 2 roadmap generations.</p>
+            <p>Paid plans run on recurring billing cycles, and generation quotas reset at the start of each cycle.</p>
+            <p>When your current plan quota is reached, Decipath prompts you to upgrade before starting additional roadmap generations.</p>
+            <p>Your saved roadmaps and account history remain available across all plan tiers.</p>
           </div>
         </div>
       </section>
