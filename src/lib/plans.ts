@@ -1,6 +1,6 @@
 import { BillingPeriod, PlanTier } from "@prisma/client";
 
-export type PaidPlanTier = Exclude<PlanTier, PlanTier.FREE>;
+export type PaidPlanTier = Exclude<PlanTier, "FREE">;
 
 export type PlanCapabilities = {
   monthlyGenerationLimit: number;
@@ -25,7 +25,7 @@ export type PlanDefinition = {
 
 export const PLAN_DEFINITIONS: Record<PlanTier, PlanDefinition> = {
   FREE: {
-    tier: PlanTier.FREE,
+    tier: "FREE",
     label: "Free plan",
     pricing: {
       currency: "INR",
@@ -43,7 +43,7 @@ export const PLAN_DEFINITIONS: Record<PlanTier, PlanDefinition> = {
     },
   },
   PRO: {
-    tier: PlanTier.PRO,
+    tier: "PRO",
     label: "Pro plan",
     pricing: {
       currency: "INR",
@@ -61,7 +61,7 @@ export const PLAN_DEFINITIONS: Record<PlanTier, PlanDefinition> = {
     },
   },
   PREMIUM: {
-    tier: PlanTier.PREMIUM,
+    tier: "PREMIUM",
     label: "Premium plan",
     pricing: {
       currency: "INR",
@@ -102,16 +102,16 @@ export const inferPaidPlanTierFromProviderPlanId = (planId?: string | null): Pai
   const premiumYearly = process.env.RAZORPAY_PLAN_ID_PREMIUM_YEARLY?.trim();
 
   if (planId === proMonthly || planId === proYearly) {
-    return PlanTier.PRO;
+    return "PRO";
   }
 
   if (planId === premiumMonthly || planId === premiumYearly) {
-    return PlanTier.PREMIUM;
+    return "PREMIUM";
   }
 
   return null;
 };
 
 export const getPlanDefinition = (tier: PlanTier): PlanDefinition => {
-  return PLAN_DEFINITIONS[tier] ?? PLAN_DEFINITIONS.FREE;
+  return PLAN_DEFINITIONS[tier] ?? PLAN_DEFINITIONS["FREE"];
 };

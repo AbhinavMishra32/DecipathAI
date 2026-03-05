@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { BillingPeriod, BillingProvider, PlanTier, Prisma, SubscriptionStatus } from "@prisma/client";
+import { BillingPeriod, BillingProvider, Prisma, SubscriptionStatus } from "@prisma/client";
 import { AuthError, requireDbUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import {
@@ -14,8 +14,10 @@ type CheckoutBody = {
   period?: "MONTHLY" | "YEARLY";
 };
 
-const parsePaidPlanTier = (tier: unknown): PaidPlanTier | null => {
-  if (tier === PlanTier.PRO || tier === PlanTier.PREMIUM) {
+type CheckoutPaidTierInput = "PRO" | "PREMIUM";
+
+const parsePaidPlanTier = (tier: unknown): CheckoutPaidTierInput | null => {
+  if (tier === "PRO" || tier === "PREMIUM") {
     return tier;
   }
 
@@ -66,7 +68,7 @@ export async function POST(request: NextRequest) {
     }
 
     const subscription = await createRazorpaySubscriptionCheckout({
-      tier: targetTier,
+      tier: targetTier as PaidPlanTier,
       period: billingPeriod,
       userId: user.id,
       email: user.email,

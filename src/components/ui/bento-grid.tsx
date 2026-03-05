@@ -4,6 +4,8 @@ import { cn } from "../../lib/utils";
 import { Button } from "../../components/ui/button";
 import React from "react";
 
+type BentoIcon = React.ComponentType<{ className?: string }>;
+
 const BentoGrid = ({
   children,
   className,
@@ -35,7 +37,7 @@ const BentoCard = ({
   name: string;
   className: string;
   background: ReactNode;
-  Icon: any;
+  Icon: BentoIcon;
   description: string;
   href: string;
   cta: string;
