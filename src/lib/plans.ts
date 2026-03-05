@@ -1,6 +1,7 @@
-import { BillingPeriod, PlanTier } from "@prisma/client";
+import { BillingPeriod, type PlanTier } from "@prisma/client";
 
-export type PaidPlanTier = Exclude<PlanTier, "FREE">;
+export type AppPlanTier = "FREE" | "PRO" | "PREMIUM";
+export type PaidPlanTier = Exclude<AppPlanTier, "FREE">;
 
 export type PlanCapabilities = {
   monthlyGenerationLimit: number;
@@ -13,7 +14,7 @@ export type PlanCapabilities = {
 };
 
 export type PlanDefinition = {
-  tier: PlanTier;
+  tier: AppPlanTier;
   label: string;
   pricing: {
     currency: "INR";
@@ -23,7 +24,7 @@ export type PlanDefinition = {
   capabilities: PlanCapabilities;
 };
 
-export const PLAN_DEFINITIONS: Record<PlanTier, PlanDefinition> = {
+export const PLAN_DEFINITIONS: Record<AppPlanTier, PlanDefinition> = {
   FREE: {
     tier: "FREE",
     label: "Free plan",
@@ -112,6 +113,14 @@ export const inferPaidPlanTierFromProviderPlanId = (planId?: string | null): Pai
   return null;
 };
 
-export const getPlanDefinition = (tier: PlanTier): PlanDefinition => {
-  return PLAN_DEFINITIONS[tier] ?? PLAN_DEFINITIONS["FREE"];
+export const getPlanDefinition = (tier?: PlanTier | AppPlanTier | null): PlanDefinition => {
+  if (tier === "PREMIUM") {
+    return PLAN_DEFINITIONS.PREMIUM;
+  }
+
+  if (tier === "PRO") {
+    return PLAN_DEFINITIONS.PRO;
+  }
+
+  return PLAN_DEFINITIONS.FREE;
 };
